@@ -148,11 +148,6 @@ function download_and_unpack() {
 
     temp_dir=$(mktemp -d)
 
-    if ! command -v curl &> /dev/null; then
-        echo "curl is not installed. Please install curl to continue."
-        exit 1
-    fi
-
     curl --silent --fail --location "$url" | tar -xvz -C "$temp_dir" -f - $path_to_unpack
 
     mv "$temp_dir/$path_to_unpack" "$target_path"
@@ -166,20 +161,7 @@ function download_git() {
 
     tmp_dir=$(mktemp -d)
     pushd "$tmp_dir"
-
-    case "$architecture" in
-        aarch64-apple-darwin)
-            download_and_unpack "https://github.com/desktop/dugite-native/releases/download/${GIT_VERSION}/dugite-native-${GIT_VERSION}-${GIT_VERSION_SHA}-macOS-arm64.tar.gz" bin/git ./git
-            ;;
-        x86_64-apple-darwin)
-            download_and_unpack "https://github.com/desktop/dugite-native/releases/download/${GIT_VERSION}/dugite-native-${GIT_VERSION}-${GIT_VERSION_SHA}-macOS-x64.tar.gz" bin/git ./git
-            ;;
-        *)
-            echo "Unsupported architecture: $architecture"
-            exit 1
-            ;;
-    esac
-
+    download_and_unpack "https://github.com/desktop/dugite-native/releases/download/${GIT_VERSION}/dugite-native-${GIT_VERSION}-${GIT_VERSION_SHA}-macOS-arm64.tar.gz" bin/git ./git
     popd
 
     mv "${tmp_dir}/git" "${target_binary}"
@@ -208,12 +190,6 @@ function prepare_binaries() {
 
     echo "Gzipping dSYMs for $architecture"
     gzip -kf target/${architecture}/${target_dir}/Zed.dwarf
-
-    echo "Uploading dSYMs${architecture} for $architecture to by-uuid/${uuid}.dwarf.gz"
-    upload_to_blob_store_public \
-        "zed-debug-symbols" \
-        target/${architecture}/${target_dir}/Zed.dwarf.gz \
-        "by-uuid/${uuid}.dwarf.gz"
 
     cp target/${architecture}/${target_dir}/zed "${app_path}/Contents/MacOS/zed"
     cp target/${architecture}/${target_dir}/cli "${app_path}/Contents/MacOS/cli"
@@ -348,44 +324,8 @@ function sign_binary() {
     fi
 }
 
-if [ "$local_arch" = true ]; then
-    sign_app_binaries "$app_path" "$local_target_triple" "$local_target_triple"
 
-    sign_binary "target/release/remote_server"
-else
-    # Create universal binary
-    prepare_binaries "aarch64-apple-darwin" "$app_path_aarch64"
-    prepare_binaries "x86_64-apple-darwin" "$app_path_x64"
-
-
-    sign_app_binaries "$app_path_x64" "x86_64-apple-darwin" "x86_64-apple-darwin"
-    sign_app_binaries "$app_path_aarch64" "aarch64-apple-darwin" "aarch64-apple-darwin"
-
-    sign_binary "target/x86_64-apple-darwin/release/remote_server"
-    sign_binary "target/aarch64-apple-darwin/release/remote_server"
-    gzip -f --stdout --best target/x86_64-apple-darwin/release/remote_server > target/zed-remote-server-macos-x86_64.gz
-    gzip -f --stdout --best target/aarch64-apple-darwin/release/remote_server > target/zed-remote-server-macos-aarch64.gz
-fi
-
-function upload_debug_info() {
-    architecture=$1
-    if [[ -n "${SENTRY_AUTH_TOKEN:-}" ]]; then
-        echo "Uploading zed debug symbols to sentry..."
-        # note: this uploads the unstripped binary which is needed because it contains
-        # .eh_frame data for stack unwinindg. see https://github.com/getsentry/symbolic/issues/783
-        sentry-cli debug-files upload --include-sources --wait -p zed -o zed-dev \
-            "target/${architecture}/${target_dir}/zed" \
-            "target/${architecture}/${target_dir}/remote_server" \
-            "target/${architecture}/${target_dir}/zed.dwarf"
-    else
-        echo "missing SENTRY_AUTH_TOKEN. skipping sentry upload."
-    fi
-}
-
-if command -v sentry-cli >/dev/null 2>&1; then
-    upload_debug_info "aarch64-apple-darwin"
-    upload_debug_info "x86_64-apple-darwin"
-else
-    echo "sentry-cli not found. skipping sentry upload."
-    echo "install with: 'curl -sL https://sentry.io/get-cli | bash'"
-fi
+prepare_binaries "aarch64-apple-darwin" "$app_path_aarch64"
+sign_app_binaries "$app_path_aarch64" "aarch64-apple-darwin" "aarch64-apple-darwin"
+sign_binary "target/aarch64-apple-darwin/release/remote_server"
+gzip -f --stdout --best target/aarch64-apple-darwin/release/remote_server > target/zed-remote-server-macos-aarch64.gz
