@@ -9,8 +9,6 @@ CREATE TABLE IF NOT EXISTS "signups" (
     "inviting_user_id" INTEGER REFERENCES users (id) ON DELETE SET NULL,
 
     "platform_mac" BOOLEAN NOT NULL,
-    "platform_linux" BOOLEAN NOT NULL,
-    "platform_windows" BOOLEAN NOT NULL,
     "platform_unknown" BOOLEAN NOT NULL,
 
     "editor_features" VARCHAR[],

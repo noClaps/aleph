@@ -111,13 +111,8 @@ async fn stream_file_archive(
     match asset_kind {
         AssetKind::TarGz => extract_tar_gz(destination_path, url, file_archive).await?,
         AssetKind::Gz => extract_gz(destination_path, url, file_archive).await?,
-        #[cfg(not(windows))]
         AssetKind::Zip => {
             util::archive::extract_seekable_zip(destination_path, file_archive).await?;
-        }
-        #[cfg(windows)]
-        AssetKind::Zip => {
-            util::archive::extract_zip(destination_path, file_archive).await?;
         }
     };
     Ok(())

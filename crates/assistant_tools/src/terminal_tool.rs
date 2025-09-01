@@ -54,10 +54,6 @@ impl TerminalTool {
 
     pub(crate) fn new(cx: &mut App) -> Self {
         let determine_shell = cx.background_spawn(async move {
-            if cfg!(windows) {
-                return get_system_shell();
-            }
-
             if which::which("bash").is_ok() {
                 "bash".into()
             } else {
@@ -136,9 +132,7 @@ impl Tool for TerminalTool {
             Err(err) => return Task::ready(Err(err)).into(),
         };
         let program = self.determine_shell.clone();
-        let command = if cfg!(windows) {
-            format!("$null | & {{{}}}", input.command.replace("\"", "'"))
-        } else if let Some(cwd) = working_dir
+        let command = if let Some(cwd) = working_dir
             .as_ref()
             .and_then(|cwd| cwd.as_os_str().to_str())
         {
@@ -159,9 +153,7 @@ impl Tool for TerminalTool {
 
         let env = cx.spawn(async move |_| {
             let mut env = env.await.unwrap_or_default();
-            if cfg!(unix) {
-                env.insert("PAGER".into(), "cat".into());
-            }
+            env.insert("PAGER".into(), "cat".into());
             env
         });
 
@@ -737,10 +729,6 @@ mod tests {
 
     #[gpui::test]
     async fn test_interactive_command(executor: BackgroundExecutor, cx: &mut TestAppContext) {
-        if cfg!(windows) {
-            return;
-        }
-
         init_test(&executor, cx);
 
         let fs = Arc::new(RealFs::new(None, executor));
@@ -780,10 +768,6 @@ mod tests {
 
     #[gpui::test]
     async fn test_working_directory(executor: BackgroundExecutor, cx: &mut TestAppContext) {
-        if cfg!(windows) {
-            return;
-        }
-
         init_test(&executor, cx);
 
         let fs = Arc::new(RealFs::new(None, executor));

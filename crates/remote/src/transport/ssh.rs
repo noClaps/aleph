@@ -66,7 +66,6 @@ pub struct SshPortForwardOption {
 #[derive(Clone)]
 struct SshSocket {
     connection_options: SshConnectionOptions,
-    #[cfg(not(target_os = "windows"))]
     socket_path: PathBuf,
     envs: HashMap<String, String>,
 }
@@ -305,11 +304,9 @@ impl SshRemoteConnection {
         // Start the master SSH process, which does not do anything except for establish
         // the connection and keep it open, allowing other ssh commands to reuse it
         // via a control socket.
-        #[cfg(not(target_os = "windows"))]
         let socket_path = temp_dir.path().join("ssh.sock");
 
         let mut master_process = {
-            #[cfg(not(target_os = "windows"))]
             let args = [
                 "-N",
                 "-o",
@@ -318,11 +315,6 @@ impl SshRemoteConnection {
                 "ControlMaster=yes",
                 "-o",
             ];
-            // On Windows, `ControlMaster` and `ControlPath` are not supported:
-            // https://github.com/PowerShell/Win32-OpenSSH/issues/405
-            // https://github.com/PowerShell/Win32-OpenSSH/wiki/Project-Scope
-            #[cfg(target_os = "windows")]
-            let args = ["-N"];
             let mut master_process = util::command::new_smol_command("ssh");
             master_process
                 .kill_on_drop(true)
@@ -333,7 +325,6 @@ impl SshRemoteConnection {
                 .env("SSH_ASKPASS", askpass.script_path())
                 .args(connection_options.additional_args())
                 .args(args);
-            #[cfg(not(target_os = "windows"))]
             master_process.arg(format!("ControlPath={}", socket_path.display()));
             master_process.arg(&url).spawn()?
         };
@@ -375,17 +366,11 @@ impl SshRemoteConnection {
             anyhow::bail!(error_message);
         }
 
-        #[cfg(not(target_os = "windows"))]
         let socket = SshSocket::new(connection_options, socket_path)?;
-        #[cfg(target_os = "windows")]
-        let socket = SshSocket::new(connection_options, &temp_dir, askpass.get_password())?;
         drop(askpass);
 
         let ssh_platform = socket.platform().await?;
-        let ssh_path_style = match ssh_platform.os {
-            "windows" => PathStyle::Windows,
-            _ => PathStyle::Posix,
-        };
+        let ssh_path_style = PathStyle::Posix;
         let ssh_shell = socket.shell().await;
 
         let mut this = Self {
@@ -693,26 +678,11 @@ impl SshRemoteConnection {
 }
 
 impl SshSocket {
-    #[cfg(not(target_os = "windows"))]
     fn new(options: SshConnectionOptions, socket_path: PathBuf) -> Result<Self> {
         Ok(Self {
             connection_options: options,
             envs: HashMap::default(),
             socket_path,
-        })
-    }
-
-    #[cfg(target_os = "windows")]
-    fn new(options: SshConnectionOptions, temp_dir: &TempDir, secret: String) -> Result<Self> {
-        let askpass_script = temp_dir.path().join("askpass.bat");
-        std::fs::write(&askpass_script, "@ECHO OFF\necho %ZED_SSH_ASKPASS%")?;
-        let mut envs = HashMap::default();
-        envs.insert("SSH_ASKPASS_REQUIRE".into(), "force".into());
-        envs.insert("SSH_ASKPASS".into(), askpass_script.display().to_string());
-        envs.insert("ZED_SSH_ASKPASS".into(), secret);
-        Ok(Self {
-            connection_options: options,
-            envs,
         })
     }
 
@@ -753,7 +723,6 @@ impl SshSocket {
         Ok(String::from_utf8_lossy(&output.stdout).to_string())
     }
 
-    #[cfg(not(target_os = "windows"))]
     fn ssh_options<'a>(&self, command: &'a mut process::Command) -> &'a mut process::Command {
         command
             .stdin(Stdio::piped())
@@ -764,19 +733,7 @@ impl SshSocket {
             .arg(format!("ControlPath={}", self.socket_path.display()))
     }
 
-    #[cfg(target_os = "windows")]
-    fn ssh_options<'a>(&self, command: &'a mut process::Command) -> &'a mut process::Command {
-        command
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .args(self.connection_options.additional_args())
-            .envs(self.envs.clone())
-    }
-
-    // On Windows, we need to use `SSH_ASKPASS` to provide the password to ssh.
     // On Linux, we use the `ControlPath` option to create a socket file that ssh can use to
-    #[cfg(not(target_os = "windows"))]
     fn ssh_args(&self) -> Vec<String> {
         let mut arguments = self.connection_options.additional_args();
         arguments.extend(vec![
@@ -789,13 +746,6 @@ impl SshSocket {
         arguments
     }
 
-    #[cfg(target_os = "windows")]
-    fn ssh_args(&self) -> Vec<String> {
-        let mut arguments = self.connection_options.additional_args();
-        arguments.push(self.connection_options.ssh_url());
-        arguments
-    }
-
     async fn platform(&self) -> Result<RemotePlatform> {
         let uname = self.run_command("sh", &["-c", "uname -sm"]).await?;
         let Some((os, arch)) = uname.split_once(" ") else {
@@ -804,7 +754,6 @@ impl SshSocket {
 
         let os = match os.trim() {
             "Darwin" => "macos",
-            "Linux" => "linux",
             _ => anyhow::bail!(
                 "Prebuilt remote servers are not yet available for {os:?}. See https://zed.dev/docs/remote-development"
             ),
@@ -816,8 +765,6 @@ impl SshSocket {
             || arch.starts_with("aarch64")
         {
             "aarch64"
-        } else if arch.starts_with("x86") {
-            "x86_64"
         } else {
             anyhow::bail!(
                 "Prebuilt remote servers are not yet available for {arch:?}. See https://zed.dev/docs/remote-development"

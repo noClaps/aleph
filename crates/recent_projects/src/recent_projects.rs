@@ -335,10 +335,9 @@ impl PickerDelegate for RecentProjectsDelegate {
                                     ..Default::default()
                                 };
 
-                                if let RemoteConnectionOptions::Ssh(connection) = &mut connection {
-                                    SshSettings::get_global(cx)
-                                        .fill_connection_options_from_settings(connection);
-                                };
+                                let RemoteConnectionOptions::Ssh(ssh_connection) = &mut connection;
+                                SshSettings::get_global(cx)
+                                    .fill_connection_options_from_settings(ssh_connection);
 
                                 let paths = candidate_workspace_paths.paths().to_vec();
 

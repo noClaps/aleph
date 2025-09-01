@@ -2219,11 +2219,6 @@ mod tests {
                 false,
                 "Path with . should work normally",
             ),
-            // Windows-style paths (if on Windows)
-            #[cfg(target_os = "windows")]
-            ("C:\\Windows\\System32\\hosts", true, "Windows system path"),
-            #[cfg(target_os = "windows")]
-            ("project\\src\\main.rs", false, "Windows-style project path"),
         ];
 
         for (path, should_confirm, description) in test_cases {

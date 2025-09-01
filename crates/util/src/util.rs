@@ -335,9 +335,6 @@ pub fn load_login_shell_environment() -> Result<()> {
 pub fn set_pre_exec_to_start_new_session(
     command: &mut std::process::Command,
 ) -> &mut std::process::Command {
-    // safety: code in pre_exec should be signal safe.
-    // https://man7.org/linux/man-pages/man7/signal-safety.7.html
-    #[cfg(not(target_os = "windows"))]
     unsafe {
         use std::os::unix::process::CommandExt;
         command.pre_exec(|| {
@@ -503,108 +500,6 @@ pub fn wrapped_usize_outward_from(
     })
 }
 
-#[cfg(target_os = "windows")]
-pub fn get_windows_system_shell() -> String {
-    use std::path::PathBuf;
-
-    fn find_pwsh_in_programfiles(find_alternate: bool, find_preview: bool) -> Option<PathBuf> {
-        #[cfg(target_pointer_width = "64")]
-        let env_var = if find_alternate {
-            "ProgramFiles(x86)"
-        } else {
-            "ProgramFiles"
-        };
-
-        #[cfg(target_pointer_width = "32")]
-        let env_var = if find_alternate {
-            "ProgramW6432"
-        } else {
-            "ProgramFiles"
-        };
-
-        let install_base_dir = PathBuf::from(std::env::var_os(env_var)?).join("PowerShell");
-        install_base_dir
-            .read_dir()
-            .ok()?
-            .filter_map(Result::ok)
-            .filter(|entry| matches!(entry.file_type(), Ok(ft) if ft.is_dir()))
-            .filter_map(|entry| {
-                let dir_name = entry.file_name();
-                let dir_name = dir_name.to_string_lossy();
-
-                let version = if find_preview {
-                    let dash_index = dir_name.find('-')?;
-                    if &dir_name[dash_index + 1..] != "preview" {
-                        return None;
-                    };
-                    dir_name[..dash_index].parse::<u32>().ok()?
-                } else {
-                    dir_name.parse::<u32>().ok()?
-                };
-
-                let exe_path = entry.path().join("pwsh.exe");
-                if exe_path.exists() {
-                    Some((version, exe_path))
-                } else {
-                    None
-                }
-            })
-            .max_by_key(|(version, _)| *version)
-            .map(|(_, path)| path)
-    }
-
-    fn find_pwsh_in_msix(find_preview: bool) -> Option<PathBuf> {
-        let msix_app_dir =
-            PathBuf::from(std::env::var_os("LOCALAPPDATA")?).join("Microsoft\\WindowsApps");
-        if !msix_app_dir.exists() {
-            return None;
-        }
-
-        let prefix = if find_preview {
-            "Microsoft.PowerShellPreview_"
-        } else {
-            "Microsoft.PowerShell_"
-        };
-        msix_app_dir
-            .read_dir()
-            .ok()?
-            .filter_map(|entry| {
-                let entry = entry.ok()?;
-                if !matches!(entry.file_type(), Ok(ft) if ft.is_dir()) {
-                    return None;
-                }
-
-                if !entry.file_name().to_string_lossy().starts_with(prefix) {
-                    return None;
-                }
-
-                let exe_path = entry.path().join("pwsh.exe");
-                exe_path.exists().then_some(exe_path)
-            })
-            .next()
-    }
-
-    fn find_pwsh_in_scoop() -> Option<PathBuf> {
-        let pwsh_exe =
-            PathBuf::from(std::env::var_os("USERPROFILE")?).join("scoop\\shims\\pwsh.exe");
-        pwsh_exe.exists().then_some(pwsh_exe)
-    }
-
-    static SYSTEM_SHELL: LazyLock<String> = LazyLock::new(|| {
-        find_pwsh_in_programfiles(false, false)
-            .or_else(|| find_pwsh_in_programfiles(true, false))
-            .or_else(|| find_pwsh_in_msix(false))
-            .or_else(|| find_pwsh_in_programfiles(false, true))
-            .or_else(|| find_pwsh_in_msix(true))
-            .or_else(|| find_pwsh_in_programfiles(true, true))
-            .or_else(find_pwsh_in_scoop)
-            .map(|p| p.to_string_lossy().to_string())
-            .unwrap_or("powershell.exe".to_string())
-    });
-
-    (*SYSTEM_SHELL).clone()
-}
-
 pub trait ResultExt<E> {
     type Ok;
 
@@ -665,10 +560,7 @@ fn log_error_with_caller<E>(caller: core::panic::Location<'_>, error: E, level: 
 where
     E: std::fmt::Debug,
 {
-    #[cfg(not(target_os = "windows"))]
     let file = caller.file();
-    #[cfg(target_os = "windows")]
-    let file = caller.file().replace('\\', "/");
     // In this codebase all crates reside in a `crates` directory,
     // so discard the prefix up to that segment to find the crate name
     let target = file
@@ -1049,27 +941,11 @@ pub fn default<D: Default>() -> D {
 }
 
 pub fn get_system_shell() -> String {
-    #[cfg(target_os = "windows")]
-    {
-        get_windows_system_shell()
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    {
-        std::env::var("SHELL").unwrap_or("/bin/sh".to_string())
-    }
+    std::env::var("SHELL").unwrap_or("/bin/sh".to_string())
 }
 
 pub fn get_default_system_shell() -> String {
-    #[cfg(target_os = "windows")]
-    {
-        get_windows_system_shell()
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    {
-        "/bin/sh".to_string()
-    }
+    "/bin/sh".to_string()
 }
 
 #[derive(Debug)]

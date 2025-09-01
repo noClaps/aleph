@@ -15,14 +15,6 @@ static KEYMAP_MACOS: LazyLock<KeymapFile> = LazyLock::new(|| {
     load_keymap("keymaps/default-macos.json").expect("Failed to load MacOS keymap")
 });
 
-static KEYMAP_LINUX: LazyLock<KeymapFile> = LazyLock::new(|| {
-    load_keymap("keymaps/default-linux.json").expect("Failed to load Linux keymap")
-});
-
-static KEYMAP_WINDOWS: LazyLock<KeymapFile> = LazyLock::new(|| {
-    load_keymap("keymaps/default-windows.json").expect("Failed to load Windows keymap")
-});
-
 static ALL_ACTIONS: LazyLock<Vec<ActionDef>> = LazyLock::new(dump_all_gpui_actions);
 
 const FRONT_MATTER_COMMENT: &str = "<!-- ZED_META {} -->";
@@ -178,13 +170,12 @@ fn template_and_validate_keybindings(book: &mut Book, errors: &mut HashSet<Prepr
                     return String::new();
                 }
                 let macos_binding = find_binding("macos", action).unwrap_or_default();
-                let linux_binding = find_binding("linux", action).unwrap_or_default();
 
-                if macos_binding.is_empty() && linux_binding.is_empty() {
+                if macos_binding.is_empty() {
                     return "<div>No default binding</div>".to_string();
                 }
 
-                format!("<kbd class=\"keybinding\">{macos_binding}|{linux_binding}</kbd>")
+                format!("<kbd class=\"keybinding\">{macos_binding}</kbd>")
             })
             .into_owned()
     });
@@ -219,8 +210,6 @@ fn find_action_by_name(name: &str) -> Option<&ActionDef> {
 fn find_binding(os: &str, action: &str) -> Option<String> {
     let keymap = match os {
         "macos" => &KEYMAP_MACOS,
-        "linux" | "freebsd" => &KEYMAP_LINUX,
-        "windows" => &KEYMAP_WINDOWS,
         _ => unreachable!("Not a valid OS: {}", os),
     };
 

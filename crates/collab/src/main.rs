@@ -172,22 +172,6 @@ async fn main() -> Result<()> {
                 futures::future::select(sigterm, sigint).await;
             };
 
-            #[cfg(windows)]
-            let signal = async move {
-                // todo(windows):
-                // `ctrl_close` does not work well, because tokio's signal handler always returns soon,
-                // but system terminates the application soon after returning CTRL+CLOSE handler.
-                // So we should implement blocking handler to treat CTRL+CLOSE signal.
-                let mut ctrl_break = tokio::signal::windows::ctrl_break()
-                    .expect("failed to listen for interrupt signal");
-                let mut ctrl_c = tokio::signal::windows::ctrl_c()
-                    .expect("failed to listen for interrupt signal");
-                let ctrl_break = ctrl_break.recv();
-                let ctrl_c = ctrl_c.recv();
-                futures::pin_mut!(ctrl_break, ctrl_c);
-                futures::future::select(ctrl_break, ctrl_c).await;
-            };
-
             axum::Server::from_tcp(listener)
                 .map_err(|e| anyhow!(e))?
                 .serve(app.into_make_service_with_connect_info::<SocketAddr>())

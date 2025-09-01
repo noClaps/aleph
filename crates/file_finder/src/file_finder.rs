@@ -1398,9 +1398,6 @@ impl PickerDelegate for FileFinderDelegate {
         } else {
             let path_position = PathWithPosition::parse_str(raw_query);
 
-            #[cfg(windows)]
-            let raw_query = raw_query.trim().to_owned().replace("/", "\\");
-            #[cfg(not(windows))]
             let raw_query = raw_query.trim();
 
             let raw_query = raw_query.trim_end_matches(':').to_owned();

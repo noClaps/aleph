@@ -531,18 +531,17 @@ pub async fn get_git_committer(cx: &AsyncApp) -> GitCommitter {
         };
     }
 
-    let git_binary_path =
-        if cfg!(target_os = "macos") && option_env!("ZED_BUNDLE").as_deref() == Some("true") {
-            cx.update(|cx| {
-                cx.path_for_auxiliary_executable("git")
-                    .context("could not find git binary path")
-                    .log_err()
-            })
-            .ok()
-            .flatten()
-        } else {
-            None
-        };
+    let git_binary_path = if option_env!("ZED_BUNDLE").as_deref() == Some("true") {
+        cx.update(|cx| {
+            cx.path_for_auxiliary_executable("git")
+                .context("could not find git binary path")
+                .log_err()
+        })
+        .ok()
+        .flatten()
+    } else {
+        None
+    };
 
     let git = GitBinary::new(
         git_binary_path.unwrap_or(PathBuf::from("git")),
@@ -1923,17 +1922,7 @@ impl RepoPath {
     }
 
     pub fn to_unix_style(&self) -> Cow<'_, OsStr> {
-        #[cfg(target_os = "windows")]
-        {
-            use std::ffi::OsString;
-
-            let path = self.0.as_os_str().to_string_lossy().replace("\\", "/");
-            Cow::Owned(OsString::from(path))
-        }
-        #[cfg(not(target_os = "windows"))]
-        {
-            Cow::Borrowed(self.0.as_os_str())
-        }
+        Cow::Borrowed(self.0.as_os_str())
     }
 }
 
@@ -2081,10 +2070,6 @@ fn parse_upstream_track(upstream_track: &str) -> Result<UpstreamTracking> {
 fn check_path_to_repo_path_errors(relative_file_path: &Path) -> Result<()> {
     match relative_file_path.components().next() {
         None => anyhow::bail!("repo path should not be empty"),
-        Some(Component::Prefix(_)) => anyhow::bail!(
-            "repo path `{}` should be relative, not a windows prefix",
-            relative_file_path.to_string_lossy()
-        ),
         Some(Component::RootDir) => {
             anyhow::bail!(
                 "repo path `{}` should be relative",

@@ -12,7 +12,6 @@ use rpc::proto::Envelope;
 use smol::process::Child;
 
 pub mod ssh;
-pub mod wsl;
 
 fn handle_rpc_messages_over_child_process_stdio(
     mut ssh_proxy_process: Child,
@@ -144,17 +143,10 @@ async fn build_remote_server_from_source(
         Ok(())
     }
 
-    let use_musl = !build_remote_server.contains("nomusl");
     let triple = format!(
         "{}-{}",
         platform.arch,
         match platform.os {
-            "linux" =>
-                if use_musl {
-                    "unknown-linux-musl"
-                } else {
-                    "unknown-linux-gnu"
-                },
             "macos" => "apple-darwin",
             _ => anyhow::bail!("can't cross compile for: {:?}", platform),
         }
@@ -167,9 +159,6 @@ async fn build_remote_server_from_source(
             String::new()
         }
     };
-    if platform.os == "linux" && use_musl {
-        rust_flags.push_str(" -C target-feature=+crt-static");
-    }
     if build_remote_server.contains("mold") {
         rust_flags.push_str(" -C link-arg=-fuse-ld=mold");
     }
@@ -194,9 +183,6 @@ async fn build_remote_server_from_source(
         )
         .await?;
     } else if build_remote_server.contains("cross") {
-        #[cfg(target_os = "windows")]
-        use util::paths::SanitizedPath;
-
         delegate.set_status(Some("Installing cross.rs for cross-compilation"), cx);
         log::info!("installing cross");
         run_cmd(Command::new("cargo").args([
@@ -216,10 +202,6 @@ async fn build_remote_server_from_source(
         );
         log::info!("building remote server binary from source for {}", &triple);
 
-        // On Windows, the binding needs to be set to the canonical path
-        #[cfg(target_os = "windows")]
-        let src = SanitizedPath::new(&smol::fs::canonicalize("./target").await?).to_glob_string();
-        #[cfg(not(target_os = "windows"))]
         let src = "./target";
 
         run_cmd(
@@ -248,18 +230,9 @@ async fn build_remote_server_from_source(
             .await;
 
         if which.is_err() {
-            #[cfg(not(target_os = "windows"))]
-            {
-                anyhow::bail!(
-                    "zig not found on $PATH, install zig (see https://ziglang.org/learn/getting-started or use zigup) or pass ZED_BUILD_REMOTE_SERVER=cross to use cross"
-                )
-            }
-            #[cfg(target_os = "windows")]
-            {
-                anyhow::bail!(
-                    "zig not found on $PATH, install zig (use `winget install -e --id zig.zig` or see https://ziglang.org/learn/getting-started or use zigup) or pass ZED_BUILD_REMOTE_SERVER=cross to use cross"
-                )
-            }
+            anyhow::bail!(
+                "zig not found on $PATH, install zig (see https://ziglang.org/learn/getting-started or use zigup) or pass ZED_BUILD_REMOTE_SERVER=cross to use cross"
+            )
         }
 
         delegate.set_status(Some("Adding rustup target for cross-compilation"), cx);
@@ -303,27 +276,7 @@ async fn build_remote_server_from_source(
     let path = if !build_remote_server.contains("nocompress") {
         delegate.set_status(Some("Compressing binary"), cx);
 
-        #[cfg(not(target_os = "windows"))]
-        {
-            run_cmd(Command::new("gzip").args(["-f", &bin_path.to_string_lossy()])).await?;
-        }
-
-        #[cfg(target_os = "windows")]
-        {
-            // On Windows, we use 7z to compress the binary
-            let seven_zip = which::which("7z.exe").context("7z.exe not found on $PATH, install it (e.g. with `winget install -e --id 7zip.7zip`) or, if you don't want this behaviour, set $env:ZED_BUILD_REMOTE_SERVER=\"nocompress\"")?;
-            let gz_path = format!("target/remote_server/{}/debug/remote_server.gz", triple);
-            if smol::fs::metadata(&gz_path).await.is_ok() {
-                smol::fs::remove_file(&gz_path).await?;
-            }
-            run_cmd(Command::new(seven_zip).args([
-                "a",
-                "-tgzip",
-                &gz_path,
-                &bin_path.to_string_lossy(),
-            ]))
-            .await?;
-        }
+        run_cmd(Command::new("gzip").args(["-f", &bin_path.to_string_lossy()])).await?;
 
         let mut archive_path = bin_path;
         archive_path.set_extension("gz");

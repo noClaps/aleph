@@ -3192,11 +3192,7 @@ pub enum LineEnding {
 
 impl Default for LineEnding {
     fn default() -> Self {
-        #[cfg(unix)]
         return Self::Unix;
-
-        #[cfg(not(unix))]
-        return Self::Windows;
     }
 }
 

@@ -14,8 +14,6 @@ pub struct Model {
     pub user_id: Option<UserId>,
     pub inviting_user_id: Option<UserId>,
     pub platform_mac: bool,
-    pub platform_linux: bool,
-    pub platform_windows: bool,
     pub platform_unknown: bool,
     pub editor_features: Option<Vec<String>>,
     pub programming_languages: Option<Vec<String>>,

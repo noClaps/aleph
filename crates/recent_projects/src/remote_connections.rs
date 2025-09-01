@@ -303,7 +303,6 @@ impl RemoteConnectionModal {
             RemoteConnectionOptions::Ssh(options) => {
                 (options.connection_string(), options.nickname.clone())
             }
-            RemoteConnectionOptions::Wsl(options) => (options.distro_name.clone(), None),
         };
         Self {
             prompt: cx
@@ -624,12 +623,9 @@ pub async fn open_remote_project(
                 Some(Arc::new(RemoteClientDelegate {
                     window: window.window_handle(),
                     ui: ui.downgrade(),
-                    known_password: if let RemoteConnectionOptions::Ssh(options) =
-                        &connection_options
-                    {
+                    known_password: {
+                        let RemoteConnectionOptions::Ssh(options) = &connection_options;
                         options.password.clone()
-                    } else {
-                        None
                     },
                 }))
             }
@@ -665,10 +661,7 @@ pub async fn open_remote_project(
                 .update(cx, |_, window, cx| {
                     window.prompt(
                         PromptLevel::Critical,
-                        match connection_options {
-                            RemoteConnectionOptions::Ssh(_) => "Failed to connect over SSH",
-                            RemoteConnectionOptions::Wsl(_) => "Failed to connect to WSL",
-                        },
+                        "Failed to connect over SSH",
                         Some(&e.to_string()),
                         &["Retry", "Ok"],
                         cx,

@@ -773,9 +773,6 @@ impl VimGlobals {
                     }
                     '*' => {
                         self.registers.insert('"', content.clone());
-                        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-                        cx.write_to_primary(content.into());
-                        #[cfg(not(any(target_os = "linux", target_os = "freebsd")))]
                         cx.write_to_clipboard(content.into());
                     }
                     '"' => {
@@ -843,16 +840,7 @@ impl VimGlobals {
         match lower {
             '_' | ':' | '.' | '#' | '=' => None,
             '+' => cx.read_from_clipboard().map(|item| item.into()),
-            '*' => {
-                #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-                {
-                    cx.read_from_primary().map(|item| item.into())
-                }
-                #[cfg(not(any(target_os = "linux", target_os = "freebsd")))]
-                {
-                    cx.read_from_clipboard().map(|item| item.into())
-                }
-            }
+            '*' => cx.read_from_clipboard().map(|item| item.into()),
             '%' => editor.and_then(|editor| {
                 let selection = editor.selections.newest::<Point>(cx);
                 if let Some((_, buffer, _)) = editor

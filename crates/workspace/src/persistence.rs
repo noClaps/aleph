@@ -20,7 +20,7 @@ use project::debugger::breakpoint_store::{BreakpointState, SourceBreakpoint};
 
 use language::{LanguageName, Toolchain, ToolchainScope};
 use project::WorktreeId;
-use remote::{RemoteConnectionOptions, SshConnectionOptions, WslConnectionOptions};
+use remote::{RemoteConnectionOptions, SshConnectionOptions};
 use sqlez::{
     bindable::{Bind, Column, StaticColumnCount},
     statement::Statement,
@@ -1102,20 +1102,15 @@ impl WorkspaceDb {
     ) -> Result<RemoteConnectionId> {
         let kind;
         let user;
-        let mut host = None;
-        let mut port = None;
-        let mut distro = None;
+        let host;
+        let port;
+        let distro = None;
         match options {
             RemoteConnectionOptions::Ssh(options) => {
                 kind = RemoteConnectionKind::Ssh;
                 host = Some(options.host);
                 port = options.port;
                 user = options.username;
-            }
-            RemoteConnectionOptions::Wsl(options) => {
-                kind = RemoteConnectionKind::Wsl;
-                distro = Some(options.distro_name);
-                user = options.user;
             }
         }
         Self::get_or_create_remote_connection_query(this, kind, host, port, user, distro)
@@ -1269,24 +1264,18 @@ impl WorkspaceDb {
     }
 
     fn remote_connection_from_row(
-        kind: String,
+        _kind: String,
         host: Option<String>,
         port: Option<u16>,
         user: Option<String>,
-        distro: Option<String>,
+        _distro: Option<String>,
     ) -> Option<RemoteConnectionOptions> {
-        match RemoteConnectionKind::deserialize(&kind)? {
-            RemoteConnectionKind::Wsl => Some(RemoteConnectionOptions::Wsl(WslConnectionOptions {
-                distro_name: distro?,
-                user: user,
-            })),
-            RemoteConnectionKind::Ssh => Some(RemoteConnectionOptions::Ssh(SshConnectionOptions {
-                host: host?,
-                port,
-                username: user,
-                ..Default::default()
-            })),
-        }
+        Some(RemoteConnectionOptions::Ssh(SshConnectionOptions {
+            host: host?,
+            port,
+            username: user,
+            ..Default::default()
+        }))
     }
 
     pub(crate) fn last_window(

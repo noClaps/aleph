@@ -413,11 +413,7 @@ impl RulesLibrary {
             picker
         });
         Self {
-            title_bar: if !cfg!(target_os = "macos") {
-                Some(cx.new(|cx| PlatformTitleBar::new("rules-library-title-bar", cx)))
-            } else {
-                None
-            },
+            title_bar: None,
             store,
             language_registry,
             rule_editors: HashMap::default(),

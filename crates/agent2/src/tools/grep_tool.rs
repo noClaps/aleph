@@ -758,13 +758,7 @@ mod tests {
         let task = cx.update(|cx| tool.run(input, ToolCallEventStream::test().0, cx));
 
         match task.await {
-            Ok(result) => {
-                if cfg!(windows) {
-                    result.replace("root\\", "root/")
-                } else {
-                    result
-                }
-            }
+            Ok(result) => result,
             Err(e) => panic!("Failed to run grep tool: {}", e),
         }
     }

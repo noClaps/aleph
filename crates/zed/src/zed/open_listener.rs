@@ -18,7 +18,7 @@ use language::Point;
 use onboarding::FIRST_OPEN;
 use onboarding::show_onboarding_view;
 use recent_projects::{SshSettings, open_remote_project};
-use remote::{RemoteConnectionOptions, WslConnectionOptions};
+use remote::RemoteConnectionOptions;
 use settings::Settings;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -53,20 +53,6 @@ impl OpenRequest {
         let mut this = Self::default();
 
         this.diff_paths = request.diff_paths;
-        if let Some(wsl) = request.wsl {
-            let (user, distro_name) = if let Some((user, distro)) = wsl.split_once('@') {
-                if user.is_empty() {
-                    anyhow::bail!("user is empty in wsl argument");
-                }
-                (Some(user.to_string()), distro.to_string())
-            } else {
-                (None, wsl)
-            };
-            this.remote_connection = Some(RemoteConnectionOptions::Wsl(WslConnectionOptions {
-                distro_name,
-                user,
-            }));
-        }
 
         for url in request.urls {
             if let Some(server_name) = url.strip_prefix("zed-cli://") {
@@ -169,7 +155,6 @@ pub struct OpenListener(UnboundedSender<RawOpenRequest>);
 pub struct RawOpenRequest {
     pub urls: Vec<String>,
     pub diff_paths: Vec<[String; 2]>,
-    pub wsl: Option<String>,
 }
 
 impl Global for OpenListener {}
@@ -186,31 +171,6 @@ impl OpenListener {
             .context("no listener for open requests")
             .log_err();
     }
-}
-
-#[cfg(any(target_os = "linux", target_os = "freebsd"))]
-pub fn listen_for_cli_connections(opener: OpenListener) -> Result<()> {
-    use release_channel::RELEASE_CHANNEL_NAME;
-    use std::os::unix::net::UnixDatagram;
-
-    let sock_path = paths::data_dir().join(format!("zed-{}.sock", *RELEASE_CHANNEL_NAME));
-    // remove the socket if the process listening on it has died
-    if let Err(e) = UnixDatagram::unbound()?.connect(&sock_path)
-        && e.kind() == std::io::ErrorKind::ConnectionRefused
-    {
-        std::fs::remove_file(&sock_path)?;
-    }
-    let listener = UnixDatagram::bind(&sock_path)?;
-    thread::spawn(move || {
-        let mut buf = [0u8; 1024];
-        while let Ok(len) = listener.recv(&mut buf) {
-            opener.open(RawOpenRequest {
-                urls: vec![String::from_utf8_lossy(&buf[..len]).to_string()],
-                ..Default::default()
-            });
-        }
-    });
-    Ok(())
 }
 
 fn connect_to_cli(
@@ -321,21 +281,13 @@ pub async fn handle_cli_connection(
                 paths,
                 diff_paths,
                 wait,
-                wsl,
                 open_new_workspace,
                 env,
                 user_data_dir: _,
             } => {
                 if !urls.is_empty() {
                     cx.update(|cx| {
-                        match OpenRequest::parse(
-                            RawOpenRequest {
-                                urls,
-                                diff_paths,
-                                wsl,
-                            },
-                            cx,
-                        ) {
+                        match OpenRequest::parse(RawOpenRequest { urls, diff_paths }, cx) {
                             Ok(open_request) => {
                                 handle_open_request(open_request, app_state.clone(), cx);
                                 responses.send(CliResponse::Exit { status: 0 }).log_err();
@@ -450,12 +402,11 @@ async fn open_workspaces(
                 }
                 SerializedWorkspaceLocation::Remote(mut connection) => {
                     let app_state = app_state.clone();
-                    if let RemoteConnectionOptions::Ssh(options) = &mut connection {
-                        cx.update(|cx| {
-                            SshSettings::get_global(cx)
-                                .fill_connection_options_from_settings(options)
-                        })?;
-                    }
+                    let RemoteConnectionOptions::Ssh(options) = &mut connection;
+                    cx.update(|cx| {
+                        SshSettings::get_global(cx).fill_connection_options_from_settings(options)
+                    })?;
+
                     cx.spawn(async move |cx| {
                         open_remote_project(
                             connection,

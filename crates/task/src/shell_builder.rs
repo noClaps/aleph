@@ -34,9 +34,6 @@ impl ShellKind {
     }
 
     pub fn new(program: &str) -> Self {
-        #[cfg(windows)]
-        let (_, program) = program.rsplit_once('\\').unwrap_or(("", program));
-        #[cfg(not(windows))]
         let (_, program) = program.rsplit_once('/').unwrap_or(("", program));
         if program == "powershell"
             || program.ends_with("powershell.exe")

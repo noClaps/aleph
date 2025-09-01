@@ -784,13 +784,7 @@ mod tests {
             cx.update(|cx| tool.run(input, Arc::default(), project, action_log, model, None, cx));
 
         match task.output.await {
-            Ok(result) => {
-                if cfg!(windows) {
-                    result.content.as_str().unwrap().replace("root\\", "root/")
-                } else {
-                    result.content.as_str().unwrap().to_string()
-                }
-            }
+            Ok(result) => result.content.as_str().unwrap().to_string(),
             Err(e) => panic!("Failed to run grep tool: {}", e),
         }
     }

@@ -1,6 +1,3 @@
-/// todo(windows)
-/// The tests in this file assume that server_cx is running on Windows too.
-/// We neead to find a way to test Windows-Non-Windows interactions.
 use crate::headless_project::HeadlessProject;
 use assistant_tool::{Tool as _, ToolResultContent};
 use assistant_tools::{ReadFileTool, ReadFileToolInput};
@@ -31,7 +28,6 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-#[cfg(not(windows))]
 use unindent::Unindent as _;
 use util::path;
 
@@ -1329,8 +1325,6 @@ async fn test_copy_file_into_remote_project(
     );
 }
 
-// TODO: this test fails on Windows.
-#[cfg(not(windows))]
 #[gpui::test]
 async fn test_remote_git_diffs(cx: &mut TestAppContext, server_cx: &mut TestAppContext) {
     let text_2 = "
@@ -1445,8 +1439,6 @@ async fn test_remote_git_diffs(cx: &mut TestAppContext, server_cx: &mut TestAppC
     });
 }
 
-// TODO: this test fails on Windows.
-#[cfg(not(windows))]
 #[gpui::test]
 async fn test_remote_git_diffs_when_recv_update_repository_delay(
     cx: &mut TestAppContext,

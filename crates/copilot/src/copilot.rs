@@ -491,11 +491,7 @@ impl Copilot {
                 env,
             };
 
-            let root_path = if cfg!(target_os = "windows") {
-                Path::new("C:/")
-            } else {
-                Path::new("/")
-            };
+            let root_path = Path::new("/");
 
             let server_name = LanguageServerName("copilot".into());
             let server = LanguageServer::new(

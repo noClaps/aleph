@@ -1,40 +1,10 @@
 use gpui::{Entity, OwnedMenu, OwnedMenuItem};
 use settings::Settings;
 
-#[cfg(not(target_os = "macos"))]
-use gpui::{Action, actions};
-
-#[cfg(not(target_os = "macos"))]
-use schemars::JsonSchema;
-#[cfg(not(target_os = "macos"))]
-use serde::Deserialize;
-
 use smallvec::SmallVec;
 use ui::{ContextMenu, PopoverMenu, PopoverMenuHandle, Tooltip, prelude::*};
 
 use crate::title_bar_settings::TitleBarSettings;
-
-#[cfg(not(target_os = "macos"))]
-actions!(
-    app_menu,
-    [
-        /// Navigates to the menu item on the right.
-        ActivateMenuRight,
-        /// Navigates to the menu item on the left.
-        ActivateMenuLeft
-    ]
-);
-
-#[cfg(not(target_os = "macos"))]
-#[derive(Clone, Deserialize, JsonSchema, PartialEq, Default, Action)]
-#[action(namespace = app_menu)]
-pub struct OpenApplicationMenu(String);
-
-#[cfg(not(target_os = "macos"))]
-pub enum ActivateDirection {
-    Left,
-    Right,
-}
 
 #[derive(Clone)]
 struct MenuEntry {
@@ -204,55 +174,6 @@ impl ApplicationMenu {
             })
     }
 
-    #[cfg(not(target_os = "macos"))]
-    pub fn open_menu(
-        &mut self,
-        action: &OpenApplicationMenu,
-        _window: &mut Window,
-        _cx: &mut Context<Self>,
-    ) {
-        self.pending_menu_open = Some(action.0.clone());
-    }
-
-    #[cfg(not(target_os = "macos"))]
-    pub fn navigate_menus_in_direction(
-        &mut self,
-        direction: ActivateDirection,
-        window: &mut Window,
-        cx: &mut Context<Self>,
-    ) {
-        let current_index = self
-            .entries
-            .iter()
-            .position(|entry| entry.handle.is_deployed());
-        let Some(current_index) = current_index else {
-            return;
-        };
-
-        let next_index = match direction {
-            ActivateDirection::Left => {
-                if current_index == 0 {
-                    self.entries.len() - 1
-                } else {
-                    current_index - 1
-                }
-            }
-            ActivateDirection::Right => {
-                if current_index == self.entries.len() - 1 {
-                    0
-                } else {
-                    current_index + 1
-                }
-            }
-        };
-
-        self.entries[current_index].handle.hide(cx);
-
-        // We need to defer this so that this menu handle can take focus from the previous menu
-        let next_handle = self.entries[next_index].handle.clone();
-        cx.defer_in(window, move |_, window, cx| next_handle.show(window, cx));
-    }
-
     pub fn all_menus_shown(&self, cx: &mut Context<Self>) -> bool {
         show_menus(cx)
             || self.entries.iter().any(|entry| entry.handle.is_deployed())
@@ -262,7 +183,7 @@ impl ApplicationMenu {
 
 pub(crate) fn show_menus(cx: &mut App) -> bool {
     TitleBarSettings::get_global(cx).show_menus
-        && (cfg!(not(target_os = "macos")) || option_env!("ZED_USE_CROSS_PLATFORM_MENU").is_some())
+        && option_env!("ZED_USE_CROSS_PLATFORM_MENU").is_some()
 }
 
 impl Render for ApplicationMenu {

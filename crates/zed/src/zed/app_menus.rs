@@ -34,17 +34,13 @@ pub fn app_menus() -> Vec<Menu> {
                     ],
                 }),
                 MenuItem::separator(),
-                #[cfg(target_os = "macos")]
                 MenuItem::os_submenu("Services", gpui::SystemMenuType::Services),
                 MenuItem::separator(),
                 MenuItem::action("Extensions", zed_actions::Extensions::default()),
                 MenuItem::action("Install CLI", install_cli::Install),
                 MenuItem::separator(),
-                #[cfg(target_os = "macos")]
                 MenuItem::action("Hide Zed", super::Hide),
-                #[cfg(target_os = "macos")]
                 MenuItem::action("Hide Others", super::HideOthers),
-                #[cfg(target_os = "macos")]
                 MenuItem::action("Show All", super::ShowAll),
                 MenuItem::separator(),
                 MenuItem::action("Quit Zed", Quit),
@@ -56,16 +52,7 @@ pub fn app_menus() -> Vec<Menu> {
                 MenuItem::action("New", workspace::NewFile),
                 MenuItem::action("New Window", workspace::NewWindow),
                 MenuItem::separator(),
-                #[cfg(not(target_os = "macos"))]
-                MenuItem::action("Open File...", workspace::OpenFiles),
-                MenuItem::action(
-                    if cfg!(not(target_os = "macos")) {
-                        "Open Folder..."
-                    } else {
-                        "Open…"
-                    },
-                    workspace::Open,
-                ),
+                MenuItem::action("Open…", workspace::Open),
                 MenuItem::action(
                     "Open Recent...",
                     zed_actions::OpenRecent {

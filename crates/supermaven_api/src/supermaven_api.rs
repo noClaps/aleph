@@ -236,13 +236,10 @@ pub async fn get_supermaven_agent_path(client: Arc<dyn HttpClient>) -> Result<Pa
 
     let platform = match std::env::consts::OS {
         "macos" => "darwin",
-        "windows" => "windows",
-        "linux" => "linux",
         unsupported => anyhow::bail!("unsupported platform {unsupported}"),
     };
 
     let arch = match std::env::consts::ARCH {
-        "x86_64" => "amd64",
         "aarch64" => "arm64",
         unsupported => anyhow::bail!("unsupported architecture {unsupported}"),
     };

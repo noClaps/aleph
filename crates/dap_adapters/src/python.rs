@@ -239,11 +239,7 @@ impl PythonDebugAdapter {
                     return Err("Failed to create base virtual environment".into());
                 }
 
-                const DIR: &str = if cfg!(target_os = "windows") {
-                    "Scripts"
-                } else {
-                    "bin"
-                };
+                const DIR: &str = "bin";
                 Ok(Arc::from(
                     paths::debug_adapters_dir()
                         .join(Self::DEBUG_ADAPTER_NAME.as_ref())
@@ -493,7 +489,6 @@ impl DebugAdapter for PythonDebugAdapter {
                     "default": null,
                     "description": "OS that VS code is using.",
                     "enum": [
-                        "windows",
                         null,
                         "unix"
                     ]

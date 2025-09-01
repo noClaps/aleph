@@ -1105,32 +1105,6 @@ async fn test_adding_directory_via_file(cx: &mut gpui::TestAppContext) {
             "      .dockerignore",
         ]
     );
-
-    // Test filename ends with "\"
-    #[cfg(target_os = "windows")]
-    {
-        select_path(&panel, "root1", cx);
-        panel.update_in(cx, |panel, window, cx| panel.new_file(&NewFile, window, cx));
-        let confirm = panel.update_in(cx, |panel, window, cx| {
-            // If we want to create a subdirectory, there should be no prefix slash.
-            panel
-                .filename_editor
-                .update(cx, |editor, cx| editor.set_text("new_dir_3\\", window, cx));
-            panel.confirm_edit(window, cx).unwrap()
-        });
-        confirm.await.unwrap();
-        assert_eq!(
-            visible_entries_as_strings(&panel, 0..10, cx),
-            &[
-                "v root1",
-                "    > .git",
-                "    v new dir 2",
-                "    v new_dir",
-                "    v new_dir_3  <== selected",
-                "      .dockerignore",
-            ]
-        );
-    }
 }
 
 #[gpui::test]
@@ -2815,7 +2789,6 @@ async fn test_new_file_move(cx: &mut gpui::TestAppContext) {
 }
 
 #[gpui::test]
-#[cfg_attr(target_os = "windows", ignore)]
 async fn test_rename_root_of_worktree(cx: &mut gpui::TestAppContext) {
     init_test_with_editor(cx);
 
@@ -2967,22 +2940,13 @@ async fn test_rename_with_hide_root(cx: &mut gpui::TestAppContext) {
         select_path(&panel, "root1", cx);
         panel.update_in(cx, |panel, window, cx| panel.rename(&Rename, window, cx));
 
-        #[cfg(target_os = "windows")]
         assert!(
-            panel.read_with(cx, |panel, _| panel.edit_state.is_none()),
-            "Rename should be blocked on Windows even with multiple worktrees"
+            panel.read_with(cx, |panel, _| panel.edit_state.is_some()),
+            "Rename should work with multiple worktrees on non-Windows when hide_root=true"
         );
-
-        #[cfg(not(target_os = "windows"))]
-        {
-            assert!(
-                panel.read_with(cx, |panel, _| panel.edit_state.is_some()),
-                "Rename should work with multiple worktrees on non-Windows when hide_root=true"
-            );
-            panel.update_in(cx, |panel, window, cx| {
-                panel.cancel(&menu::Cancel, window, cx)
-            });
-        }
+        panel.update_in(cx, |panel, window, cx| {
+            panel.cancel(&menu::Cancel, window, cx)
+        });
     }
 }
 
@@ -6091,9 +6055,6 @@ fn visible_entries_as_strings(
             } else {
                 "  "
             };
-            #[cfg(windows)]
-            let filename = details.filename.replace("\\", "/");
-            #[cfg(not(windows))]
             let filename = details.filename;
             let name = if details.is_editing {
                 format!("[EDITOR: '{}']", filename)

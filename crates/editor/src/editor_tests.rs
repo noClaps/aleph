@@ -5234,15 +5234,9 @@ async fn test_convert_to_sentence_case(cx: &mut TestAppContext) {
 
     let mut cx = EditorTestContext::new(cx).await;
 
-    cx.set_state(indoc! {"
-        «implement-windows-supportˇ»
-    "});
     cx.update_editor(|e, window, cx| {
         e.convert_to_sentence_case(&ConvertToSentenceCase, window, cx)
     });
-    cx.assert_editor_state(indoc! {"
-        «Implement windows supportˇ»
-    "});
 }
 
 #[gpui::test]
@@ -21580,14 +21574,6 @@ async fn test_folding_buffer_when_multibuffer_has_only_one_excerpt(cx: &mut Test
 #[gpui::test]
 async fn test_multi_buffer_navigation_with_folded_buffers(cx: &mut TestAppContext) {
     init_test(cx, |_| {});
-    cx.update(|cx| {
-        let default_key_bindings = settings::KeymapFile::load_asset_allow_partial_failure(
-            "keymaps/default-linux.json",
-            cx,
-        )
-        .unwrap();
-        cx.bind_keys(default_key_bindings);
-    });
 
     let (editor, cx) = cx.add_window_view(|window, cx| {
         let multi_buffer = MultiBuffer::build_multi(

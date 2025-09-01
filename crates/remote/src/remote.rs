@@ -9,4 +9,3 @@ pub use remote_client::{
     RemoteConnectionOptions, RemotePlatform,
 };
 pub use transport::ssh::{SshConnectionOptions, SshPortForwardOption};
-pub use transport::wsl::WslConnectionOptions;

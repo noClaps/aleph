@@ -31,9 +31,6 @@ ui_macros.workspace = true
 util.workspace = true
 workspace-hack.workspace = true
 
-[target.'cfg(windows)'.dependencies]
-windows.workspace = true
-
 [dev-dependencies]
 gpui = { workspace = true, features = ["test-support"] }
 

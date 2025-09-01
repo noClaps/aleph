@@ -460,8 +460,7 @@ mod tests {
         /// These likely rise to the level of being worth fixing.
         mod issues {
             #[test]
-            #[cfg_attr(not(target_os = "windows"), should_panic(expected = "Path = «例»"))]
-            #[cfg_attr(target_os = "windows", should_panic(expected = r#"Path = «C:\\例»"#))]
+            #[should_panic(expected = "Path = «例»")]
             // <https://github.com/alacritty/alacritty/issues/8586>
             fn issue_alacritty_8586() {
                 // Rust paths
@@ -517,17 +516,8 @@ mod tests {
             }
 
             #[test]
-            #[cfg_attr(
-                not(target_os = "windows"),
-                should_panic(
-                    expected = "Path = «test/controllers/template_items_controller_test.rb», line = 20, at grid cells (0, 0)..=(17, 1)"
-                )
-            )]
-            #[cfg_attr(
-                target_os = "windows",
-                should_panic(
-                    expected = r#"Path = «test\\controllers\\template_items_controller_test.rb», line = 20, at grid cells (0, 0)..=(17, 1)"#
-                )
+            #[should_panic(
+                expected = "Path = «test/controllers/template_items_controller_test.rb», line = 20, at grid cells (0, 0)..=(17, 1)"
             )]
             // <https://github.com/zed-industries/zed/issues/28194>
             //
@@ -546,14 +536,7 @@ mod tests {
         /// Minor issues arguably not important enough to fix/workaround...
         mod nits {
             #[test]
-            #[cfg_attr(
-                not(target_os = "windows"),
-                should_panic(expected = "Path = «/test/cool.rs(4»")
-            )]
-            #[cfg_attr(
-                target_os = "windows",
-                should_panic(expected = r#"Path = «C:\\test\\cool.rs(4»"#)
-            )]
+            #[should_panic(expected = "Path = «/test/cool.rs(4»")]
             fn alacritty_bugs_with_two_columns() {
                 test_path!(2; "‹«/👉test/cool.rs»(«4»)›");
                 test_path!(2; "‹«/test/cool.rs»(«👉4»)›");
@@ -564,17 +547,8 @@ mod tests {
             }
 
             #[test]
-            #[cfg_attr(
-                not(target_os = "windows"),
-                should_panic(
-                    expected = "Path = «/test/cool.rs», line = 1, at grid cells (0, 0)..=(9, 0)"
-                )
-            )]
-            #[cfg_attr(
-                target_os = "windows",
-                should_panic(
-                    expected = r#"Path = «C:\\test\\cool.rs», line = 1, at grid cells (0, 0)..=(9, 2)"#
-                )
+            #[should_panic(
+                expected = "Path = «/test/cool.rs», line = 1, at grid cells (0, 0)..=(9, 0)"
             )]
             fn invalid_row_column_should_be_part_of_path() {
                 test_path!("‹«/👉test/cool.rs:1:618033988749»›");
@@ -589,51 +563,10 @@ mod tests {
             }
 
             #[test]
-            #[cfg_attr(
-                not(target_os = "windows"),
-                should_panic(expected = "Path = «/test/cool.rs»")
-            )]
-            #[cfg_attr(
-                target_os = "windows",
-                should_panic(expected = r#"Path = «C:\\test\\cool.rs»"#)
-            )]
+            #[should_panic(expected = "Path = «/test/cool.rs»")]
             fn many_trailing_colons_should_be_parsed_as_part_of_the_path() {
                 test_path!("‹«/test/cool.rs:::👉:»›");
                 test_path!("‹«/te:st/👉co:ol.r:s:4:2::::::»›");
-            }
-        }
-
-        #[cfg(target_os = "windows")]
-        mod windows {
-            // Lots of fun to be had with long file paths (verbatim) and UNC paths on Windows.
-            // See <https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation>
-            // See <https://users.rust-lang.org/t/understanding-windows-paths/58583>
-            // See <https://github.com/rust-lang/cargo/issues/13919>
-
-            #[test]
-            fn unc() {
-                test_path!(r#"‹«\\server\share\👉test\cool.rs»›"#);
-                test_path!(r#"‹«\\server\share\test\cool👉.rs»›"#);
-            }
-
-            mod issues {
-                #[test]
-                #[should_panic(
-                    expected = r#"Path = «C:\\test\\cool.rs», at grid cells (0, 0)..=(6, 0)"#
-                )]
-                fn issue_verbatim() {
-                    test_path!(r#"‹«\\?\C:\👉test\cool.rs»›"#);
-                    test_path!(r#"‹«\\?\C:\test\cool👉.rs»›"#);
-                }
-
-                #[test]
-                #[should_panic(
-                    expected = r#"Path = «\\\\server\\share\\test\\cool.rs», at grid cells (0, 0)..=(10, 2)"#
-                )]
-                fn issue_verbatim_unc() {
-                    test_path!(r#"‹«\\?\UNC\server\share\👉test\cool.rs»›"#);
-                    test_path!(r#"‹«\\?\UNC\server\share\test\cool👉.rs»›"#);
-                }
             }
         }
     }
@@ -653,7 +586,6 @@ mod tests {
             } };
         }
 
-        #[cfg(not(target_os = "windows"))]
         #[test]
         fn absolute_file_iri() {
             test_file_iri!("file:///test/cool/index.rs");
@@ -661,7 +593,6 @@ mod tests {
         }
 
         mod issues {
-            #[cfg(not(target_os = "windows"))]
             #[test]
             #[should_panic(expected = "Path = «/test/Ῥόδος/», at grid cells (0, 0)..=(15, 1)")]
             fn issue_file_iri_with_percent_encoded_characters() {
@@ -672,46 +603,6 @@ mod tests {
                 // Spaces
                 test_file_iri!("file:///te%20st/co%20ol/index.rs");
                 test_file_iri!("file:///te%20st/co%20ol/");
-            }
-        }
-
-        #[cfg(target_os = "windows")]
-        mod windows {
-            mod issues {
-                // The test uses Url::to_file_path(), but it seems that the Url crate doesn't
-                // support relative file IRIs.
-                #[test]
-                #[should_panic(
-                    expected = r#"Failed to interpret file IRI `file:/test/cool/index.rs` as a path"#
-                )]
-                fn issue_relative_file_iri() {
-                    test_file_iri!("file:/test/cool/index.rs");
-                    test_file_iri!("file:/test/cool/");
-                }
-
-                // See https://en.wikipedia.org/wiki/File_URI_scheme
-                #[test]
-                #[should_panic(
-                    expected = r#"Path = «C:\\test\\cool\\index.rs», at grid cells (0, 0)..=(9, 1)"#
-                )]
-                fn issue_absolute_file_iri() {
-                    test_file_iri!("file:///C:/test/cool/index.rs");
-                    test_file_iri!("file:///C:/test/cool/");
-                }
-
-                #[test]
-                #[should_panic(
-                    expected = r#"Path = «C:\\test\\Ῥόδος\\», at grid cells (0, 0)..=(16, 1)"#
-                )]
-                fn issue_file_iri_with_percent_encoded_characters() {
-                    // Non-space characters
-                    // file:///test/Ῥόδος/
-                    test_file_iri!("file:///C:/test/%E1%BF%AC%CF%8C%CE%B4%CE%BF%CF%82/"); // URI
-
-                    // Spaces
-                    test_file_iri!("file:///C:/te%20st/co%20ol/index.rs");
-                    test_file_iri!("file:///C:/te%20st/co%20ol/");
-                }
             }
         }
     }
@@ -875,12 +766,7 @@ mod tests {
         let mut term = Term::new(Config::default(), &term_size, VoidListener);
 
         for text in test_lines {
-            let chars: Box<dyn Iterator<Item = char>> =
-                if cfg!(windows) && hyperlink_kind == HyperlinkKind::Path {
-                    Box::new(text.chars().map(|c| if c == '/' { '\\' } else { c })) as _
-                } else {
-                    Box::new(text.chars()) as _
-                };
+            let chars: Box<dyn Iterator<Item = char>> = Box::new(text.chars()) as _;
             let mut chars = chars.peekable();
             while let Some(c) = chars.next() {
                 match c {
@@ -937,24 +823,8 @@ mod tests {
                             number.push(c)
                         }
 
-                        let is_windows_abs_path_start = captures_state
-                            == CapturesState::PathNextChar
-                            && cfg!(windows)
-                            && hyperlink_kind == HyperlinkKind::Path
-                            && c == '\\'
-                            && chars.peek().is_some_and(|c| *c != '\\');
-
-                        if is_windows_abs_path_start {
-                            // Convert Unix abs path start into Windows abs path start so that the
-                            // same test can be used for both OSes.
-                            term.input('C');
-                            prev_input_point = prev_input_point_from_term(&term);
-                            term.input(':');
-                            term.input(c);
-                        } else {
-                            term.input(c);
-                            prev_input_point = prev_input_point_from_term(&term);
-                        }
+                        term.input(c);
+                        prev_input_point = prev_input_point_from_term(&term);
 
                         if hovered_state == HoveredState::HoveredNextChar {
                             hovered_grid_point = Some(prev_input_point);
@@ -980,15 +850,6 @@ mod tests {
                 panic!("Failed to interpret file IRI `{iri_or_path}` as a path");
             };
             iri_or_path = path.to_string_lossy().to_string();
-        }
-
-        if cfg!(windows) {
-            // Handle verbatim and UNC paths for Windows
-            if let Some(stripped) = iri_or_path.strip_prefix(r#"\\?\UNC\"#) {
-                iri_or_path = format!(r#"\\{stripped}"#);
-            } else if let Some(stripped) = iri_or_path.strip_prefix(r#"\\?\"#) {
-                iri_or_path = stripped.to_string();
-            }
         }
 
         let hovered_grid_point = hovered_grid_point.expect("Missing hovered point (👉 or 👈)");

@@ -437,37 +437,26 @@ impl libwebrtc::native::audio_mixer::AudioMixerSource for AudioMixerSource {
 pub fn play_remote_video_track(
     track: &crate::RemoteVideoTrack,
 ) -> impl Stream<Item = RemoteVideoFrame> + use<> {
-    #[cfg(target_os = "macos")]
-    {
-        let mut pool = None;
-        let most_recent_frame_size = (0, 0);
-        NativeVideoStream::new(track.0.rtc_track()).filter_map(move |frame| {
-            if pool == None
-                || most_recent_frame_size != (frame.buffer.width(), frame.buffer.height())
-            {
-                pool = create_buffer_pool(frame.buffer.width(), frame.buffer.height()).log_err();
+    let mut pool = None;
+    let most_recent_frame_size = (0, 0);
+    NativeVideoStream::new(track.0.rtc_track()).filter_map(move |frame| {
+        if pool == None || most_recent_frame_size != (frame.buffer.width(), frame.buffer.height()) {
+            pool = create_buffer_pool(frame.buffer.width(), frame.buffer.height()).log_err();
+        }
+        let pool = pool.clone();
+        async move {
+            if frame.buffer.width() < 10 && frame.buffer.height() < 10 {
+                // when the remote stops sharing, we get an 8x8 black image.
+                // In a lil bit, the unpublish will come through and close the view,
+                // but until then, don't flash black.
+                return None;
             }
-            let pool = pool.clone();
-            async move {
-                if frame.buffer.width() < 10 && frame.buffer.height() < 10 {
-                    // when the remote stops sharing, we get an 8x8 black image.
-                    // In a lil bit, the unpublish will come through and close the view,
-                    // but until then, don't flash black.
-                    return None;
-                }
 
-                video_frame_buffer_from_webrtc(pool?, frame.buffer)
-            }
-        })
-    }
-    #[cfg(not(target_os = "macos"))]
-    {
-        NativeVideoStream::new(track.0.rtc_track())
-            .filter_map(|frame| async move { video_frame_buffer_from_webrtc(frame.buffer) })
-    }
+            video_frame_buffer_from_webrtc(pool?, frame.buffer)
+        }
+    })
 }
 
-#[cfg(target_os = "macos")]
 fn create_buffer_pool(
     width: u32,
     height: u32,
@@ -507,10 +496,8 @@ fn create_buffer_pool(
     })
 }
 
-#[cfg(target_os = "macos")]
 pub type RemoteVideoFrame = core_video::pixel_buffer::CVPixelBuffer;
 
-#[cfg(target_os = "macos")]
 fn video_frame_buffer_from_webrtc(
     pool: core_video::pixel_buffer_pool::CVPixelBufferPool,
     buffer: Box<dyn VideoBuffer>,
@@ -573,51 +560,6 @@ fn video_frame_buffer_from_webrtc(
     Some(image_buffer)
 }
 
-#[cfg(not(target_os = "macos"))]
-pub type RemoteVideoFrame = Arc<gpui::RenderImage>;
-
-#[cfg(not(target_os = "macos"))]
-fn video_frame_buffer_from_webrtc(buffer: Box<dyn VideoBuffer>) -> Option<RemoteVideoFrame> {
-    use gpui::RenderImage;
-    use image::{Frame, RgbaImage};
-    use livekit::webrtc::prelude::VideoFormatType;
-    use smallvec::SmallVec;
-    use std::alloc::{Layout, alloc};
-
-    let width = buffer.width();
-    let height = buffer.height();
-    let stride = width * 4;
-    let byte_len = (stride * height) as usize;
-    let argb_image = unsafe {
-        // Motivation for this unsafe code is to avoid initializing the frame data, since to_argb
-        // will write all bytes anyway.
-        let start_ptr = alloc(Layout::array::<u8>(byte_len).log_err()?);
-        if start_ptr.is_null() {
-            return None;
-        }
-        let argb_frame_slice = std::slice::from_raw_parts_mut(start_ptr, byte_len);
-        buffer.to_argb(
-            VideoFormatType::ARGB,
-            argb_frame_slice,
-            stride,
-            width as i32,
-            height as i32,
-        );
-        Vec::from_raw_parts(start_ptr, byte_len, byte_len)
-    };
-
-    // TODO: Unclear why providing argb_image to RgbaImage works properly.
-    let image = RgbaImage::from_raw(width, height, argb_image)
-        .with_context(|| "Bug: not enough bytes allocated for image.")
-        .log_err()?;
-
-    Some(Arc::new(RenderImage::new(SmallVec::from_elem(
-        Frame::new(image),
-        1,
-    ))))
-}
-
-#[cfg(target_os = "macos")]
 fn video_frame_buffer_to_webrtc(frame: ScreenCaptureFrame) -> Option<impl AsRef<dyn VideoBuffer>> {
     use livekit::webrtc;
 
@@ -628,69 +570,10 @@ fn video_frame_buffer_to_webrtc(frame: ScreenCaptureFrame) -> Option<impl AsRef<
     }
 }
 
-#[cfg(not(target_os = "macos"))]
-fn video_frame_buffer_to_webrtc(frame: ScreenCaptureFrame) -> Option<impl AsRef<dyn VideoBuffer>> {
-    use libwebrtc::native::yuv_helper::{abgr_to_nv12, argb_to_nv12};
-    use livekit::webrtc::prelude::NV12Buffer;
-    match frame.0 {
-        scap::frame::Frame::BGRx(frame) => {
-            let mut buffer = NV12Buffer::new(frame.width as u32, frame.height as u32);
-            let (stride_y, stride_uv) = buffer.strides();
-            let (data_y, data_uv) = buffer.data_mut();
-            argb_to_nv12(
-                &frame.data,
-                frame.width as u32 * 4,
-                data_y,
-                stride_y,
-                data_uv,
-                stride_uv,
-                frame.width,
-                frame.height,
-            );
-            Some(buffer)
-        }
-        scap::frame::Frame::RGBx(frame) => {
-            let mut buffer = NV12Buffer::new(frame.width as u32, frame.height as u32);
-            let (stride_y, stride_uv) = buffer.strides();
-            let (data_y, data_uv) = buffer.data_mut();
-            abgr_to_nv12(
-                &frame.data,
-                frame.width as u32 * 4,
-                data_y,
-                stride_y,
-                data_uv,
-                stride_uv,
-                frame.width,
-                frame.height,
-            );
-            Some(buffer)
-        }
-        scap::frame::Frame::YUVFrame(yuvframe) => {
-            let mut buffer = NV12Buffer::with_strides(
-                yuvframe.width as u32,
-                yuvframe.height as u32,
-                yuvframe.luminance_stride as u32,
-                yuvframe.chrominance_stride as u32,
-            );
-            let (luminance, chrominance) = buffer.data_mut();
-            luminance.copy_from_slice(yuvframe.luminance_bytes.as_slice());
-            chrominance.copy_from_slice(yuvframe.chrominance_bytes.as_slice());
-            Some(buffer)
-        }
-        _ => {
-            log::error!(
-                "Expected BGRx or YUV frame from scap screen capture but got some other format."
-            );
-            None
-        }
-    }
-}
-
 trait DeviceChangeListenerApi: Stream<Item = ()> + Sized {
     fn new(input: bool) -> Result<Self>;
 }
 
-#[cfg(target_os = "macos")]
 mod macos {
 
     use coreaudio::sys::{
@@ -878,34 +761,4 @@ mod macos {
     }
 }
 
-#[cfg(target_os = "macos")]
 type DeviceChangeListener = macos::CoreAudioDefaultDeviceChangeListener;
-
-#[cfg(not(target_os = "macos"))]
-mod noop_change_listener {
-    use std::task::Poll;
-
-    use super::DeviceChangeListenerApi;
-
-    pub struct NoopOutputDeviceChangelistener {}
-
-    impl DeviceChangeListenerApi for NoopOutputDeviceChangelistener {
-        fn new(_input: bool) -> anyhow::Result<Self> {
-            Ok(NoopOutputDeviceChangelistener {})
-        }
-    }
-
-    impl futures::Stream for NoopOutputDeviceChangelistener {
-        type Item = ();
-
-        fn poll_next(
-            self: std::pin::Pin<&mut Self>,
-            _cx: &mut std::task::Context<'_>,
-        ) -> Poll<Option<Self::Item>> {
-            Poll::Pending
-        }
-    }
-}
-
-#[cfg(not(target_os = "macos"))]
-type DeviceChangeListener = noop_change_listener::NoopOutputDeviceChangelistener;

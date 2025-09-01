@@ -4,7 +4,6 @@ use minidumper::{Client, LoopAction, MinidumpBinary};
 use release_channel::{RELEASE_CHANNEL, ReleaseChannel};
 use serde::{Deserialize, Serialize};
 
-#[cfg(target_os = "macos")]
 use std::sync::atomic::AtomicU32;
 use std::{
     env,
@@ -28,7 +27,6 @@ pub static REQUESTED_MINIDUMP: AtomicBool = AtomicBool::new(false);
 const CRASH_HANDLER_PING_TIMEOUT: Duration = Duration::from_secs(60);
 const CRASH_HANDLER_CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 
-#[cfg(target_os = "macos")]
 static PANIC_THREAD_ID: AtomicU32 = AtomicU32::new(0);
 
 pub async fn init(crash_init: InitCrashHandler) {
@@ -79,7 +77,6 @@ pub async fn init(crash_init: InitCrashHandler) {
                 .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
                 .is_ok()
             {
-                #[cfg(target_os = "macos")]
                 suspend_all_other_threads();
 
                 client.ping().unwrap();
@@ -92,10 +89,6 @@ pub async fn init(crash_init: InitCrashHandler) {
     })
     .expect("failed to attach signal handler");
 
-    #[cfg(target_os = "linux")]
-    {
-        handler.set_ptracer(Some(server_pid));
-    }
     CRASH_HANDLER.set(client.clone()).ok();
     std::mem::forget(handler);
     info!("crash handler registered");
@@ -106,7 +99,6 @@ pub async fn init(crash_init: InitCrashHandler) {
     }
 }
 
-#[cfg(target_os = "macos")]
 unsafe fn suspend_all_other_threads() {
     let task = unsafe { mach2::traps::current_task() };
     let mut threads: mach2::mach_types::thread_act_array_t = std::ptr::null_mut();
@@ -180,17 +172,7 @@ impl minidumper::ServerHandler for CrashServer {
             Err(e) => Some(format!("{e:?}")),
         };
 
-        #[cfg(not(any(target_os = "linux", target_os = "freebsd")))]
         let gpus = vec![];
-
-        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-        let gpus = match system_specs::read_gpu_info_from_sys_class_drm() {
-            Ok(gpus) => gpus,
-            Err(err) => {
-                log::warn!("Failed to collect GPU information for crash report: {err}");
-                vec![]
-            }
-        };
 
         let crash_info = CrashInfo {
             init: self
@@ -268,15 +250,11 @@ pub fn handle_panic(message: String, span: Option<&Location>) {
                 .ok();
             log::error!("triggering a crash to generate a minidump...");
 
-            #[cfg(target_os = "macos")]
             PANIC_THREAD_ID.store(
                 unsafe { mach2::mach_init::mach_thread_self() },
                 Ordering::SeqCst,
             );
 
-            #[cfg(target_os = "linux")]
-            CrashHandler.simulate_signal(crash_handler::Signal::Trap as u32);
-            #[cfg(not(target_os = "linux"))]
             CrashHandler.simulate_exception(None);
             break;
         }

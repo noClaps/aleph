@@ -613,12 +613,7 @@ impl RemoteServerProjects {
                         .await
                         .and_then(|path| path.into_abs_path())
                         .map(|path| RemotePathBuf::new(path, path_style))
-                        .unwrap_or_else(|| match path_style {
-                            PathStyle::Posix => RemotePathBuf::from_str("/", PathStyle::Posix),
-                            PathStyle::Windows => {
-                                RemotePathBuf::from_str("C:\\", PathStyle::Windows)
-                            }
-                        });
+                        .unwrap_or_else(|| RemotePathBuf::from_str("/", PathStyle::Posix));
 
                     workspace
                         .update_in(cx, |workspace, window, cx| {

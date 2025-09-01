@@ -109,10 +109,7 @@ actions!(
 ///Scrolling is unbearably sluggish by default. Alacritty supports a configurable
 ///Scroll multiplier that is set to 3 by default. This will be removed when I
 ///Implement scroll bars.
-#[cfg(target_os = "macos")]
 const SCROLL_MULTIPLIER: f32 = 4.;
-#[cfg(not(target_os = "macos"))]
-const SCROLL_MULTIPLIER: f32 = 1.;
 const DEBUG_TERMINAL_WIDTH: Pixels = px(500.);
 const DEBUG_TERMINAL_HEIGHT: Pixels = px(30.);
 const DEBUG_CELL_WIDTH: Pixels = px(5.);
@@ -381,17 +378,7 @@ impl TerminalBuilder {
         }
 
         let shell_params = match shell.clone() {
-            Shell::System => {
-                #[cfg(target_os = "windows")]
-                {
-                    Some(ShellParams {
-                        program: util::get_windows_system_shell(),
-                        ..Default::default()
-                    })
-                }
-                #[cfg(not(target_os = "windows"))]
-                None
-            }
+            Shell::System => None,
             Shell::Program(program) => Some(ShellParams {
                 program,
                 ..Default::default()
@@ -407,15 +394,6 @@ impl TerminalBuilder {
             }),
         };
         let terminal_title_override = shell_params.as_ref().and_then(|e| e.title_override.clone());
-
-        #[cfg(windows)]
-        let shell_program = shell_params.as_ref().map(|params| {
-            use util::ResultExt;
-
-            Self::resolve_path(&params.program)
-                .log_err()
-                .unwrap_or(params.program.clone())
-        });
 
         let pty_options = {
             let alac_shell = shell_params.map(|params| {
@@ -518,8 +496,6 @@ impl TerminalBuilder {
             is_ssh_terminal,
             last_mouse_move_time: Instant::now(),
             last_hyperlink_search_position: None,
-            #[cfg(windows)]
-            shell_program,
             activation_script: activation_script.clone(),
             template: CopyTemplate {
                 shell,
@@ -611,24 +587,6 @@ impl TerminalBuilder {
 
         self.terminal
     }
-
-    #[cfg(windows)]
-    fn resolve_path(path: &str) -> Result<String> {
-        use windows::Win32::Storage::FileSystem::SearchPathW;
-        use windows::core::HSTRING;
-
-        let path = if path.starts_with(r"\\?\") || !path.contains(&['/', '\\']) {
-            path.to_string()
-        } else {
-            r"\\?\".to_string() + path
-        };
-
-        let required_length = unsafe { SearchPathW(None, &HSTRING::from(&path), None, None, None) };
-        let mut buf = vec![0u16; required_length as usize];
-        let size = unsafe { SearchPathW(None, &HSTRING::from(&path), None, Some(&mut buf), None) };
-
-        Ok(String::from_utf16(&buf[..size as usize])?)
-    }
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -719,8 +677,6 @@ pub struct Terminal {
     is_ssh_terminal: bool,
     last_mouse_move_time: Instant,
     last_hyperlink_search_position: Option<Point<Pixels>>,
-    #[cfg(windows)]
-    shell_program: Option<String>,
     template: CopyTemplate,
     activation_script: Vec<String>,
 }
@@ -777,20 +733,6 @@ impl Terminal {
     fn process_event(&mut self, event: AlacTermEvent, cx: &mut Context<Self>) {
         match event {
             AlacTermEvent::Title(title) => {
-                // ignore default shell program title change as windows always sends those events
-                // and it would end up showing the shell executable path in breadcrumbs
-                #[cfg(windows)]
-                {
-                    if self
-                        .shell_program
-                        .as_ref()
-                        .map(|e| *e == title)
-                        .unwrap_or(false)
-                    {
-                        return;
-                    }
-                }
-
                 self.breadcrumb_text = title;
                 cx.emit(Event::BreadcrumbsChanged);
             }
@@ -939,11 +881,6 @@ impl Terminal {
                         selection.update(point, AlacDirection::Right);
                         term.selection = Some(selection);
 
-                        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-                        if let Some(selection_text) = term.selection_to_string() {
-                            cx.write_to_primary(ClipboardItem::new_string(selection_text));
-                        }
-
                         self.selection_head = Some(point);
                         cx.emit(Event::SelectionsChanged)
                     }
@@ -951,11 +888,6 @@ impl Terminal {
             }
             InternalEvent::SetSelection(selection) => {
                 term.selection = selection.as_ref().map(|(sel, _)| sel.clone());
-
-                #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-                if let Some(selection_text) = term.selection_to_string() {
-                    cx.write_to_primary(ClipboardItem::new_string(selection_text));
-                }
 
                 if let Some((_, head)) = selection {
                     self.selection_head = Some(*head);
@@ -972,11 +904,6 @@ impl Terminal {
 
                     selection.update(point, side);
                     term.selection = Some(selection);
-
-                    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-                    if let Some(selection_text) = term.selection_to_string() {
-                        cx.write_to_primary(ClipboardItem::new_string(selection_text));
-                    }
 
                     self.selection_head = Some(point);
                     cx.emit(Event::SelectionsChanged)
@@ -1678,13 +1605,6 @@ impl Terminal {
                             .push_back(InternalEvent::SetSelection(Some((sel, point))));
                     }
                 }
-                #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-                MouseButton::Middle => {
-                    if let Some(item) = _cx.read_from_primary() {
-                        let text = item.text().unwrap_or_default();
-                        self.input(text.into_bytes());
-                    }
-                }
                 _ => {}
             }
         }
@@ -1904,16 +1824,8 @@ impl Terminal {
     }
 
     fn register_task_finished(&mut self, error_code: Option<i32>, cx: &mut Context<Terminal>) {
-        let e: Option<ExitStatus> = error_code.map(|code| {
-            #[cfg(unix)]
-            {
-                std::os::unix::process::ExitStatusExt::from_raw(code)
-            }
-            #[cfg(windows)]
-            {
-                std::os::windows::process::ExitStatusExt::from_raw(code as u32)
-            }
-        });
+        let e: Option<ExitStatus> =
+            error_code.map(|code| std::os::unix::process::ExitStatusExt::from_raw(code));
 
         if let Some(tx) = &self.completion_tx {
             tx.try_send(e).ok();

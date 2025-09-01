@@ -32,28 +32,9 @@ use crate::language_settings::language_settings;
 
 pub struct RustLspAdapter;
 
-#[cfg(target_os = "macos")]
 impl RustLspAdapter {
     const GITHUB_ASSET_KIND: AssetKind = AssetKind::Gz;
     const ARCH_SERVER_NAME: &str = "apple-darwin";
-}
-
-#[cfg(target_os = "linux")]
-impl RustLspAdapter {
-    const GITHUB_ASSET_KIND: AssetKind = AssetKind::Gz;
-    const ARCH_SERVER_NAME: &str = "unknown-linux-gnu";
-}
-
-#[cfg(target_os = "freebsd")]
-impl RustLspAdapter {
-    const GITHUB_ASSET_KIND: AssetKind = AssetKind::Gz;
-    const ARCH_SERVER_NAME: &str = "unknown-freebsd";
-}
-
-#[cfg(target_os = "windows")]
-impl RustLspAdapter {
-    const GITHUB_ASSET_KIND: AssetKind = AssetKind::Zip;
-    const ARCH_SERVER_NAME: &str = "pc-windows-msvc";
 }
 
 const SERVER_NAME: LanguageServerName = LanguageServerName::new_static("rust-analyzer");

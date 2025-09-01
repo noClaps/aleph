@@ -2,8 +2,6 @@ mod buffer_tests;
 mod channel_tests;
 mod contributor_tests;
 mod db_tests;
-// we only run postgres tests on macos right now
-#[cfg(target_os = "macos")]
 mod embedding_tests;
 mod extension_tests;
 mod feature_flag_tests;
@@ -129,7 +127,6 @@ impl TestDb {
 #[macro_export]
 macro_rules! test_both_dbs {
     ($test_name:ident, $postgres_test_name:ident, $sqlite_test_name:ident) => {
-        #[cfg(target_os = "macos")]
         #[gpui::test]
         async fn $postgres_test_name(cx: &mut gpui::TestAppContext) {
             let test_db = $crate::db::TestDb::postgres(cx.executor().clone());

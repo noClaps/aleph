@@ -1,12 +1,6 @@
-#[cfg(target_os = "macos")]
 mod mac_watcher;
 
-#[cfg(not(target_os = "macos"))]
-pub mod fs_watcher;
-
 use anyhow::{Context as _, Result, anyhow};
-#[cfg(any(target_os = "linux", target_os = "freebsd"))]
-use ashpd::desktop::trash;
 use gpui::App;
 use gpui::BackgroundExecutor;
 use gpui::Global;
@@ -14,10 +8,8 @@ use gpui::ReadGlobal as _;
 use std::borrow::Cow;
 use util::command::{new_smol_command, new_std_command};
 
-#[cfg(unix)]
 use std::os::fd::{AsFd, AsRawFd};
 
-#[cfg(unix)]
 use std::os::unix::fs::{FileTypeExt, MetadataExt};
 
 #[cfg(any(target_os = "macos", target_os = "freebsd"))]
@@ -256,7 +248,6 @@ pub trait FileHandle: Send + Sync + std::fmt::Debug {
 }
 
 impl FileHandle for std::fs::File {
-    #[cfg(target_os = "macos")]
     fn current_path(&self, _: &Arc<dyn Fs>) -> Result<PathBuf> {
         use std::{
             ffi::{CStr, OsStr},
@@ -275,48 +266,6 @@ impl FileHandle for std::fs::File {
         let c_str = unsafe { CStr::from_ptr(path_buf.as_ptr().cast()) };
         let path = PathBuf::from(OsStr::from_bytes(c_str.to_bytes()));
         Ok(path)
-    }
-
-    #[cfg(target_os = "linux")]
-    fn current_path(&self, _: &Arc<dyn Fs>) -> Result<PathBuf> {
-        let fd = self.as_fd();
-        let fd_path = format!("/proc/self/fd/{}", fd.as_raw_fd());
-        let new_path = std::fs::read_link(fd_path)?;
-        if new_path
-            .file_name()
-            .is_some_and(|f| f.to_string_lossy().ends_with(" (deleted)"))
-        {
-            anyhow::bail!("file was deleted")
-        };
-
-        Ok(new_path)
-    }
-
-    #[cfg(target_os = "freebsd")]
-    fn current_path(&self, _: &Arc<dyn Fs>) -> Result<PathBuf> {
-        use std::{
-            ffi::{CStr, OsStr},
-            os::unix::ffi::OsStrExt,
-        };
-
-        let fd = self.as_fd();
-        let mut kif = MaybeUninit::<libc::kinfo_file>::uninit();
-        kif.kf_structsize = libc::KINFO_FILE_SIZE;
-
-        let result = unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_KINFO, kif.as_mut_ptr()) };
-        if result == -1 {
-            anyhow::bail!("fcntl returned -1".to_string());
-        }
-
-        // SAFETY: `fcntl` will initialize the kif.
-        let c_str = unsafe { CStr::from_ptr(kif.assume_init().kf_path.as_ptr()) };
-        let path = PathBuf::from(OsStr::from_bytes(c_str.to_bytes()));
-        Ok(path)
-    }
-
-    #[cfg(target_os = "windows")]
-    fn current_path(&self, _: &Arc<dyn Fs>) -> Result<PathBuf> {
-        anyhow::bail!("unimplemented")
     }
 }
 
@@ -338,15 +287,7 @@ impl Fs for RealFs {
     }
 
     async fn create_symlink(&self, path: &Path, target: PathBuf) -> Result<()> {
-        #[cfg(unix)]
         smol::fs::unix::symlink(target, path).await?;
-
-        #[cfg(windows)]
-        if smol::fs::metadata(&target).await?.is_dir() {
-            smol::fs::windows::symlink_dir(target, path).await?
-        } else {
-            smol::fs::windows::symlink_file(target, path).await?
-        }
 
         Ok(())
     }
@@ -424,22 +365,6 @@ impl Fs for RealFs {
     }
 
     async fn remove_file(&self, path: &Path, options: RemoveOptions) -> Result<()> {
-        #[cfg(windows)]
-        if let Ok(Some(metadata)) = self.metadata(path).await
-            && metadata.is_symlink
-            && metadata.is_dir
-        {
-            self.remove_dir(
-                path,
-                RemoveOptions {
-                    recursive: false,
-                    ignore_if_not_exists: true,
-                },
-            )
-            .await?;
-            return Ok(());
-        }
-
         match smol::fs::remove_file(path).await {
             Ok(()) => Ok(()),
             Err(err) if err.kind() == io::ErrorKind::NotFound && options.ignore_if_not_exists => {
@@ -449,7 +374,6 @@ impl Fs for RealFs {
         }
     }
 
-    #[cfg(target_os = "macos")]
     async fn trash_file(&self, path: &Path, _options: RemoveOptions) -> Result<()> {
         use cocoa::{
             base::{id, nil},
@@ -471,69 +395,8 @@ impl Fs for RealFs {
         Ok(())
     }
 
-    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-    async fn trash_file(&self, path: &Path, _options: RemoveOptions) -> Result<()> {
-        if let Ok(Some(metadata)) = self.metadata(path).await
-            && metadata.is_symlink
-        {
-            // TODO: trash_file does not support trashing symlinks yet - https://github.com/bilelmoussaoui/ashpd/issues/255
-            return self.remove_file(path, RemoveOptions::default()).await;
-        }
-        let file = smol::fs::File::open(path).await?;
-        match trash::trash_file(&file.as_fd()).await {
-            Ok(_) => Ok(()),
-            Err(err) => {
-                log::error!("Failed to trash file: {}", err);
-                // Trashing files can fail if you don't have a trashing dbus service configured.
-                // In that case, delete the file directly instead.
-                return self.remove_file(path, RemoveOptions::default()).await;
-            }
-        }
-    }
-
-    #[cfg(target_os = "windows")]
-    async fn trash_file(&self, path: &Path, _options: RemoveOptions) -> Result<()> {
-        use util::paths::SanitizedPath;
-        use windows::{
-            Storage::{StorageDeleteOption, StorageFile},
-            core::HSTRING,
-        };
-        // todo(windows)
-        // When new version of `windows-rs` release, make this operation `async`
-        let path = path.canonicalize()?;
-        let path = SanitizedPath::new(&path);
-        let path_string = path.to_string();
-        let file = StorageFile::GetFileFromPathAsync(&HSTRING::from(path_string))?.get()?;
-        file.DeleteAsync(StorageDeleteOption::Default)?.get()?;
-        Ok(())
-    }
-
-    #[cfg(target_os = "macos")]
     async fn trash_dir(&self, path: &Path, options: RemoveOptions) -> Result<()> {
         self.trash_file(path, options).await
-    }
-
-    #[cfg(any(target_os = "linux", target_os = "freebsd"))]
-    async fn trash_dir(&self, path: &Path, options: RemoveOptions) -> Result<()> {
-        self.trash_file(path, options).await
-    }
-
-    #[cfg(target_os = "windows")]
-    async fn trash_dir(&self, path: &Path, _options: RemoveOptions) -> Result<()> {
-        use util::paths::SanitizedPath;
-        use windows::{
-            Storage::{StorageDeleteOption, StorageFolder},
-            core::HSTRING,
-        };
-
-        // todo(windows)
-        // When new version of `windows-rs` release, make this operation `async`
-        let path = path.canonicalize()?;
-        let path = SanitizedPath::new(&path);
-        let path_string = path.to_string();
-        let folder = StorageFolder::GetFolderFromPathAsync(&HSTRING::from(path_string))?.get()?;
-        folder.DeleteAsync(StorageDeleteOption::Default)?.get()?;
-        Ok(())
     }
 
     async fn open_sync(&self, path: &Path) -> Result<Box<dyn io::Read + Send + Sync>> {
@@ -555,7 +418,6 @@ impl Fs for RealFs {
         Ok(bytes)
     }
 
-    #[cfg(not(target_os = "windows"))]
     async fn atomic_write(&self, path: PathBuf, data: String) -> Result<()> {
         smol::unblock(move || {
             // Use the directory of the destination as temp dir to avoid
@@ -569,35 +431,6 @@ impl Fs for RealFs {
         })
         .await?;
 
-        Ok(())
-    }
-
-    #[cfg(target_os = "windows")]
-    async fn atomic_write(&self, path: PathBuf, data: String) -> Result<()> {
-        smol::unblock(move || {
-            // If temp dir is set to a different drive than the destination,
-            // we receive error:
-            //
-            // failed to persist temporary file:
-            // The system cannot move the file to a different disk drive. (os error 17)
-            //
-            // This is because `ReplaceFileW` does not support cross volume moves.
-            // See the remark section: "The backup file, replaced file, and replacement file must all reside on the same volume."
-            // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-replacefilew#remarks
-            //
-            // So we use the directory of the destination as a temp dir to avoid it.
-            // https://github.com/zed-industries/zed/issues/16571
-            let temp_dir = TempDir::new_in(path.parent().unwrap_or(paths::temp_dir()))?;
-            let temp_file = {
-                let temp_file_path = temp_dir.path().join("temp_file");
-                let mut file = std::fs::File::create_new(&temp_file_path)?;
-                file.write_all(data.as_bytes())?;
-                temp_file_path
-            };
-            atomic_replace(path.as_path(), temp_file.as_path())?;
-            anyhow::Ok(())
-        })
-        .await?;
         Ok(())
     }
 
@@ -668,16 +501,8 @@ impl Fs for RealFs {
             _ => symlink_metadata,
         };
 
-        #[cfg(unix)]
         let inode = metadata.ino();
 
-        #[cfg(windows)]
-        let inode = file_id(path).await?;
-
-        #[cfg(windows)]
-        let is_fifo = false;
-
-        #[cfg(unix)]
         let is_fifo = metadata.file_type().is_fifo();
 
         Ok(Some(Metadata {
@@ -706,7 +531,6 @@ impl Fs for RealFs {
         Ok(Box::pin(result))
     }
 
-    #[cfg(target_os = "macos")]
     async fn watch(
         &self,
         path: &Path,
@@ -754,64 +578,6 @@ impl Fs for RealFs {
                         vec![]
                     })),
             ),
-            watcher,
-        )
-    }
-
-    #[cfg(not(target_os = "macos"))]
-    async fn watch(
-        &self,
-        path: &Path,
-        latency: Duration,
-    ) -> (
-        Pin<Box<dyn Send + Stream<Item = Vec<PathEvent>>>>,
-        Arc<dyn Watcher>,
-    ) {
-        use parking_lot::Mutex;
-        use util::{ResultExt as _, paths::SanitizedPath};
-
-        let (tx, rx) = smol::channel::unbounded();
-        let pending_paths: Arc<Mutex<Vec<PathEvent>>> = Default::default();
-        let watcher = Arc::new(fs_watcher::FsWatcher::new(tx, pending_paths.clone()));
-
-        // If the path doesn't exist yet (e.g. settings.json), watch the parent dir to learn when it's created.
-        if watcher.add(path).is_err()
-            && let Some(parent) = path.parent()
-            && let Err(e) = watcher.add(parent)
-        {
-            log::warn!("Failed to watch: {e}");
-        }
-
-        // Check if path is a symlink and follow the target parent
-        if let Some(mut target) = self.read_link(path).await.ok() {
-            // Check if symlink target is relative path, if so make it absolute
-            if target.is_relative()
-                && let Some(parent) = path.parent()
-            {
-                target = parent.join(target);
-                if let Ok(canonical) = self.canonicalize(&target).await {
-                    target = SanitizedPath::new(&canonical).as_path().to_path_buf();
-                }
-            }
-            watcher.add(&target).ok();
-            if let Some(parent) = target.parent() {
-                watcher.add(parent).log_err();
-            }
-        }
-
-        (
-            Box::pin(rx.filter_map({
-                let watcher = watcher.clone();
-                move |_| {
-                    let _ = watcher.clone();
-                    let pending_paths = pending_paths.clone();
-                    async move {
-                        smol::Timer::after(latency).await;
-                        let paths = std::mem::take(&mut *pending_paths.lock());
-                        (!paths.is_empty()).then_some(paths)
-                    }
-                }
-            })),
             watcher,
         )
     }
@@ -910,7 +676,6 @@ impl Fs for RealFs {
     }
 }
 
-#[cfg(not(any(target_os = "linux", target_os = "freebsd")))]
 impl Watcher for RealWatcher {
     fn add(&self, _: &Path) -> Result<()> {
         Ok(())
@@ -2615,63 +2380,6 @@ fn read_recursive<'a>(
         Ok(())
     }
     .boxed()
-}
-
-// todo(windows)
-// can we get file id not open the file twice?
-// https://github.com/rust-lang/rust/issues/63010
-#[cfg(target_os = "windows")]
-async fn file_id(path: impl AsRef<Path>) -> Result<u64> {
-    use std::os::windows::io::AsRawHandle;
-
-    use smol::fs::windows::OpenOptionsExt;
-    use windows::Win32::{
-        Foundation::HANDLE,
-        Storage::FileSystem::{
-            BY_HANDLE_FILE_INFORMATION, FILE_FLAG_BACKUP_SEMANTICS, GetFileInformationByHandle,
-        },
-    };
-
-    let file = smol::fs::OpenOptions::new()
-        .read(true)
-        .custom_flags(FILE_FLAG_BACKUP_SEMANTICS.0)
-        .open(path)
-        .await?;
-
-    let mut info: BY_HANDLE_FILE_INFORMATION = unsafe { std::mem::zeroed() };
-    // https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileinformationbyhandle
-    // This function supports Windows XP+
-    smol::unblock(move || {
-        unsafe { GetFileInformationByHandle(HANDLE(file.as_raw_handle() as _), &mut info)? };
-
-        Ok(((info.nFileIndexHigh as u64) << 32) | (info.nFileIndexLow as u64))
-    })
-    .await
-}
-
-#[cfg(target_os = "windows")]
-fn atomic_replace<P: AsRef<Path>>(
-    replaced_file: P,
-    replacement_file: P,
-) -> windows::core::Result<()> {
-    use windows::{
-        Win32::Storage::FileSystem::{REPLACE_FILE_FLAGS, ReplaceFileW},
-        core::HSTRING,
-    };
-
-    // If the file does not exist, create it.
-    let _ = std::fs::File::create_new(replaced_file.as_ref());
-
-    unsafe {
-        ReplaceFileW(
-            &HSTRING::from(replaced_file.as_ref().to_string_lossy().to_string()),
-            &HSTRING::from(replacement_file.as_ref().to_string_lossy().to_string()),
-            None,
-            REPLACE_FILE_FLAGS::default(),
-            None,
-            None,
-        )
-    }
 }
 
 #[cfg(test)]

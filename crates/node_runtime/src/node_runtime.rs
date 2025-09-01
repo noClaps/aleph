@@ -18,7 +18,6 @@ use std::{
     sync::Arc,
 };
 use util::ResultExt;
-use util::archive::extract_zip;
 
 const NODE_CA_CERTS_ENV_VAR: &str = "NODE_EXTRA_CA_CERTS";
 
@@ -331,11 +330,6 @@ impl NodeRuntime {
     }
 }
 
-enum ArchiveType {
-    TarGz,
-    Zip,
-}
-
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct NpmInfo {
@@ -377,28 +371,19 @@ struct ManagedNodeRuntime {
 impl ManagedNodeRuntime {
     const VERSION: &str = "v22.5.1";
 
-    #[cfg(not(windows))]
     const NODE_PATH: &str = "bin/node";
-    #[cfg(windows)]
-    const NODE_PATH: &str = "node.exe";
 
-    #[cfg(not(windows))]
     const NPM_PATH: &str = "bin/npm";
-    #[cfg(windows)]
-    const NPM_PATH: &str = "node_modules/npm/bin/npm-cli.js";
 
     async fn install_if_needed(http: &Arc<dyn HttpClient>) -> Result<Self> {
         log::info!("Node runtime install_if_needed");
 
         let os = match consts::OS {
             "macos" => "darwin",
-            "linux" => "linux",
-            "windows" => "win",
             other => bail!("Running on unsupported os: {other}"),
         };
 
         let arch = match consts::ARCH {
-            "x86_64" => "x64",
             "aarch64" => "arm64",
             other => bail!("Running on unsupported architecture: {other}"),
         };
@@ -455,19 +440,10 @@ impl ManagedNodeRuntime {
                 .await
                 .context("error creating node containing dir")?;
 
-            let archive_type = match consts::OS {
-                "macos" | "linux" => ArchiveType::TarGz,
-                "windows" => ArchiveType::Zip,
-                other => bail!("Running on unsupported os: {other}"),
-            };
-
             let version = Self::VERSION;
             let file_name = format!(
                 "node-{version}-{os}-{arch}.{extension}",
-                extension = match archive_type {
-                    ArchiveType::TarGz => "tar.gz",
-                    ArchiveType::Zip => "zip",
-                }
+                extension = "tar.gz"
             );
 
             let url = format!("https://nodejs.org/dist/{version}/{file_name}");
@@ -478,15 +454,9 @@ impl ManagedNodeRuntime {
                 .context("error downloading Node binary tarball")?;
             log::info!("Download of Node.js complete, extracting...");
 
-            let body = response.body_mut();
-            match archive_type {
-                ArchiveType::TarGz => {
-                    let decompressed_bytes = GzipDecoder::new(BufReader::new(response.body_mut()));
-                    let archive = Archive::new(decompressed_bytes);
-                    archive.unpack(&node_containing_dir).await?;
-                }
-                ArchiveType::Zip => extract_zip(&node_containing_dir, body).await?,
-            }
+            let decompressed_bytes = GzipDecoder::new(BufReader::new(response.body_mut()));
+            let archive = Archive::new(decompressed_bytes);
+            archive.unpack(&node_containing_dir).await?;
             log::info!("Extracted Node.js to {}", node_containing_dir.display())
         }
 
@@ -810,23 +780,5 @@ fn configure_npm_command(
             .replace("localhost", "127.0.0.1");
 
         command.args(["--proxy", &proxy]);
-    }
-
-    #[cfg(windows)]
-    {
-        // SYSTEMROOT is a critical environment variables for Windows.
-        if let Some(val) = env::var("SYSTEMROOT")
-            .context("Missing environment variable: SYSTEMROOT!")
-            .log_err()
-        {
-            command.env("SYSTEMROOT", val);
-        }
-        // Without ComSpec, the post-install will always fail.
-        if let Some(val) = env::var("ComSpec")
-            .context("Missing environment variable: ComSpec!")
-            .log_err()
-        {
-            command.env("ComSpec", val);
-        }
     }
 }

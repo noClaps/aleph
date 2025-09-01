@@ -10,8 +10,8 @@ use paths::remote_servers_dir;
 use release_channel::{AppCommitSha, ReleaseChannel};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use settings::{Settings, SettingsKey, SettingsSources, SettingsStore, SettingsUi};
-use smol::{fs, io::AsyncReadExt};
+use settings::{Settings, SettingsSources, SettingsStore, SettingsUi};
+use smol::io::AsyncReadExt;
 use smol::{fs::File, process::Command};
 use std::{
     env::{
@@ -266,10 +266,8 @@ pub fn view_release_notes(_: &ViewReleaseNotes, cx: &mut App) -> Option<()> {
     None
 }
 
-#[cfg(not(target_os = "windows"))]
 struct InstallerDir(tempfile::TempDir);
 
-#[cfg(not(target_os = "windows"))]
 impl InstallerDir {
     async fn new() -> Result<Self> {
         Ok(Self(
@@ -281,28 +279,6 @@ impl InstallerDir {
 
     fn path(&self) -> &Path {
         self.0.path()
-    }
-}
-
-#[cfg(target_os = "windows")]
-struct InstallerDir(PathBuf);
-
-#[cfg(target_os = "windows")]
-impl InstallerDir {
-    async fn new() -> Result<Self> {
-        let installer_dir = std::env::current_exe()?
-            .parent()
-            .context("No parent dir for Zed.exe")?
-            .join("updates");
-        if smol::fs::metadata(&installer_dir).await.is_ok() {
-            smol::fs::remove_dir_all(&installer_dir).await?;
-        }
-        smol::fs::create_dir(&installer_dir).await?;
-        Ok(Self(installer_dir))
-    }
-
-    fn path(&self) -> &Path {
-        self.0.as_path()
     }
 }
 
@@ -321,17 +297,7 @@ impl AutoUpdater {
         http_client: Arc<HttpClientWithUrl>,
         cx: &mut Context<Self>,
     ) -> Self {
-        // On windows, executable files cannot be overwritten while they are
-        // running, so we must wait to overwrite the application until quitting
-        // or restarting. When quitting the app, we spawn the auto update helper
-        // to finish the auto update process after Zed exits. When restarting
-        // the app after an update, we use `set_restart_path` to run the auto
-        // update helper instead of the app, so that it can overwrite the app
-        // and then spawn the new binary.
-        let quit_subscription = Some(cx.on_app_quit(|_, _| async move {
-            #[cfg(target_os = "windows")]
-            finalize_auto_update_on_quit();
-        }));
+        let quit_subscription = Some(cx.on_app_quit(|_, _| async move {}));
 
         cx.on_app_restart(|this, _| {
             this.quit_subscription.take();
@@ -661,7 +627,6 @@ impl AutoUpdater {
     }
 
     fn check_dependencies() -> Result<()> {
-        #[cfg(not(target_os = "windows"))]
         anyhow::ensure!(
             which::which("rsync").is_ok(),
             "Aborting. Could not find rsync which is required for auto-updates."
@@ -672,8 +637,6 @@ impl AutoUpdater {
     async fn target_path(installer_dir: &InstallerDir) -> Result<PathBuf> {
         let filename = match OS {
             "macos" => anyhow::Ok("Zed.dmg"),
-            "linux" => Ok("zed.tar.gz"),
-            "windows" => Ok("zed_editor_installer.exe"),
             unsupported_os => anyhow::bail!("not supported: {unsupported_os}"),
         }?;
 
@@ -687,8 +650,6 @@ impl AutoUpdater {
     ) -> Result<Option<PathBuf>> {
         match OS {
             "macos" => install_release_macos(&installer_dir, target_path, cx).await,
-            "linux" => install_release_linux(&installer_dir, target_path, cx).await,
-            "windows" => install_release_windows(target_path).await,
             unsupported_os => anyhow::bail!("not supported: {unsupported_os}"),
         }
     }
@@ -821,73 +782,6 @@ async fn download_release(
     Ok(())
 }
 
-async fn install_release_linux(
-    temp_dir: &InstallerDir,
-    downloaded_tar_gz: PathBuf,
-    cx: &AsyncApp,
-) -> Result<Option<PathBuf>> {
-    let channel = cx.update(|cx| ReleaseChannel::global(cx).dev_name())?;
-    let home_dir = PathBuf::from(env::var("HOME").context("no HOME env var set")?);
-    let running_app_path = cx.update(|cx| cx.app_path())??;
-
-    let extracted = temp_dir.path().join("zed");
-    fs::create_dir_all(&extracted)
-        .await
-        .context("failed to create directory into which to extract update")?;
-
-    let output = Command::new("tar")
-        .arg("-xzf")
-        .arg(&downloaded_tar_gz)
-        .arg("-C")
-        .arg(&extracted)
-        .output()
-        .await?;
-
-    anyhow::ensure!(
-        output.status.success(),
-        "failed to extract {:?} to {:?}: {:?}",
-        downloaded_tar_gz,
-        extracted,
-        String::from_utf8_lossy(&output.stderr)
-    );
-
-    let suffix = if channel != "stable" {
-        format!("-{}", channel)
-    } else {
-        String::default()
-    };
-    let app_folder_name = format!("zed{}.app", suffix);
-
-    let from = extracted.join(&app_folder_name);
-    let mut to = home_dir.join(".local");
-
-    let expected_suffix = format!("{}/libexec/zed-editor", app_folder_name);
-
-    if let Some(prefix) = running_app_path
-        .to_str()
-        .and_then(|str| str.strip_suffix(&expected_suffix))
-    {
-        to = PathBuf::from(prefix);
-    }
-
-    let output = Command::new("rsync")
-        .args(["-av", "--delete"])
-        .arg(&from)
-        .arg(&to)
-        .output()
-        .await?;
-
-    anyhow::ensure!(
-        output.status.success(),
-        "failed to copy Zed update from {:?} to {:?}: {:?}",
-        from,
-        to,
-        String::from_utf8_lossy(&output.stderr)
-    );
-
-    Ok(Some(to.join(expected_suffix)))
-}
-
 async fn install_release_macos(
     temp_dir: &InstallerDir,
     downloaded_dmg: PathBuf,
@@ -935,29 +829,6 @@ async fn install_release_macos(
     );
 
     Ok(None)
-}
-
-async fn install_release_windows(downloaded_installer: PathBuf) -> Result<Option<PathBuf>> {
-    let output = Command::new(downloaded_installer)
-        .arg("/verysilent")
-        .arg("/update=true")
-        .arg("!desktopicon")
-        .arg("!quicklaunchicon")
-        .output()
-        .await?;
-    anyhow::ensure!(
-        output.status.success(),
-        "failed to start installer: {:?}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-    // We return the path to the update helper program, because it will
-    // perform the final steps of the update process, copying the new binary,
-    // deleting the old one, and launching the new binary.
-    let helper_path = std::env::current_exe()?
-        .parent()
-        .context("No parent dir for Zed.exe")?
-        .join("tools\\auto_update_helper.exe");
-    Ok(Some(helper_path))
 }
 
 pub fn finalize_auto_update_on_quit() {

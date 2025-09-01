@@ -3333,10 +3333,6 @@ mod tests {
         // Check content and context in message object
         let message = thread.read_with(cx, |thread, _| thread.message(message_id).unwrap().clone());
 
-        // Use different path format strings based on platform for the test
-        #[cfg(windows)]
-        let path_part = r"test\code.rs";
-        #[cfg(not(windows))]
         let path_part = "test/code.rs";
 
         let expected_context = format!(

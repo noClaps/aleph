@@ -1,11 +1,6 @@
 use crate::{
-    SshConnectionOptions,
-    protocol::MessageId,
-    proxy::ProxyLaunchError,
-    transport::{
-        ssh::SshRemoteConnection,
-        wsl::{WslConnectionOptions, WslRemoteConnection},
-    },
+    SshConnectionOptions, protocol::MessageId, proxy::ProxyLaunchError,
+    transport::ssh::SshRemoteConnection,
 };
 use anyhow::{Context as _, Result, anyhow};
 use async_trait::async_trait;
@@ -969,11 +964,6 @@ impl ConnectionPool {
                                 .await
                                 .map(|connection| Arc::new(connection) as Arc<dyn RemoteConnection>)
                         }
-                        RemoteConnectionOptions::Wsl(opts) => {
-                            WslRemoteConnection::new(opts, delegate, cx)
-                                .await
-                                .map(|connection| Arc::new(connection) as Arc<dyn RemoteConnection>)
-                        }
                     };
 
                     cx.update_global(|pool: &mut Self, _| {
@@ -1008,14 +998,12 @@ impl ConnectionPool {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum RemoteConnectionOptions {
     Ssh(SshConnectionOptions),
-    Wsl(WslConnectionOptions),
 }
 
 impl RemoteConnectionOptions {
     pub fn display_name(&self) -> String {
         match self {
             RemoteConnectionOptions::Ssh(opts) => opts.host.clone(),
-            RemoteConnectionOptions::Wsl(opts) => opts.distro_name.clone(),
         }
     }
 }
@@ -1023,12 +1011,6 @@ impl RemoteConnectionOptions {
 impl From<SshConnectionOptions> for RemoteConnectionOptions {
     fn from(opts: SshConnectionOptions) -> Self {
         RemoteConnectionOptions::Ssh(opts)
-    }
-}
-
-impl From<WslConnectionOptions> for RemoteConnectionOptions {
-    fn from(opts: WslConnectionOptions) -> Self {
-        RemoteConnectionOptions::Wsl(opts)
     }
 }
 

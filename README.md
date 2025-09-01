@@ -7,4 +7,4 @@ A minimal fork of the [Zed](https://zed.dev) code editor.
 
 This fork removes:
 
-- Nothing so far, this list will be updated as features get removed.
+- Support for all platforms other than macOS arm64

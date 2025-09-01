@@ -2284,10 +2284,7 @@ impl Workspace {
     ) -> Task<Result<bool>> {
         let active_call = self.active_call().cloned();
 
-        // On Linux and Windows, closing the last window should restore the last workspace.
-        let save_last_workspace = cfg!(not(target_os = "macos"))
-            && close_intent != CloseIntent::ReplaceWindow
-            && cx.windows().len() == 1;
+        let save_last_workspace = false;
 
         cx.spawn_in(window, async move |this, cx| {
             let workspace_count = cx.update(|_window, cx| {

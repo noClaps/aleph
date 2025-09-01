@@ -36,7 +36,6 @@ use postage::stream::Stream as _;
 use pretty_assertions::{assert_eq, assert_matches};
 use rand::{Rng as _, rngs::StdRng};
 use serde_json::json;
-#[cfg(not(windows))]
 use std::os;
 use std::{env, mem, num::NonZeroU32, ops::Range, str::FromStr, sync::OnceLock, task::Poll};
 use task::{ResolvedTask, ShellKind, TaskContext};
@@ -55,10 +54,7 @@ async fn test_block_via_channel(cx: &mut gpui::TestAppContext) {
 
     let (tx, mut rx) = futures::channel::mpsc::unbounded();
     let _thread = std::thread::spawn(move || {
-        #[cfg(not(target_os = "windows"))]
         std::fs::metadata("/tmp").unwrap();
-        #[cfg(target_os = "windows")]
-        std::fs::metadata("C:/Windows").unwrap();
         std::thread::sleep(Duration::from_millis(1000));
         tx.unbounded_send(1).unwrap();
     });
@@ -82,7 +78,6 @@ async fn test_block_via_smol(cx: &mut gpui::TestAppContext) {
     task.await;
 }
 
-#[cfg(not(windows))]
 #[gpui::test]
 async fn test_symlinks(cx: &mut gpui::TestAppContext) {
     init_test(cx);
@@ -386,11 +381,7 @@ async fn test_managing_project_specific_settings(cx: &mut gpui::TestAppContext) 
                 TaskSourceKind::Worktree {
                     id: worktree_id,
                     directory_in_worktree: PathBuf::from(path!("b/.zed")),
-                    id_base: if cfg!(windows) {
-                        "local worktree tasks from directory \"b\\\\.zed\"".into()
-                    } else {
-                        "local worktree tasks from directory \"b/.zed\"".into()
-                    },
+                    id_base: "local worktree tasks from directory \"b/.zed\"".into(),
                 },
                 "cargo check".to_string(),
                 vec!["check".to_string()],
@@ -471,11 +462,7 @@ async fn test_managing_project_specific_settings(cx: &mut gpui::TestAppContext) 
                 TaskSourceKind::Worktree {
                     id: worktree_id,
                     directory_in_worktree: PathBuf::from(path!("b/.zed")),
-                    id_base: if cfg!(windows) {
-                        "local worktree tasks from directory \"b\\\\.zed\"".into()
-                    } else {
-                        "local worktree tasks from directory \"b/.zed\"".into()
-                    },
+                    id_base: "local worktree tasks from directory \"b/.zed\"".into(),
                 },
                 "cargo check".to_string(),
                 vec!["check".to_string()],
@@ -586,11 +573,7 @@ async fn test_fallback_to_single_worktree_tasks(cx: &mut gpui::TestAppContext) {
             TaskSourceKind::Worktree {
                 id: worktree_id,
                 directory_in_worktree: PathBuf::from(path!(".zed")),
-                id_base: if cfg!(windows) {
-                    "local worktree tasks from directory \".zed\"".into()
-                } else {
-                    "local worktree tasks from directory \".zed\"".into()
-                },
+                id_base: "local worktree tasks from directory \".zed\"".into(),
             },
             "echo /dir".to_string(),
         )]
@@ -8268,89 +8251,6 @@ async fn test_repository_subfolder_git_status(
     });
 }
 
-// TODO: this test is flaky (especially on Windows but at least sometimes on all platforms).
-#[cfg(any())]
-#[gpui::test]
-async fn test_conflicted_cherry_pick(cx: &mut gpui::TestAppContext) {
-    init_test(cx);
-    cx.executor().allow_parking();
-
-    let root = TempTree::new(json!({
-        "project": {
-            "a.txt": "a",
-        },
-    }));
-    let root_path = root.path();
-
-    let repo = git_init(&root_path.join("project"));
-    git_add("a.txt", &repo);
-    git_commit("init", &repo);
-
-    let project = Project::test(Arc::new(RealFs::new(None, cx.executor())), [root_path], cx).await;
-
-    let tree = project.read_with(cx, |project, cx| project.worktrees(cx).next().unwrap());
-    tree.flush_fs_events(cx).await;
-    project
-        .update(cx, |project, cx| project.git_scans_complete(cx))
-        .await;
-    cx.executor().run_until_parked();
-
-    let repository = project.read_with(cx, |project, cx| {
-        project.repositories(cx).values().next().unwrap().clone()
-    });
-
-    git_branch("other-branch", &repo);
-    git_checkout("refs/heads/other-branch", &repo);
-    std::fs::write(root_path.join("project/a.txt"), "A").unwrap();
-    git_add("a.txt", &repo);
-    git_commit("capitalize", &repo);
-    let commit = repo
-        .head()
-        .expect("Failed to get HEAD")
-        .peel_to_commit()
-        .expect("HEAD is not a commit");
-    git_checkout("refs/heads/main", &repo);
-    std::fs::write(root_path.join("project/a.txt"), "b").unwrap();
-    git_add("a.txt", &repo);
-    git_commit("improve letter", &repo);
-    git_cherry_pick(&commit, &repo);
-    std::fs::read_to_string(root_path.join("project/.git/CHERRY_PICK_HEAD"))
-        .expect("No CHERRY_PICK_HEAD");
-    pretty_assertions::assert_eq!(
-        git_status(&repo),
-        collections::HashMap::from_iter([("a.txt".to_owned(), git2::Status::CONFLICTED)])
-    );
-    tree.flush_fs_events(cx).await;
-    project
-        .update(cx, |project, cx| project.git_scans_complete(cx))
-        .await;
-    cx.executor().run_until_parked();
-    let conflicts = repository.update(cx, |repository, _| {
-        repository
-            .merge_conflicts
-            .iter()
-            .cloned()
-            .collect::<Vec<_>>()
-    });
-    pretty_assertions::assert_eq!(conflicts, [RepoPath::from("a.txt")]);
-
-    git_add("a.txt", &repo);
-    // Attempt to manually simulate what `git cherry-pick --continue` would do.
-    git_commit("whatevs", &repo);
-    std::fs::remove_file(root.path().join("project/.git/CHERRY_PICK_HEAD"))
-        .expect("Failed to remove CHERRY_PICK_HEAD");
-    pretty_assertions::assert_eq!(git_status(&repo), collections::HashMap::default());
-    tree.flush_fs_events(cx).await;
-    let conflicts = repository.update(cx, |repository, _| {
-        repository
-            .merge_conflicts
-            .iter()
-            .cloned()
-            .collect::<Vec<_>>()
-    });
-    pretty_assertions::assert_eq!(conflicts, []);
-}
-
 #[gpui::test]
 async fn test_update_gitignore(cx: &mut gpui::TestAppContext) {
     init_test(cx);
@@ -8419,13 +8319,7 @@ async fn test_update_gitignore(cx: &mut gpui::TestAppContext) {
     });
 }
 
-// NOTE:
-// This test always fails on Windows, because on Windows, unlike on Unix, you can't rename
-// a directory which some program has already open.
-// This is a limitation of the Windows.
-// See: https://stackoverflow.com/questions/41365318/access-is-denied-when-renaming-folder
 #[gpui::test]
-#[cfg_attr(target_os = "windows", ignore)]
 async fn test_rename_work_directory(cx: &mut gpui::TestAppContext) {
     init_test(cx);
     cx.executor().allow_parking();
@@ -8500,12 +8394,7 @@ async fn test_rename_work_directory(cx: &mut gpui::TestAppContext) {
     });
 }
 
-// NOTE: This test always fails on Windows, because on Windows, unlike on Unix,
-// you can't rename a directory which some program has already open. This is a
-// limitation of the Windows. See:
-// https://stackoverflow.com/questions/41365318/access-is-denied-when-renaming-folder
 #[gpui::test]
-#[cfg_attr(target_os = "windows", ignore)]
 async fn test_file_status(cx: &mut gpui::TestAppContext) {
     init_test(cx);
     cx.executor().allow_parking();
@@ -9386,12 +9275,6 @@ fn git_commit(msg: &'static str, repo: &git2::Repository) {
     }
 }
 
-#[cfg(any())]
-#[track_caller]
-fn git_cherry_pick(commit: &git2::Commit<'_>, repo: &git2::Repository) {
-    repo.cherrypick(commit, None).expect("Failed to cherrypick");
-}
-
 #[track_caller]
 fn git_stash(repo: &mut git2::Repository) {
     use git2::Signature;
@@ -9415,34 +9298,6 @@ fn git_reset(offset: usize, repo: &git2::Repository) {
         .expect("Not enough history");
     repo.reset(new_head.as_object(), git2::ResetType::Soft, None)
         .expect("Could not reset");
-}
-
-#[cfg(any())]
-#[track_caller]
-fn git_branch(name: &str, repo: &git2::Repository) {
-    let head = repo
-        .head()
-        .expect("Couldn't get repo head")
-        .peel_to_commit()
-        .expect("HEAD is not a commit");
-    repo.branch(name, &head, false).expect("Failed to commit");
-}
-
-#[cfg(any())]
-#[track_caller]
-fn git_checkout(name: &str, repo: &git2::Repository) {
-    repo.set_head(name).expect("Failed to set head");
-    repo.checkout_head(None).expect("Failed to check out head");
-}
-
-#[cfg(any())]
-#[track_caller]
-fn git_status(repo: &git2::Repository) -> collections::HashMap<String, git2::Status> {
-    repo.statuses(None)
-        .unwrap()
-        .iter()
-        .map(|status| (status.path().unwrap().to_string(), status.status()))
-        .collect()
 }
 
 #[gpui::test]

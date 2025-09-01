@@ -243,11 +243,7 @@ pub fn deploy_context_menu(
                 .separator()
                 .action_disabled_when(
                     !has_reveal_target,
-                    if cfg!(target_os = "macos") {
-                        "Reveal in Finder"
-                    } else {
-                        "Reveal in File Manager"
-                    },
+                    "Reveal in Finder",
                     Box::new(RevealInFileManager),
                 )
                 .action_disabled_when(

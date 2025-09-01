@@ -1165,9 +1165,7 @@ impl SettingsStore {
                         "nightly": zed_settings_override_ref,
                         "stable": zed_settings_override_ref,
                         "preview": zed_settings_override_ref,
-                        "linux": zed_settings_override_ref,
                         "macos": zed_settings_override_ref,
-                        "windows": zed_settings_override_ref,
                         "profiles": {
                             "type": "object",
                             "description": "Configures any number of settings profiles.",

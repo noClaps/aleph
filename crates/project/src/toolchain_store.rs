@@ -239,8 +239,6 @@ impl ToolchainStore {
             };
             let toolchain = Toolchain {
                 name: toolchain.name.into(),
-                // todo(windows)
-                // Do we need to convert path to native string?
                 path: PathBuf::from(toolchain.path).to_proto().into(),
                 as_json: serde_json::Value::from_str(&toolchain.raw_json)?,
                 language_name,
@@ -656,8 +654,6 @@ impl RemoteToolchainStore {
                     Some(Toolchain {
                         language_name: language_name.clone(),
                         name: toolchain.name.into(),
-                        // todo(windows)
-                        // Do we need to convert path to native string?
                         path: PathBuf::from_proto(toolchain.path)
                             .to_string_lossy()
                             .to_string()
@@ -712,8 +708,6 @@ impl RemoteToolchainStore {
                 Some(Toolchain {
                     language_name: language_name.clone(),
                     name: toolchain.name.into(),
-                    // todo(windows)
-                    // Do we need to convert path to native string?
                     path: PathBuf::from_proto(toolchain.path)
                         .to_string_lossy()
                         .to_string()

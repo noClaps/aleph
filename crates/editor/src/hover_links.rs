@@ -980,11 +980,7 @@ mod tests {
                 ])))
             });
 
-        let modifiers = if cfg!(target_os = "macos") {
-            Modifiers::command_shift()
-        } else {
-            Modifiers::control_shift()
-        };
+        let modifiers = Modifiers::control_shift();
 
         cx.simulate_mouse_move(screen_coord.unwrap(), None, modifiers);
 
@@ -1599,7 +1595,6 @@ mod tests {
             )
             .await;
 
-        #[cfg(not(target_os = "windows"))]
         cx.set_state(indoc! {"
             You can't go to a file that does_not_exist.txt.
             Go to file2.rs if you want.
@@ -1607,31 +1602,14 @@ mod tests {
             Or go to /root/dir/file2.rs if project is local.
             Or go to /root/dir/file2 if this is a Rust file.ˇ
             "});
-        #[cfg(target_os = "windows")]
-        cx.set_state(indoc! {"
-            You can't go to a file that does_not_exist.txt.
-            Go to file2.rs if you want.
-            Or go to ../dir/file2.rs if you want.
-            Or go to C:/root/dir/file2.rs if project is local.
-            Or go to C:/root/dir/file2 if this is a Rust file.ˇ
-        "});
 
         // File does not exist
-        #[cfg(not(target_os = "windows"))]
         let screen_coord = cx.pixel_position(indoc! {"
             You can't go to a file that dˇoes_not_exist.txt.
             Go to file2.rs if you want.
             Or go to ../dir/file2.rs if you want.
             Or go to /root/dir/file2.rs if project is local.
             Or go to /root/dir/file2 if this is a Rust file.
-        "});
-        #[cfg(target_os = "windows")]
-        let screen_coord = cx.pixel_position(indoc! {"
-            You can't go to a file that dˇoes_not_exist.txt.
-            Go to file2.rs if you want.
-            Or go to ../dir/file2.rs if you want.
-            Or go to C:/root/dir/file2.rs if project is local.
-            Or go to C:/root/dir/file2 if this is a Rust file.
         "});
         cx.simulate_mouse_move(screen_coord, None, Modifiers::secondary_key());
         // No highlight
@@ -1647,61 +1625,33 @@ mod tests {
         });
 
         // Moving the mouse over a file that does exist should highlight it.
-        #[cfg(not(target_os = "windows"))]
         let screen_coord = cx.pixel_position(indoc! {"
             You can't go to a file that does_not_exist.txt.
             Go to fˇile2.rs if you want.
             Or go to ../dir/file2.rs if you want.
             Or go to /root/dir/file2.rs if project is local.
             Or go to /root/dir/file2 if this is a Rust file.
-        "});
-        #[cfg(target_os = "windows")]
-        let screen_coord = cx.pixel_position(indoc! {"
-            You can't go to a file that does_not_exist.txt.
-            Go to fˇile2.rs if you want.
-            Or go to ../dir/file2.rs if you want.
-            Or go to C:/root/dir/file2.rs if project is local.
-            Or go to C:/root/dir/file2 if this is a Rust file.
         "});
 
         cx.simulate_mouse_move(screen_coord, None, Modifiers::secondary_key());
-        #[cfg(not(target_os = "windows"))]
         cx.assert_editor_text_highlights::<HoveredLinkState>(indoc! {"
             You can't go to a file that does_not_exist.txt.
             Go to «file2.rsˇ» if you want.
             Or go to ../dir/file2.rs if you want.
             Or go to /root/dir/file2.rs if project is local.
             Or go to /root/dir/file2 if this is a Rust file.
-        "});
-        #[cfg(target_os = "windows")]
-        cx.assert_editor_text_highlights::<HoveredLinkState>(indoc! {"
-            You can't go to a file that does_not_exist.txt.
-            Go to «file2.rsˇ» if you want.
-            Or go to ../dir/file2.rs if you want.
-            Or go to C:/root/dir/file2.rs if project is local.
-            Or go to C:/root/dir/file2 if this is a Rust file.
         "});
 
         // Moving the mouse over a relative path that does exist should highlight it
-        #[cfg(not(target_os = "windows"))]
         let screen_coord = cx.pixel_position(indoc! {"
             You can't go to a file that does_not_exist.txt.
             Go to file2.rs if you want.
             Or go to ../dir/fˇile2.rs if you want.
             Or go to /root/dir/file2.rs if project is local.
             Or go to /root/dir/file2 if this is a Rust file.
-        "});
-        #[cfg(target_os = "windows")]
-        let screen_coord = cx.pixel_position(indoc! {"
-            You can't go to a file that does_not_exist.txt.
-            Go to file2.rs if you want.
-            Or go to ../dir/fˇile2.rs if you want.
-            Or go to C:/root/dir/file2.rs if project is local.
-            Or go to C:/root/dir/file2 if this is a Rust file.
         "});
 
         cx.simulate_mouse_move(screen_coord, None, Modifiers::secondary_key());
-        #[cfg(not(target_os = "windows"))]
         cx.assert_editor_text_highlights::<HoveredLinkState>(indoc! {"
             You can't go to a file that does_not_exist.txt.
             Go to file2.rs if you want.
@@ -1709,17 +1659,8 @@ mod tests {
             Or go to /root/dir/file2.rs if project is local.
             Or go to /root/dir/file2 if this is a Rust file.
         "});
-        #[cfg(target_os = "windows")]
-        cx.assert_editor_text_highlights::<HoveredLinkState>(indoc! {"
-            You can't go to a file that does_not_exist.txt.
-            Go to file2.rs if you want.
-            Or go to «../dir/file2.rsˇ» if you want.
-            Or go to C:/root/dir/file2.rs if project is local.
-            Or go to C:/root/dir/file2 if this is a Rust file.
-        "});
 
         // Moving the mouse over an absolute path that does exist should highlight it
-        #[cfg(not(target_os = "windows"))]
         let screen_coord = cx.pixel_position(indoc! {"
             You can't go to a file that does_not_exist.txt.
             Go to file2.rs if you want.
@@ -1728,17 +1669,7 @@ mod tests {
             Or go to /root/dir/file2 if this is a Rust file.
         "});
 
-        #[cfg(target_os = "windows")]
-        let screen_coord = cx.pixel_position(indoc! {"
-            You can't go to a file that does_not_exist.txt.
-            Go to file2.rs if you want.
-            Or go to ../dir/file2.rs if you want.
-            Or go to C:/root/diˇr/file2.rs if project is local.
-            Or go to C:/root/dir/file2 if this is a Rust file.
-        "});
-
         cx.simulate_mouse_move(screen_coord, None, Modifiers::secondary_key());
-        #[cfg(not(target_os = "windows"))]
         cx.assert_editor_text_highlights::<HoveredLinkState>(indoc! {"
             You can't go to a file that does_not_exist.txt.
             Go to file2.rs if you want.
@@ -1746,17 +1677,8 @@ mod tests {
             Or go to «/root/dir/file2.rsˇ» if project is local.
             Or go to /root/dir/file2 if this is a Rust file.
         "});
-        #[cfg(target_os = "windows")]
-        cx.assert_editor_text_highlights::<HoveredLinkState>(indoc! {"
-            You can't go to a file that does_not_exist.txt.
-            Go to file2.rs if you want.
-            Or go to ../dir/file2.rs if you want.
-            Or go to «C:/root/dir/file2.rsˇ» if project is local.
-            Or go to C:/root/dir/file2 if this is a Rust file.
-        "});
 
         // Moving the mouse over a path that exists, if we add the language-specific suffix, it should highlight it
-        #[cfg(not(target_os = "windows"))]
         let screen_coord = cx.pixel_position(indoc! {"
             You can't go to a file that does_not_exist.txt.
             Go to file2.rs if you want.
@@ -1764,31 +1686,14 @@ mod tests {
             Or go to /root/dir/file2.rs if project is local.
             Or go to /root/diˇr/file2 if this is a Rust file.
         "});
-        #[cfg(target_os = "windows")]
-        let screen_coord = cx.pixel_position(indoc! {"
-            You can't go to a file that does_not_exist.txt.
-            Go to file2.rs if you want.
-            Or go to ../dir/file2.rs if you want.
-            Or go to C:/root/dir/file2.rs if project is local.
-            Or go to C:/root/diˇr/file2 if this is a Rust file.
-        "});
 
         cx.simulate_mouse_move(screen_coord, None, Modifiers::secondary_key());
-        #[cfg(not(target_os = "windows"))]
         cx.assert_editor_text_highlights::<HoveredLinkState>(indoc! {"
             You can't go to a file that does_not_exist.txt.
             Go to file2.rs if you want.
             Or go to ../dir/file2.rs if you want.
             Or go to /root/dir/file2.rs if project is local.
             Or go to «/root/dir/file2ˇ» if this is a Rust file.
-        "});
-        #[cfg(target_os = "windows")]
-        cx.assert_editor_text_highlights::<HoveredLinkState>(indoc! {"
-            You can't go to a file that does_not_exist.txt.
-            Go to file2.rs if you want.
-            Or go to ../dir/file2.rs if you want.
-            Or go to C:/root/dir/file2.rs if project is local.
-            Or go to «C:/root/dir/file2ˇ» if this is a Rust file.
         "});
 
         cx.simulate_click(screen_coord, Modifiers::secondary_key());

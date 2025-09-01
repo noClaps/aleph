@@ -13,11 +13,19 @@ path = "src/client.rs"
 doctest = false
 
 [features]
-test-support = ["clock/test-support", "collections/test-support", "gpui/test-support", "rpc/test-support"]
+test-support = [
+    "clock/test-support",
+    "collections/test-support",
+    "gpui/test-support",
+    "rpc/test-support",
+]
 
 [dependencies]
 anyhow.workspace = true
-async-tungstenite = { workspace = true, features = ["tokio", "tokio-rustls-manual-roots"] }
+async-tungstenite = { workspace = true, features = [
+    "tokio",
+    "tokio-rustls-manual-roots",
+] }
 base64.workspace = true
 chrono = { workspace = true, features = ["serde"] }
 clock.workspace = true
@@ -54,12 +62,16 @@ text.workspace = true
 thiserror.workspace = true
 time.workspace = true
 tiny_http.workspace = true
-tokio-socks = { version = "0.5.2", default-features = false, features = ["futures-io"] }
+tokio-socks = { version = "0.5.2", default-features = false, features = [
+    "futures-io",
+] }
 tokio.workspace = true
 url.workspace = true
 util.workspace = true
 workspace-hack.workspace = true
 worktree.workspace = true
+cocoa.workspace = true
+tokio-native-tls = "0.3"
 
 [dev-dependencies]
 clock = { workspace = true, features = ["test-support"] }
@@ -70,16 +82,3 @@ http_client = { workspace = true, features = ["test-support"] }
 rpc = { workspace = true, features = ["test-support"] }
 settings = { workspace = true, features = ["test-support"] }
 util = { workspace = true, features = ["test-support"] }
-
-[target.'cfg(target_os = "windows")'.dependencies]
-windows.workspace = true
-
-[target.'cfg(target_os = "macos")'.dependencies]
-objc2-foundation.workspace = true
-
-[target.'cfg(any(target_os = "windows", target_os = "macos"))'.dependencies]
-tokio-native-tls = "0.3"
-
-[target.'cfg(not(any(target_os = "windows", target_os = "macos")))'.dependencies]
-rustls-pki-types = "1.12"
-tokio-rustls = { version = "0.26", features = ["tls12", "ring"], default-features = false }

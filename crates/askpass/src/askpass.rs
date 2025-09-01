@@ -43,21 +43,13 @@ impl AskPassDelegate {
 }
 
 pub struct AskPassSession {
-    #[cfg(not(target_os = "windows"))]
     script_path: std::path::PathBuf,
-    #[cfg(target_os = "windows")]
-    askpass_helper: String,
-    #[cfg(target_os = "windows")]
-    secret: std::sync::Arc<parking_lot::Mutex<String>>,
     _askpass_task: Task<()>,
     askpass_opened_rx: Option<oneshot::Receiver<()>>,
     askpass_kill_master_rx: Option<oneshot::Receiver<()>>,
 }
 
-#[cfg(not(target_os = "windows"))]
 const ASKPASS_SCRIPT_NAME: &str = "askpass.sh";
-#[cfg(target_os = "windows")]
-const ASKPASS_SCRIPT_NAME: &str = "askpass.ps1";
 
 impl AskPassSession {
     /// This will create a new AskPassSession.
@@ -67,24 +59,16 @@ impl AskPassSession {
         use net::async_net::UnixListener;
         use util::fs::make_file_executable;
 
-        #[cfg(target_os = "windows")]
-        let secret = std::sync::Arc::new(parking_lot::Mutex::new(String::new()));
         let temp_dir = tempfile::Builder::new().prefix("zed-askpass").tempdir()?;
         let askpass_socket = temp_dir.path().join("askpass.sock");
         let askpass_script_path = temp_dir.path().join(ASKPASS_SCRIPT_NAME);
         let (askpass_opened_tx, askpass_opened_rx) = oneshot::channel::<()>();
         let listener = UnixListener::bind(&askpass_socket).context("creating askpass socket")?;
-        #[cfg(not(target_os = "windows"))]
         let zed_path = util::get_shell_safe_zed_path()?;
-        #[cfg(target_os = "windows")]
-        let zed_path = std::env::current_exe()
-            .context("finding current executable path for use in askpass")?;
 
         let (askpass_kill_master_tx, askpass_kill_master_rx) = oneshot::channel::<()>();
         let mut kill_tx = Some(askpass_kill_master_tx);
 
-        #[cfg(target_os = "windows")]
-        let askpass_secret = secret.clone();
         let askpass_task = executor.spawn(async move {
             let mut askpass_opened_tx = Some(askpass_opened_tx);
 
@@ -105,10 +89,6 @@ impl AskPassSession {
                     .log_err()
                 {
                     stream.write_all(password.as_bytes()).await.log_err();
-                    #[cfg(target_os = "windows")]
-                    {
-                        *askpass_secret.lock() = password;
-                    }
                 } else {
                     if let Some(kill_tx) = kill_tx.take() {
                         kill_tx.send(()).log_err();
@@ -129,35 +109,17 @@ impl AskPassSession {
             .await
             .with_context(|| format!("creating askpass script at {askpass_script_path:?}"))?;
         make_file_executable(&askpass_script_path).await?;
-        #[cfg(target_os = "windows")]
-        let askpass_helper = format!(
-            "powershell.exe -ExecutionPolicy Bypass -File {}",
-            askpass_script_path.display()
-        );
 
         Ok(Self {
-            #[cfg(not(target_os = "windows"))]
             script_path: askpass_script_path,
-
-            #[cfg(target_os = "windows")]
-            secret,
-            #[cfg(target_os = "windows")]
-            askpass_helper,
-
             _askpass_task: askpass_task,
             askpass_kill_master_rx: Some(askpass_kill_master_rx),
             askpass_opened_rx: Some(askpass_opened_rx),
         })
     }
 
-    #[cfg(not(target_os = "windows"))]
     pub fn script_path(&self) -> impl AsRef<OsStr> {
         &self.script_path
-    }
-
-    #[cfg(target_os = "windows")]
-    pub fn script_path(&self) -> impl AsRef<OsStr> {
-        &self.askpass_helper
     }
 
     // This will run the askpass task forever, resolving as many authentication requests as needed.
@@ -185,12 +147,6 @@ impl AskPassSession {
             }
         }
     }
-
-    /// This will return the password that was last set by the askpass script.
-    #[cfg(target_os = "windows")]
-    pub fn get_password(&self) -> String {
-        self.secret.lock().clone()
-    }
 }
 
 /// The main function for when Zed is running in netcat mode for use in askpass.
@@ -214,10 +170,6 @@ pub fn main(socket: &str) {
         exit(1);
     }
 
-    #[cfg(target_os = "windows")]
-    while buffer.last().is_some_and(|&b| b == b'\n' || b == b'\r') {
-        buffer.pop();
-    }
     if buffer.last() != Some(&b'\0') {
         buffer.push(b'\0');
     }
@@ -240,7 +192,6 @@ pub fn main(socket: &str) {
 }
 
 #[inline]
-#[cfg(not(target_os = "windows"))]
 fn generate_askpass_script(zed_path: &str, askpass_socket: &std::path::Path) -> String {
     format!(
         "{shebang}\n{print_args} | {zed_exe} --askpass={askpass_socket} 2> /dev/null \n",
@@ -248,18 +199,5 @@ fn generate_askpass_script(zed_path: &str, askpass_socket: &std::path::Path) -> 
         askpass_socket = askpass_socket.display(),
         print_args = "printf '%s\\0' \"$@\"",
         shebang = "#!/bin/sh",
-    )
-}
-
-#[inline]
-#[cfg(target_os = "windows")]
-fn generate_askpass_script(zed_path: &std::path::Path, askpass_socket: &std::path::Path) -> String {
-    format!(
-        r#"
-        $ErrorActionPreference = 'Stop';
-        ($args -join [char]0) | & "{zed_exe}" --askpass={askpass_socket} 2> $null
-        "#,
-        zed_exe = zed_path.display(),
-        askpass_socket = askpass_socket.display(),
     )
 }

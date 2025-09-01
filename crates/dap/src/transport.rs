@@ -1054,7 +1054,6 @@ impl Child {
         self.process
     }
 
-    #[cfg(not(windows))]
     fn spawn(mut command: std::process::Command, stdin: Stdio) -> Result<Self> {
         util::set_pre_exec_to_start_new_session(&mut command);
         let process = smol::process::Command::from(command)
@@ -1065,29 +1064,10 @@ impl Child {
         Ok(Self { process })
     }
 
-    #[cfg(windows)]
-    fn spawn(command: std::process::Command, stdin: Stdio) -> Result<Self> {
-        // TODO(windows): create a job object and add the child process handle to it,
-        // see https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects
-        let process = smol::process::Command::from(command)
-            .stdin(stdin)
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()?;
-        Ok(Self { process })
-    }
-
-    #[cfg(not(windows))]
     fn kill(&mut self) {
         let pid = self.process.id();
         unsafe {
             libc::killpg(pid as i32, libc::SIGKILL);
         }
-    }
-
-    #[cfg(windows)]
-    fn kill(&mut self) {
-        // TODO(windows): terminate the job object in kill
-        let _ = self.process.kill();
     }
 }

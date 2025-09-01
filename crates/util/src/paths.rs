@@ -26,24 +26,8 @@ pub trait PathExt {
     where
         Self: From<&'a Path>,
     {
-        #[cfg(unix)]
-        {
-            use std::os::unix::prelude::OsStrExt;
-            Ok(Self::from(Path::new(OsStr::from_bytes(bytes))))
-        }
-        #[cfg(windows)]
-        {
-            use anyhow::Context as _;
-            use tendril::fmt::{Format, WTF8};
-            WTF8::validate(bytes)
-                .then(|| {
-                    // Safety: bytes are valid WTF-8 sequence.
-                    Self::from(Path::new(unsafe {
-                        OsStr::from_encoded_bytes_unchecked(bytes)
-                    }))
-                })
-                .with_context(|| format!("Invalid WTF-8 sequence: {bytes:?}"))
-        }
+        use std::os::unix::prelude::OsStrExt;
+        Ok(Self::from(Path::new(OsStr::from_bytes(bytes))))
     }
 }
 
@@ -57,18 +41,14 @@ impl<T: AsRef<Path>> PathExt for T {
     ///   does not have the user's home directory prefix, or if we are not on
     ///   Linux or macOS, the original path is returned unchanged.
     fn compact(&self) -> PathBuf {
-        if cfg!(any(target_os = "linux", target_os = "freebsd")) || cfg!(target_os = "macos") {
-            match self.as_ref().strip_prefix(home_dir().as_path()) {
-                Ok(relative_path) => {
-                    let mut shortened_path = PathBuf::new();
-                    shortened_path.push("~");
-                    shortened_path.push(relative_path);
-                    shortened_path
-                }
-                Err(_) => self.as_ref().to_path_buf(),
+        match self.as_ref().strip_prefix(home_dir().as_path()) {
+            Ok(relative_path) => {
+                let mut shortened_path = PathBuf::new();
+                shortened_path.push("~");
+                shortened_path.push(relative_path);
+                shortened_path
             }
-        } else {
-            self.as_ref().to_path_buf()
+            Err(_) => self.as_ref().to_path_buf(),
         }
     }
 
@@ -86,33 +66,19 @@ impl<T: AsRef<Path>> PathExt for T {
     }
 
     /// Returns a sanitized string representation of the path.
-    /// Note, on Windows, this assumes that the path is a valid UTF-8 string and
-    /// is not a UNC path.
     fn to_sanitized_string(&self) -> String {
-        #[cfg(target_os = "windows")]
-        {
-            self.as_ref().to_string_lossy().replace("/", "\\")
-        }
-        #[cfg(not(target_os = "windows"))]
-        {
-            self.as_ref().to_string_lossy().to_string()
-        }
+        self.as_ref().to_string_lossy().to_string()
     }
 }
 
-/// In memory, this is identical to `Path`. On non-Windows conversions to this type are no-ops. On
-/// windows, these conversions sanitize UNC paths by removing the `\\\\?\\` prefix.
+/// In memory, this is identical to `Path`. Otherwise, conversions to this type are no-ops.
 #[derive(Eq, PartialEq, Hash, Ord, PartialOrd)]
 #[repr(transparent)]
 pub struct SanitizedPath(Path);
 
 impl SanitizedPath {
     pub fn new<T: AsRef<Path> + ?Sized>(path: &T) -> &Self {
-        #[cfg(not(target_os = "windows"))]
         return Self::unchecked_new(path.as_ref());
-
-        #[cfg(target_os = "windows")]
-        return Self::unchecked_new(dunce::simplified(path.as_ref()));
     }
 
     pub fn unchecked_new<T: AsRef<Path> + ?Sized>(path: &T) -> &Self {
@@ -122,12 +88,7 @@ impl SanitizedPath {
 
     pub fn from_arc(path: Arc<Path>) -> Arc<Self> {
         // safe because `Path` and `SanitizedPath` have the same repr and Drop impl
-        #[cfg(not(target_os = "windows"))]
         return unsafe { mem::transmute::<Arc<Path>, Arc<Self>>(path) };
-
-        // TODO: could avoid allocating here if dunce::simplified results in the same path
-        #[cfg(target_os = "windows")]
-        return Self::new(&path).into();
     }
 
     pub fn new_arc<T: AsRef<Path> + ?Sized>(path: &T) -> Arc<Self> {
@@ -181,14 +142,7 @@ impl SanitizedPath {
     }
 
     pub fn to_glob_string(&self) -> String {
-        #[cfg(target_os = "windows")]
-        {
-            self.0.to_string_lossy().replace("/", "\\")
-        }
-        #[cfg(not(target_os = "windows"))]
-        {
-            self.0.to_string_lossy().to_string()
-        }
+        self.0.to_string_lossy().to_string()
     }
 }
 
@@ -227,26 +181,16 @@ impl AsRef<Path> for SanitizedPath {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PathStyle {
     Posix,
-    Windows,
 }
 
 impl PathStyle {
-    #[cfg(target_os = "windows")]
-    pub const fn current() -> Self {
-        PathStyle::Windows
-    }
-
-    #[cfg(not(target_os = "windows"))]
     pub const fn current() -> Self {
         PathStyle::Posix
     }
 
     #[inline]
     pub fn separator(&self) -> &str {
-        match self {
-            PathStyle::Posix => "/",
-            PathStyle::Windows => "\\",
-        }
+        "/"
     }
 }
 
@@ -259,16 +203,7 @@ pub struct RemotePathBuf {
 
 impl RemotePathBuf {
     pub fn new(path: PathBuf, style: PathStyle) -> Self {
-        #[cfg(target_os = "windows")]
-        let string = match style {
-            PathStyle::Posix => path.to_string_lossy().replace('\\', "/"),
-            PathStyle::Windows => path.to_string_lossy().into(),
-        };
-        #[cfg(not(target_os = "windows"))]
-        let string = match style {
-            PathStyle::Posix => path.to_string_lossy().to_string(),
-            PathStyle::Windows => path.to_string_lossy().replace('/', "\\"),
-        };
+        let string = path.to_string_lossy().to_string();
         Self {
             inner: path,
             style,
@@ -281,20 +216,8 @@ impl RemotePathBuf {
         Self::new(path_buf, style)
     }
 
-    #[cfg(target_os = "windows")]
     pub fn to_proto(&self) -> String {
-        match self.path_style() {
-            PathStyle::Posix => self.to_string(),
-            PathStyle::Windows => self.inner.to_string_lossy().replace('\\', "/"),
-        }
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    pub fn to_proto(&self) -> String {
-        match self.path_style() {
-            PathStyle::Posix => self.inner.to_string_lossy().to_string(),
-            PathStyle::Windows => self.to_string(),
-        }
+        self.inner.to_string_lossy().to_string()
     }
 
     pub fn as_path(&self) -> &Path {
@@ -1001,7 +924,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(not(target_os = "windows"))]
     fn path_with_position_parse_posix_path_with_suffix() {
         assert_eq!(
             PathWithPosition::parse_str("foo/bar:34:in"),
@@ -1057,141 +979,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(target_os = "windows")]
-    fn path_with_position_parse_windows_path() {
-        assert_eq!(
-            PathWithPosition::parse_str("crates\\utils\\paths.rs"),
-            PathWithPosition {
-                path: PathBuf::from("crates\\utils\\paths.rs"),
-                row: None,
-                column: None
-            }
-        );
-
-        assert_eq!(
-            PathWithPosition::parse_str("C:\\Users\\someone\\test_file.rs"),
-            PathWithPosition {
-                path: PathBuf::from("C:\\Users\\someone\\test_file.rs"),
-                row: None,
-                column: None
-            }
-        );
-    }
-
-    #[test]
-    #[cfg(target_os = "windows")]
-    fn path_with_position_parse_windows_path_with_suffix() {
-        assert_eq!(
-            PathWithPosition::parse_str("crates\\utils\\paths.rs:101"),
-            PathWithPosition {
-                path: PathBuf::from("crates\\utils\\paths.rs"),
-                row: Some(101),
-                column: None
-            }
-        );
-
-        assert_eq!(
-            PathWithPosition::parse_str("\\\\?\\C:\\Users\\someone\\test_file.rs:1:20"),
-            PathWithPosition {
-                path: PathBuf::from("\\\\?\\C:\\Users\\someone\\test_file.rs"),
-                row: Some(1),
-                column: Some(20)
-            }
-        );
-
-        assert_eq!(
-            PathWithPosition::parse_str("C:\\Users\\someone\\test_file.rs(1902,13)"),
-            PathWithPosition {
-                path: PathBuf::from("C:\\Users\\someone\\test_file.rs"),
-                row: Some(1902),
-                column: Some(13)
-            }
-        );
-
-        // Trim off trailing `:`s for otherwise valid input.
-        assert_eq!(
-            PathWithPosition::parse_str("\\\\?\\C:\\Users\\someone\\test_file.rs:1902:13:"),
-            PathWithPosition {
-                path: PathBuf::from("\\\\?\\C:\\Users\\someone\\test_file.rs"),
-                row: Some(1902),
-                column: Some(13)
-            }
-        );
-
-        assert_eq!(
-            PathWithPosition::parse_str("\\\\?\\C:\\Users\\someone\\test_file.rs:1902:13:15:"),
-            PathWithPosition {
-                path: PathBuf::from("\\\\?\\C:\\Users\\someone\\test_file.rs:1902"),
-                row: Some(13),
-                column: Some(15)
-            }
-        );
-
-        assert_eq!(
-            PathWithPosition::parse_str("\\\\?\\C:\\Users\\someone\\test_file.rs:1902:::15:"),
-            PathWithPosition {
-                path: PathBuf::from("\\\\?\\C:\\Users\\someone\\test_file.rs:1902"),
-                row: Some(15),
-                column: None
-            }
-        );
-
-        assert_eq!(
-            PathWithPosition::parse_str("\\\\?\\C:\\Users\\someone\\test_file.rs(1902,13):"),
-            PathWithPosition {
-                path: PathBuf::from("\\\\?\\C:\\Users\\someone\\test_file.rs"),
-                row: Some(1902),
-                column: Some(13),
-            }
-        );
-
-        assert_eq!(
-            PathWithPosition::parse_str("\\\\?\\C:\\Users\\someone\\test_file.rs(1902):"),
-            PathWithPosition {
-                path: PathBuf::from("\\\\?\\C:\\Users\\someone\\test_file.rs"),
-                row: Some(1902),
-                column: None,
-            }
-        );
-
-        assert_eq!(
-            PathWithPosition::parse_str("C:\\Users\\someone\\test_file.rs:1902:13:"),
-            PathWithPosition {
-                path: PathBuf::from("C:\\Users\\someone\\test_file.rs"),
-                row: Some(1902),
-                column: Some(13),
-            }
-        );
-
-        assert_eq!(
-            PathWithPosition::parse_str("C:\\Users\\someone\\test_file.rs(1902,13):"),
-            PathWithPosition {
-                path: PathBuf::from("C:\\Users\\someone\\test_file.rs"),
-                row: Some(1902),
-                column: Some(13),
-            }
-        );
-
-        assert_eq!(
-            PathWithPosition::parse_str("C:\\Users\\someone\\test_file.rs(1902):"),
-            PathWithPosition {
-                path: PathBuf::from("C:\\Users\\someone\\test_file.rs"),
-                row: Some(1902),
-                column: None,
-            }
-        );
-
-        assert_eq!(
-            PathWithPosition::parse_str("crates/utils/paths.rs:101"),
-            PathWithPosition {
-                path: PathBuf::from("crates\\utils\\paths.rs"),
-                row: Some(101),
-                column: None,
-            }
-        );
-    }
-
-    #[test]
     fn test_path_compact() {
         let path: PathBuf = [
             home_dir().to_string_lossy().to_string(),
@@ -1199,11 +986,8 @@ mod tests {
         ]
         .iter()
         .collect();
-        if cfg!(any(target_os = "linux", target_os = "freebsd")) || cfg!(target_os = "macos") {
-            assert_eq!(path.compact().to_str(), Some("~/some_file.txt"));
-        } else {
-            assert_eq!(path.compact().to_str(), path.to_str());
-        }
+
+        assert_eq!(path.compact().to_str(), Some("~/some_file.txt"));
     }
 
     #[test]
@@ -1246,24 +1030,6 @@ mod tests {
         assert!(
             path_matcher.is_match(path),
             "Path matcher should match {path:?}"
-        );
-    }
-
-    #[test]
-    #[cfg(target_os = "windows")]
-    fn test_sanitized_path() {
-        let path = Path::new("C:\\Users\\someone\\test_file.rs");
-        let sanitized_path = SanitizedPath::new(path);
-        assert_eq!(
-            sanitized_path.to_string(),
-            "C:\\Users\\someone\\test_file.rs"
-        );
-
-        let path = Path::new("\\\\?\\C:\\Users\\someone\\test_file.rs");
-        let sanitized_path = SanitizedPath::new(path);
-        assert_eq!(
-            sanitized_path.to_string(),
-            "C:\\Users\\someone\\test_file.rs"
         );
     }
 

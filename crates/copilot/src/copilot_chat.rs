@@ -431,13 +431,9 @@ pub fn copilot_chat_config_dir() -> &'static PathBuf {
     static COPILOT_CHAT_CONFIG_DIR: OnceLock<PathBuf> = OnceLock::new();
 
     COPILOT_CHAT_CONFIG_DIR.get_or_init(|| {
-        let config_dir = if cfg!(target_os = "windows") {
-            dirs::data_local_dir().expect("failed to determine LocalAppData directory")
-        } else {
-            std::env::var("XDG_CONFIG_HOME")
-                .map(PathBuf::from)
-                .unwrap_or_else(|_| home_dir().join(".config"))
-        };
+        let config_dir = std::env::var("XDG_CONFIG_HOME")
+            .map(PathBuf::from)
+            .unwrap_or_else(|_| home_dir().join(".config"));
 
         config_dir.join("github-copilot")
     })

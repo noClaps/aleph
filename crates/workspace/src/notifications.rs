@@ -129,18 +129,7 @@ impl Workspace {
         });
     }
 
-    pub fn show_portal_error(&mut self, err: String, cx: &mut Context<Self>) {
-        struct PortalError;
-
-        self.show_notification(NotificationId::unique::<PortalError>(), cx, |cx| {
-            cx.new(|cx| {
-                ErrorMessagePrompt::new(err.to_string(), cx).with_link_button(
-                    "See docs",
-                    "https://zed.dev/docs/linux#i-cant-open-any-files",
-                )
-            })
-        });
-    }
+    pub fn show_portal_error(&mut self, _err: String, _cx: &mut Context<Self>) {}
 
     pub fn dismiss_notification(&mut self, id: &NotificationId, cx: &mut Context<Self>) {
         self.notifications.retain(|(existing_id, _)| {

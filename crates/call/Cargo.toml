@@ -19,7 +19,7 @@ test-support = [
     "gpui/test-support",
     "livekit_client/test-support",
     "project/test-support",
-    "util/test-support"
+    "util/test-support",
 ]
 
 [dependencies]
@@ -29,7 +29,7 @@ client.workspace = true
 collections.workspace = true
 fs.workspace = true
 futures.workspace = true
-gpui = { workspace = true, features = ["screen-capture"] }
+gpui.workspace = true
 language.workspace = true
 log.workspace = true
 postage.workspace = true

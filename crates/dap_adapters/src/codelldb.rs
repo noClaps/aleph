@@ -53,15 +53,12 @@ impl CodeLldbDebugAdapter {
 
         let arch = match std::env::consts::ARCH {
             "aarch64" => "arm64",
-            "x86_64" => "x64",
             unsupported => {
                 anyhow::bail!("unsupported architecture {unsupported}");
             }
         };
         let platform = match std::env::consts::OS {
             "macos" => "darwin",
-            "linux" => "linux",
-            "windows" => "win32",
             unsupported => {
                 anyhow::bail!("unsupported operating system {unsupported}");
             }

@@ -58,8 +58,6 @@ impl super::LspAdapter for CLspAdapter {
         .await?;
         let os_suffix = match consts::OS {
             "macos" => "mac",
-            "linux" => "linux",
-            "windows" => "windows",
             other => bail!("Running on unsupported os: {other}"),
         };
         let asset_name = format!("clangd-{}-{}.zip", os_suffix, release.tag_name);

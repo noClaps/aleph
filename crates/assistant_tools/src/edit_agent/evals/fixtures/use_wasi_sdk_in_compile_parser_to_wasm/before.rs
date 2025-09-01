@@ -388,13 +388,11 @@ impl Loader {
         let parser_lib_path = if let Ok(path) = env::var("TREE_SITTER_LIBDIR") {
             PathBuf::from(path)
         } else {
-            if cfg!(target_os = "macos") {
-                let legacy_apple_path = etcetera::base_strategy::Apple::new()?
-                    .cache_dir() // `$HOME/Library/Caches/`
-                    .join("tree-sitter");
-                if legacy_apple_path.exists() && legacy_apple_path.is_dir() {
-                    std::fs::remove_dir_all(legacy_apple_path)?;
-                }
+            let legacy_apple_path = etcetera::base_strategy::Apple::new()?
+                .cache_dir() // `$HOME/Library/Caches/`
+                .join("tree-sitter");
+            if legacy_apple_path.exists() && legacy_apple_path.is_dir() {
+                std::fs::remove_dir_all(legacy_apple_path)?;
             }
 
             etcetera::choose_base_strategy()?
@@ -858,13 +856,9 @@ impl Loader {
             command.arg("-link").arg(out);
         } else {
             command.arg("-Werror=implicit-function-declaration");
-            if cfg!(any(target_os = "macos", target_os = "ios")) {
-                command.arg("-dynamiclib");
-                // TODO: remove when supported
-                command.arg("-UTREE_SITTER_REUSE_ALLOCATOR");
-            } else {
-                command.arg("-shared");
-            }
+            command.arg("-dynamiclib");
+            // TODO: remove when supported
+            command.arg("-UTREE_SITTER_REUSE_ALLOCATOR");
             command.args(cc_config.get_files());
             command.arg("-o").arg(output_path);
         }
@@ -884,13 +878,8 @@ impl Loader {
         Ok(())
     }
 
-    #[cfg(unix)]
     fn check_external_scanner(&self, name: &str, library_path: &Path) -> Result<()> {
-        let prefix = if cfg!(any(target_os = "macos", target_os = "ios")) {
-            "_"
-        } else {
-            ""
-        };
+        let prefix = "_";
         let mut must_have = vec![
             format!("{prefix}tree_sitter_{name}_external_scanner_create"),
             format!("{prefix}tree_sitter_{name}_external_scanner_destroy"),
@@ -952,21 +941,6 @@ impl Loader {
         Ok(())
     }
 
-    #[cfg(windows)]
-    fn check_external_scanner(&self, _name: &str, _library_path: &Path) -> Result<()> {
-        // TODO: there's no nm command on windows, whoever wants to implement this can and should :)
-
-        // let mut must_have = vec![
-        //     format!("tree_sitter_{name}_external_scanner_create"),
-        //     format!("tree_sitter_{name}_external_scanner_destroy"),
-        //     format!("tree_sitter_{name}_external_scanner_serialize"),
-        //     format!("tree_sitter_{name}_external_scanner_deserialize"),
-        //     format!("tree_sitter_{name}_external_scanner_scan"),
-        // ];
-
-        Ok(())
-    }
-
     pub fn compile_parser_to_wasm(
         &self,
         language_name: &str,
@@ -984,7 +958,7 @@ impl Loader {
         }
 
         let root_path = root_path.unwrap_or(src_path);
-        let emcc_name = if cfg!(windows) { "emcc.bat" } else { "emcc" };
+        let emcc_name = "emcc";
 
         // Order of preference: emscripten > docker > podman > error
         let source = if !force_docker && Command::new(emcc_name).output().is_ok() {
@@ -1046,18 +1020,15 @@ impl Loader {
 
                 // Get the current user id so that files created in the docker container will have
                 // the same owner.
-                #[cfg(unix)]
-                {
-                    #[link(name = "c")]
-                    extern "C" {
-                        fn getuid() -> u32;
-                    }
-                    // don't need to set user for podman since PODMAN_USERNS=keep-id is already set
-                    if source == EmccSource::Docker {
-                        let user_id = unsafe { getuid() };
-                        command.args(["--user", &user_id.to_string()]);
-                    }
-                };
+                #[link(name = "c")]
+                extern "C" {
+                    fn getuid() -> u32;
+                }
+                // don't need to set user for podman since PODMAN_USERNS=keep-id is already set
+                if source == EmccSource::Docker {
+                    let user_id = unsafe { getuid() };
+                    command.args(["--user", &user_id.to_string()]);
+                }
 
                 // Run `emcc` in a container using the `emscripten-slim` image
                 command.args([EMSCRIPTEN_TAG, "emcc"]);

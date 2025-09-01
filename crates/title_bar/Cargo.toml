@@ -34,7 +34,7 @@ chrono.workspace = true
 client.workspace = true
 cloud_llm_client.workspace = true
 db.workspace = true
-gpui = { workspace = true, features = ["screen-capture"] }
+gpui.workspace = true
 notifications.workspace = true
 project.workspace = true
 remote.workspace = true
@@ -52,9 +52,6 @@ util.workspace = true
 workspace.workspace = true
 zed_actions.workspace = true
 workspace-hack.workspace = true
-
-[target.'cfg(windows)'.dependencies]
-windows.workspace = true
 
 [dev-dependencies]
 call = { workspace = true, features = ["test-support"] }

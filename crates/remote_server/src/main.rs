@@ -1,5 +1,3 @@
-#![cfg_attr(target_os = "windows", allow(unused, dead_code))]
-
 use clap::Parser;
 use remote_server::Commands;
 use std::path::PathBuf;
@@ -22,12 +20,6 @@ struct Cli {
     printenv: bool,
 }
 
-#[cfg(windows)]
-fn main() {
-    unimplemented!()
-}
-
-#[cfg(not(windows))]
 fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 

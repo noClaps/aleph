@@ -216,11 +216,7 @@ mod tests {
     use util::path;
 
     fn platform_paths(path_str: &str) -> String {
-        if cfg!(target_os = "windows") {
-            path_str.replace("/", "\\")
-        } else {
-            path_str.to_string()
-        }
+        path_str.to_string()
     }
 
     fn init_test(cx: &mut TestAppContext) {

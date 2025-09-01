@@ -506,15 +506,9 @@ impl LspAdapter for NodeVersionAdapter {
         .await?;
         let os = match consts::OS {
             "macos" => "apple-darwin",
-            "linux" => "unknown-linux-gnu",
-            "windows" => "pc-windows-msvc",
             other => bail!("Running on unsupported os: {other}"),
         };
-        let suffix = if consts::OS == "windows" {
-            ".zip"
-        } else {
-            ".tar.gz"
-        };
+        let suffix = ".tar.gz";
         let asset_name = format!("{}-{}-{os}{suffix}", Self::SERVER_NAME, consts::ARCH);
         let asset = release
             .assets

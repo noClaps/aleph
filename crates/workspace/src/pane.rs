@@ -3131,8 +3131,7 @@ impl Pane {
             self.set_preview_item_id(None, cx);
         }
 
-        let is_clone = cfg!(target_os = "macos") && window.modifiers().alt
-            || cfg!(not(target_os = "macos")) && window.modifiers().control;
+        let is_clone = window.modifiers().alt;
 
         let from_pane = dragged_tab.pane.clone();
 

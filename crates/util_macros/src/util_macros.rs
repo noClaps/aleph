@@ -1,5 +1,3 @@
-#![cfg_attr(not(target_os = "windows"), allow(unused))]
-
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{LitStr, parse_macro_input};
@@ -13,23 +11,12 @@ use syn::{LitStr, parse_macro_input};
 /// use util_macros::path;
 ///
 /// let path = path!("/Users/user/file.txt");
-/// #[cfg(target_os = "windows")]
-/// assert_eq!(path, "C:\\Users\\user\\file.txt");
-/// #[cfg(not(target_os = "windows"))]
 /// assert_eq!(path, "/Users/user/file.txt");
 /// ```
 #[proc_macro]
 pub fn path(input: TokenStream) -> TokenStream {
     let path = parse_macro_input!(input as LitStr);
-    let mut path = path.value();
-
-    #[cfg(target_os = "windows")]
-    {
-        path = path.replace("/", "\\");
-        if path.starts_with("\\") {
-            path = format!("C:{}", path);
-        }
-    }
+    let path = path.value();
 
     TokenStream::from(quote! {
         #path
@@ -44,18 +31,12 @@ pub fn path(input: TokenStream) -> TokenStream {
 /// use util_macros::uri;
 ///
 /// let uri = uri!("file:///path/to/file");
-/// #[cfg(target_os = "windows")]
-/// assert_eq!(uri, "file:///C:/path/to/file");
-/// #[cfg(not(target_os = "windows"))]
 /// assert_eq!(uri, "file:///path/to/file");
 /// ```
 #[proc_macro]
 pub fn uri(input: TokenStream) -> TokenStream {
     let uri = parse_macro_input!(input as LitStr);
     let uri = uri.value();
-
-    #[cfg(target_os = "windows")]
-    let uri = uri.replace("file:///", "file:///C:/");
 
     TokenStream::from(quote! {
         #uri
@@ -70,18 +51,12 @@ pub fn uri(input: TokenStream) -> TokenStream {
 /// use util_macros::line_endings;
 ///
 /// let text = line_endings!("Hello\nWorld");
-/// #[cfg(target_os = "windows")]
-/// assert_eq!(text, "Hello\r\nWorld");
-/// #[cfg(not(target_os = "windows"))]
 /// assert_eq!(text, "Hello\nWorld");
 /// ```
 #[proc_macro]
 pub fn line_endings(input: TokenStream) -> TokenStream {
     let text = parse_macro_input!(input as LitStr);
     let text = text.value();
-
-    #[cfg(target_os = "windows")]
-    let text = text.replace("\n", "\r\n");
 
     TokenStream::from(quote! {
         #text

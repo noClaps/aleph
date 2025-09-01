@@ -409,7 +409,6 @@ mod test {
         );
     }
 
-    #[cfg(not(any(target_os = "linux", target_os = "freebsd")))]
     #[test]
     fn test_sql_has_syntax_errors() {
         let connection = Connection::open_memory(Some("test_sql_has_syntax_errors"));

@@ -262,20 +262,13 @@ fn eval_use_wasi_sdk_in_compile_parser_to_wasm() {
                         Read the `{input_file_path}` file and change `compile_parser_to_wasm` to use `wasi-sdk` instead of emscripten.
                         Use `ureq` to download the SDK for the current platform and architecture.
                         Extract the archive into a sibling of `lib` inside the `tree-sitter` directory in the cache_dir.
-                        Compile the parser to wasm using the `bin/clang` executable (or `bin/clang.exe` on windows)
-                        that's inside of the archive.
+                        Compile the parser to wasm using the `bin/clang` executable that's inside of the archive.
                         Don't re-download the SDK if that executable already exists.
 
                         Use these clang flags: -fPIC -shared -Os -Wl,--export=tree_sitter_{{language_name}}
 
                         Here are the available wasi-sdk assets:
-                        - wasi-sdk-25.0-x86_64-macos.tar.gz
                         - wasi-sdk-25.0-arm64-macos.tar.gz
-                        - wasi-sdk-25.0-x86_64-linux.tar.gz
-                        - wasi-sdk-25.0-arm64-linux.tar.gz
-                        - wasi-sdk-25.0-x86_64-linux.tar.gz
-                        - wasi-sdk-25.0-arm64-linux.tar.gz
-                        - wasi-sdk-25.0-x86_64-windows.tar.gz
                     "})],
                 ),
                 message(

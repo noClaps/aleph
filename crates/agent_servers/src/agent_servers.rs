@@ -369,13 +369,10 @@ async fn find_bin_in_path(
 
     cx.background_executor()
         .spawn(async move {
-            let which_result = if cfg!(windows) {
-                which::which(bin_name.as_str())
-            } else {
-                let env = env_task.await.unwrap_or_default();
-                let shell_path = env.get("PATH").cloned();
-                which::which_in(bin_name.as_str(), shell_path.as_ref(), root_dir.as_ref())
-            };
+            let env = env_task.await.unwrap_or_default();
+            let shell_path = env.get("PATH").cloned();
+            let which_result =
+                which::which_in(bin_name.as_str(), shell_path.as_ref(), root_dir.as_ref());
 
             if let Err(which::Error::CannotFindBinaryPath) = which_result {
                 return None;

@@ -1,13 +1,10 @@
 mod app_menus;
 pub mod component_preview;
 pub mod edit_prediction_registry;
-#[cfg(target_os = "macos")]
 pub(crate) mod mac_only_instance;
 mod migrate;
 mod open_listener;
 mod quick_action_bar;
-#[cfg(target_os = "windows")]
-pub(crate) mod windows_only_instance;
 
 use agent_ui::{AgentDiffToolbar, AgentPanelDelegate};
 use anyhow::Context as _;
@@ -133,11 +130,8 @@ actions!(
 );
 
 pub fn init(cx: &mut App) {
-    #[cfg(target_os = "macos")]
     cx.on_action(|_: &Hide, cx| cx.hide());
-    #[cfg(target_os = "macos")]
     cx.on_action(|_: &HideOthers, cx| cx.hide_other_apps());
-    #[cfg(target_os = "macos")]
     cx.on_action(|_: &ShowAll, cx| cx.unhide_other_apps());
     cx.on_action(quit);
 
@@ -348,12 +342,8 @@ pub fn initialize_workspace(
         })
         .detach();
 
-        #[cfg(not(target_os = "macos"))]
-        initialize_file_watcher(window, cx);
-
         if let Some(specs) = window.gpu_specs() {
             log::info!("Using GPU: {:?}", specs);
-            show_software_emulation_warning_if_needed(specs.clone(), window, cx);
             if let Some((crash_server, message)) = crashes::CRASH_HANDLER
                 .get()
                 .zip(bincode::serialize(&specs).ok())
@@ -438,106 +428,6 @@ pub fn initialize_workspace(
         workspace.focus_handle(cx).focus(window);
     })
     .detach();
-}
-
-#[cfg(any(target_os = "linux", target_os = "freebsd"))]
-fn initialize_file_watcher(window: &mut Window, cx: &mut Context<Workspace>) {
-    if let Err(e) = fs::fs_watcher::global(|_| {}) {
-        let message = format!(
-            db::indoc! {r#"
-            inotify_init returned {}
-
-            This may be due to system-wide limits on inotify instances. For troubleshooting see: https://zed.dev/docs/linux
-            "#},
-            e
-        );
-        let prompt = window.prompt(
-            PromptLevel::Critical,
-            "Could not start inotify",
-            Some(&message),
-            &["Troubleshoot and Quit"],
-            cx,
-        );
-        cx.spawn(async move |_, cx| {
-            if prompt.await == Ok(0) {
-                cx.update(|cx| {
-                    cx.open_url("https://zed.dev/docs/linux#could-not-start-inotify");
-                    cx.quit();
-                })
-                .ok();
-            }
-        })
-        .detach()
-    }
-}
-
-#[cfg(target_os = "windows")]
-fn initialize_file_watcher(window: &mut Window, cx: &mut Context<Workspace>) {
-    if let Err(e) = fs::fs_watcher::global(|_| {}) {
-        let message = format!(
-            db::indoc! {r#"
-            ReadDirectoryChangesW initialization failed: {}
-
-            This may occur on network filesystems and WSL paths. For troubleshooting see: https://zed.dev/docs/windows
-            "#},
-            e
-        );
-        let prompt = window.prompt(
-            PromptLevel::Critical,
-            "Could not start ReadDirectoryChangesW",
-            Some(&message),
-            &["Troubleshoot and Quit"],
-            cx,
-        );
-        cx.spawn(async move |_, cx| {
-            if prompt.await == Ok(0) {
-                cx.update(|cx| {
-                    cx.open_url("https://zed.dev/docs/windows");
-                    cx.quit()
-                })
-                .ok();
-            }
-        })
-        .detach()
-    }
-}
-
-fn show_software_emulation_warning_if_needed(
-    specs: gpui::GpuSpecs,
-    window: &mut Window,
-    cx: &mut Context<Workspace>,
-) {
-    if specs.is_software_emulated && std::env::var("ZED_ALLOW_EMULATED_GPU").is_err() {
-        let message = format!(
-            db::indoc! {r#"
-            Zed uses Vulkan for rendering and requires a compatible GPU.
-
-            Currently you are using a software emulated GPU ({}) which
-            will result in awful performance.
-
-            For troubleshooting see: https://zed.dev/docs/linux
-            Set ZED_ALLOW_EMULATED_GPU=1 env var to permanently override.
-            "#},
-            specs.device_name
-        );
-        let prompt = window.prompt(
-            PromptLevel::Critical,
-            "Unsupported GPU",
-            Some(&message),
-            &["Skip", "Troubleshoot and Quit"],
-            cx,
-        );
-        cx.spawn(async move |_, cx| {
-            if prompt.await == Ok(1) {
-                cx.update(|cx| {
-                    cx.open_url("https://zed.dev/docs/linux#zed-fails-to-open-windows");
-                    cx.quit();
-                })
-                .ok();
-            }
-        })
-        .detach()
-    }
 }
 
 fn initialize_panels(
@@ -1484,8 +1374,6 @@ fn reload_keymaps(cx: &mut App, mut user_key_bindings: Vec<KeyBinding>) {
     cx.bind_keys(user_key_bindings);
 
     cx.set_menus(app_menus());
-    // On Windows, this is set in the `update_jump_list` method of the `HistoryManager`.
-    #[cfg(not(target_os = "windows"))]
     cx.set_dock_menu(vec![gpui::MenuItem::action(
         "New Window",
         workspace::NewWindow,
@@ -4445,8 +4333,6 @@ mod tests {
             let expected_namespaces = vec![
                 "activity_indicator",
                 "agent",
-                #[cfg(not(target_os = "macos"))]
-                "app_menu",
                 "assistant",
                 "assistant2",
                 "auto_update",

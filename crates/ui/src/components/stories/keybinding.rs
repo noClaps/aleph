@@ -59,41 +59,5 @@ impl Render for KeybindingStory {
             .child(Story::label("Chord with Modifier", cx))
             .child(KeyBinding::new_from_gpui(binding("ctrl-a shift-z"), cx))
             .child(KeyBinding::new_from_gpui(binding("fn-s"), cx))
-            .child(Story::label("Single Key with All Modifiers (Linux)", cx))
-            .child(
-                KeyBinding::new_from_gpui(binding("ctrl-alt-cmd-shift-z"), cx)
-                    .platform_style(PlatformStyle::Linux),
-            )
-            .child(Story::label("Chord (Linux)", cx))
-            .child(
-                KeyBinding::new_from_gpui(binding("a z"), cx).platform_style(PlatformStyle::Linux),
-            )
-            .child(Story::label("Chord with Modifier (Linux)", cx))
-            .child(
-                KeyBinding::new_from_gpui(binding("ctrl-a shift-z"), cx)
-                    .platform_style(PlatformStyle::Linux),
-            )
-            .child(
-                KeyBinding::new_from_gpui(binding("fn-s"), cx).platform_style(PlatformStyle::Linux),
-            )
-            .child(Story::label("Single Key with All Modifiers (Windows)", cx))
-            .child(
-                KeyBinding::new_from_gpui(binding("ctrl-alt-cmd-shift-z"), cx)
-                    .platform_style(PlatformStyle::Windows),
-            )
-            .child(Story::label("Chord (Windows)", cx))
-            .child(
-                KeyBinding::new_from_gpui(binding("a z"), cx)
-                    .platform_style(PlatformStyle::Windows),
-            )
-            .child(Story::label("Chord with Modifier (Windows)", cx))
-            .child(
-                KeyBinding::new_from_gpui(binding("ctrl-a shift-z"), cx)
-                    .platform_style(PlatformStyle::Windows),
-            )
-            .child(
-                KeyBinding::new_from_gpui(binding("fn-s"), cx)
-                    .platform_style(PlatformStyle::Windows),
-            )
     }
 }

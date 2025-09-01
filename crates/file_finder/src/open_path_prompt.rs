@@ -56,10 +56,7 @@ impl OpenPathDelegate {
             string_matches: Vec::new(),
             cancel_flag: Arc::new(AtomicBool::new(false)),
             should_dismiss: true,
-            prompt_root: match path_style {
-                PathStyle::Posix => "/".to_string(),
-                PathStyle::Windows => "C:\\".to_string(),
-            },
+            prompt_root: "/".to_string(),
             path_style,
             replace_prompt: Task::ready(()),
             render_footer: Arc::new(|_, _| None),
@@ -857,61 +854,16 @@ fn path_candidates(
         .collect()
 }
 
-#[cfg(target_os = "windows")]
-fn get_dir_and_suffix(query: String, path_style: PathStyle) -> (String, String) {
-    let last_item = Path::new(&query)
-        .file_name()
-        .unwrap_or_default()
-        .to_string_lossy();
-    let (mut dir, suffix) = if let Some(dir) = query.strip_suffix(last_item.as_ref()) {
-        (dir.to_string(), last_item.into_owned())
+fn get_dir_and_suffix(query: String, _path_style: PathStyle) -> (String, String) {
+    let (mut dir, suffix) = if let Some(index) = query.rfind('/') {
+        (query[..index].to_string(), query[index + 1..].to_string())
     } else {
-        (query.to_string(), String::new())
+        (query, String::new())
     };
-    match path_style {
-        PathStyle::Posix => {
-            if dir.is_empty() {
-                dir = "/".to_string();
-            }
-        }
-        PathStyle::Windows => {
-            if dir.len() < 3 {
-                dir = "C:\\".to_string();
-            }
-        }
+    if !dir.ends_with('/') {
+        dir.push('/');
     }
     (dir, suffix)
-}
-
-#[cfg(not(target_os = "windows"))]
-fn get_dir_and_suffix(query: String, path_style: PathStyle) -> (String, String) {
-    match path_style {
-        PathStyle::Posix => {
-            let (mut dir, suffix) = if let Some(index) = query.rfind('/') {
-                (query[..index].to_string(), query[index + 1..].to_string())
-            } else {
-                (query, String::new())
-            };
-            if !dir.ends_with('/') {
-                dir.push('/');
-            }
-            (dir, suffix)
-        }
-        PathStyle::Windows => {
-            let (mut dir, suffix) = if let Some(index) = query.rfind('\\') {
-                (query[..index].to_string(), query[index + 1..].to_string())
-            } else {
-                (query, String::new())
-            };
-            if dir.len() < 3 {
-                dir = "C:\\".to_string();
-            }
-            if !dir.ends_with('\\') {
-                dir.push('\\');
-            }
-            (dir, suffix)
-        }
-    }
 }
 
 #[cfg(test)]
@@ -919,40 +871,6 @@ mod tests {
     use util::paths::PathStyle;
 
     use crate::open_path_prompt::get_dir_and_suffix;
-
-    #[test]
-    fn test_get_dir_and_suffix_with_windows_style() {
-        let (dir, suffix) = get_dir_and_suffix("".into(), PathStyle::Windows);
-        assert_eq!(dir, "C:\\");
-        assert_eq!(suffix, "");
-
-        let (dir, suffix) = get_dir_and_suffix("C:".into(), PathStyle::Windows);
-        assert_eq!(dir, "C:\\");
-        assert_eq!(suffix, "");
-
-        let (dir, suffix) = get_dir_and_suffix("C:\\".into(), PathStyle::Windows);
-        assert_eq!(dir, "C:\\");
-        assert_eq!(suffix, "");
-
-        let (dir, suffix) = get_dir_and_suffix("C:\\Use".into(), PathStyle::Windows);
-        assert_eq!(dir, "C:\\");
-        assert_eq!(suffix, "Use");
-
-        let (dir, suffix) =
-            get_dir_and_suffix("C:\\Users\\Junkui\\Docum".into(), PathStyle::Windows);
-        assert_eq!(dir, "C:\\Users\\Junkui\\");
-        assert_eq!(suffix, "Docum");
-
-        let (dir, suffix) =
-            get_dir_and_suffix("C:\\Users\\Junkui\\Documents".into(), PathStyle::Windows);
-        assert_eq!(dir, "C:\\Users\\Junkui\\");
-        assert_eq!(suffix, "Documents");
-
-        let (dir, suffix) =
-            get_dir_and_suffix("C:\\Users\\Junkui\\Documents\\".into(), PathStyle::Windows);
-        assert_eq!(dir, "C:\\Users\\Junkui\\Documents\\");
-        assert_eq!(suffix, "");
-    }
 
     #[test]
     fn test_get_dir_and_suffix_with_posix_style() {

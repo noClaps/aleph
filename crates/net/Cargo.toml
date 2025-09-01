@@ -16,10 +16,5 @@ doctest = false
 smol.workspace = true
 workspace-hack.workspace = true
 
-[target.'cfg(target_os = "windows")'.dependencies]
-anyhow.workspace = true
-async-io = "2.4"
-windows.workspace = true
-
 [dev-dependencies]
 tempfile.workspace = true
