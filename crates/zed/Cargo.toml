@@ -135,7 +135,6 @@ snippets_ui.workspace = true
 supermaven.workspace = true
 sysinfo.workspace = true
 tab_switcher.workspace = true
-task.workspace = true
 tasks_ui.workspace = true
 telemetry.workspace = true
 telemetry_events.workspace = true
@@ -143,7 +142,6 @@ terminal_view.workspace = true
 theme.workspace = true
 theme_extension.workspace = true
 theme_selector.workspace = true
-time.workspace = true
 title_bar.workspace = true
 toolchain_selector.workspace = true
 ui.workspace = true
@@ -167,7 +165,6 @@ zlog_settings.workspace = true
 
 [dev-dependencies]
 call = { workspace = true, features = ["test-support"] }
-dap = { workspace = true, features = ["test-support"] }
 editor = { workspace = true, features = ["test-support"] }
 gpui = { workspace = true, features = ["test-support"] }
 image_viewer = { workspace = true, features = ["test-support"] }
@@ -213,5 +210,5 @@ osx_minimum_system_version = "10.15.7"
 osx_info_plist_exts = ["resources/info/*"]
 osx_url_schemes = ["zed"]
 
-[package.metadata.cargo-machete]
+[package.metadata.cargo-shear]
 ignored = ["profiling", "zstd"]

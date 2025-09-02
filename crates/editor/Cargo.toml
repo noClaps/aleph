@@ -75,7 +75,6 @@ sum_tree.workspace = true
 task.workspace = true
 telemetry.workspace = true
 text.workspace = true
-time.workspace = true
 theme.workspace = true
 tree-sitter-c = { workspace = true, optional = true }
 tree-sitter-html = { workspace = true, optional = true }
@@ -105,7 +104,6 @@ project = { workspace = true, features = ["test-support"] }
 release_channel.workspace = true
 rand.workspace = true
 settings = { workspace = true, features = ["test-support"] }
-tempfile.workspace = true
 text = { workspace = true, features = ["test-support"] }
 theme = { workspace = true, features = ["test-support"] }
 tree-sitter-c.workspace = true
@@ -117,5 +115,4 @@ tree-sitter-bash.workspace = true
 unindent.workspace = true
 util = { workspace = true, features = ["test-support"] }
 workspace = { workspace = true, features = ["test-support"] }
-http_client = { workspace = true, features = ["test-support"] }
 zlog.workspace = true

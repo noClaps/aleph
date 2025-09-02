@@ -42,5 +42,4 @@ client = { workspace = true, features = ["test-support"] }
 collections = { workspace = true, features = ["test-support"] }
 gpui = { workspace = true, features = ["test-support"] }
 rpc = { workspace = true, features = ["test-support"] }
-settings = { workspace = true, features = ["test-support"] }
 util = { workspace = true, features = ["test-support"] }

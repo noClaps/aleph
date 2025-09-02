@@ -20,5 +20,4 @@ workspace-hack.workspace = true
 ctor.workspace = true
 futures.workspace = true
 gpui = { workspace = true, features = ["test-support"] }
-rand.workspace = true
 zlog.workspace = true

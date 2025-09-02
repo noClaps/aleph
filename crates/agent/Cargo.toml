@@ -13,10 +13,7 @@ path = "src/agent.rs"
 doctest = false
 
 [features]
-test-support = [
-    "gpui/test-support",
-    "language/test-support",
-]
+test-support = ["gpui/test-support", "language/test-support"]
 
 [dependencies]
 action_log.workspace = true
@@ -59,7 +56,6 @@ telemetry.workspace = true
 text.workspace = true
 theme.workspace = true
 thiserror.workspace = true
-time.workspace = true
 util.workspace = true
 uuid.workspace = true
 workspace-hack.workspace = true
@@ -76,4 +72,3 @@ parking_lot.workspace = true
 pretty_assertions.workspace = true
 project = { workspace = true, features = ["test-support"] }
 workspace = { workspace = true, features = ["test-support"] }
-rand.workspace = true

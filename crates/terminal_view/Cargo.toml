@@ -48,12 +48,10 @@ zed_actions.workspace = true
 workspace-hack.workspace = true
 
 [dev-dependencies]
-client = { workspace = true, features = ["test-support"] }
 editor = { workspace = true, features = ["test-support"] }
 gpui = { workspace = true, features = ["test-support"] }
 project = { workspace = true, features = ["test-support"] }
-rand.workspace = true
 workspace = { workspace = true, features = ["test-support"] }
 
-[package.metadata.cargo-machete]
+[package.metadata.cargo-shear]
 ignored = ["log"]

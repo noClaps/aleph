@@ -23,7 +23,6 @@ test-support = [
     "worktree/test-support",
     "gpui/test-support",
     "dap/test-support",
-    "dap_adapters/test-support",
 ]
 
 [dependencies]
@@ -96,7 +95,6 @@ collections = { workspace = true, features = ["test-support"] }
 context_server = { workspace = true, features = ["test-support"] }
 buffer_diff = { workspace = true, features = ["test-support"] }
 dap = { workspace = true, features = ["test-support"] }
-dap_adapters = { workspace = true, features = ["test-support"] }
 fs = { workspace = true, features = ["test-support"] }
 git2.workspace = true
 gpui = { workspace = true, features = ["test-support"] }

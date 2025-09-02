@@ -76,7 +76,6 @@ assistant_tool.workspace = true
 assistant_tools.workspace = true
 client = { workspace = true, features = ["test-support"] }
 clock = { workspace = true, features = ["test-support"] }
-dap = { workspace = true, features = ["test-support"] }
 editor = { workspace = true, features = ["test-support"] }
 workspace = { workspace = true, features = ["test-support"] }
 fs = { workspace = true, features = ["test-support"] }
@@ -96,5 +95,5 @@ zlog.workspace = true
 cargo_toml.workspace = true
 toml.workspace = true
 
-[package.metadata.cargo-machete]
+[package.metadata.cargo-shear]
 ignored = ["git2", "rust-embed", "paths"]

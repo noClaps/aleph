@@ -55,7 +55,6 @@ workspace-hack.workspace = true
 zed_env_vars.workspace = true
 
 [dev-dependencies]
-indoc.workspace = true
 language_model = { workspace = true, features = ["test-support"] }
 pretty_assertions.workspace = true
 rand.workspace = true

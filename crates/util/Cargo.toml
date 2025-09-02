@@ -48,6 +48,5 @@ nix = { workspace = true, features = ["user"] }
 
 [dev-dependencies]
 git2.workspace = true
-indoc.workspace = true
 rand.workspace = true
 util_macros.workspace = true

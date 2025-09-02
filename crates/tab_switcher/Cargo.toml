@@ -30,7 +30,6 @@ workspace.workspace = true
 workspace-hack.workspace = true
 
 [dev-dependencies]
-anyhow.workspace = true
 ctor.workspace = true
 gpui = { workspace = true, features = ["test-support"] }
 language = { workspace = true, features = ["test-support"] }

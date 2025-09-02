@@ -2,5 +2,9 @@
 # v0 mangling scheme provides more detailed backtraces around closures
 rustflags = ["-C", "symbol-mangling-version=v0", "--cfg", "tokio_unstable"]
 
+[alias]
+she = "shear --exclude workspace-hack --fix"
+hak = "hakari generate"
+
 [env]
 MACOSX_DEPLOYMENT_TARGET = "10.15.7"

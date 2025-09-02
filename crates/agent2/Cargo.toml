@@ -98,5 +98,4 @@ terminal = { workspace = true, "features" = ["test-support"] }
 theme = { workspace = true, "features" = ["test-support"] }
 tree-sitter-rust.workspace = true
 unindent = { workspace = true }
-worktree = { workspace = true, "features" = ["test-support"] }
 zlog.workspace = true

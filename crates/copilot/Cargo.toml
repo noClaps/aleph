@@ -46,7 +46,6 @@ serde.workspace = true
 serde_json.workspace = true
 settings.workspace = true
 sum_tree.workspace = true
-task.workspace = true
 ui.workspace = true
 util.workspace = true
 workspace.workspace = true
@@ -55,7 +54,6 @@ itertools.workspace = true
 
 [dev-dependencies]
 client = { workspace = true, features = ["test-support"] }
-clock = { workspace = true, features = ["test-support"] }
 collections = { workspace = true, features = ["test-support"] }
 ctor.workspace = true
 editor = { workspace = true, features = ["test-support"] }

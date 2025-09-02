@@ -1,2 +1,2 @@
-# prevent cargo-machete from analyzing this crate
+# prevent cargo-shear from analyzing this crate
 Cargo.toml

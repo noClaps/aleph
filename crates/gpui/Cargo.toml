@@ -104,7 +104,6 @@ util = { workspace = true, features = ["test-support"] }
 [build-dependencies]
 bindgen = "0.71"
 cbindgen = { version = "0.28.0", default-features = false }
-naga.workspace = true
 
 [[example]]
 name = "hello_world"
