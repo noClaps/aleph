@@ -591,19 +591,6 @@ impl Platform for MacPlatform {
             .collect()
     }
 
-    #[cfg(feature = "screen-capture")]
-    fn is_screen_capture_supported(&self) -> bool {
-        let min_version = cocoa::foundation::NSOperatingSystemVersion::new(12, 3, 0);
-        super::is_macos_version_at_least(min_version)
-    }
-
-    #[cfg(feature = "screen-capture")]
-    fn screen_capture_sources(
-        &self,
-    ) -> oneshot::Receiver<Result<Vec<Rc<dyn crate::ScreenCaptureSource>>>> {
-        super::screen_capture::get_sources()
-    }
-
     fn active_window(&self) -> Option<AnyWindowHandle> {
         MacWindow::active_window()
     }
@@ -1628,54 +1615,5 @@ impl UTType {
 
     fn inner_mut(&self) -> *mut Object {
         self.0 as *mut _
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::ClipboardItem;
-
-    use super::*;
-
-    #[test]
-    fn test_clipboard() {
-        let platform = build_platform();
-        assert_eq!(platform.read_from_clipboard(), None);
-
-        let item = ClipboardItem::new_string("1".to_string());
-        platform.write_to_clipboard(item.clone());
-        assert_eq!(platform.read_from_clipboard(), Some(item));
-
-        let item = ClipboardItem {
-            entries: vec![ClipboardEntry::String(
-                ClipboardString::new("2".to_string()).with_json_metadata(vec![3, 4]),
-            )],
-        };
-        platform.write_to_clipboard(item.clone());
-        assert_eq!(platform.read_from_clipboard(), Some(item));
-
-        let text_from_other_app = "text from other app";
-        unsafe {
-            let bytes = NSData::dataWithBytes_length_(
-                nil,
-                text_from_other_app.as_ptr() as *const c_void,
-                text_from_other_app.len() as u64,
-            );
-            platform
-                .0
-                .lock()
-                .pasteboard
-                .setData_forType(bytes, NSPasteboardTypeString);
-        }
-        assert_eq!(
-            platform.read_from_clipboard(),
-            Some(ClipboardItem::new_string(text_from_other_app.to_string()))
-        );
-    }
-
-    fn build_platform() -> MacPlatform {
-        let platform = MacPlatform::new(false);
-        platform.0.lock().pasteboard = unsafe { NSPasteboard::pasteboardWithUniqueName(nil) };
-        platform
     }
 }

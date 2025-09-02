@@ -11,9 +11,6 @@ workspace = true
 [lib]
 path = "src/git.rs"
 
-[features]
-test-support = ["rand"]
-
 [dependencies]
 anyhow.workspace = true
 askpass.workspace = true
@@ -26,7 +23,6 @@ http_client.workspace = true
 log.workspace = true
 parking_lot.workspace = true
 regex.workspace = true
-rand = { workspace = true, optional = true }
 rope.workspace = true
 schemars.workspace = true
 serde.workspace = true
@@ -42,9 +38,5 @@ futures.workspace = true
 workspace-hack.workspace = true
 
 [dev-dependencies]
-pretty_assertions.workspace = true
-serde_json.workspace = true
-text = { workspace = true, features = ["test-support"] }
-gpui = { workspace = true, features = ["test-support"] }
-tempfile.workspace = true
-rand.workspace = true
+text.workspace = true
+gpui.workspace = true

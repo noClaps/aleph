@@ -13,15 +13,8 @@ workspace = true
 path = "src/lib.rs"
 doctest = false
 
-[[example]]
-name = "test_app"
-
-[features]
-test-support = ["collections/test-support", "gpui/test-support"]
-
 [dependencies]
 anyhow.workspace = true
-async-trait.workspace = true
 collections.workspace = true
 cpal.workspace = true
 futures.workspace = true
@@ -29,11 +22,8 @@ audio.workspace = true
 gpui.workspace = true
 gpui_tokio.workspace = true
 http_client_tls.workspace = true
-livekit_api.workspace = true
 log.workspace = true
-nanoid.workspace = true
 parking_lot.workspace = true
-postage.workspace = true
 settings.workspace = true
 tokio-tungstenite.workspace = true
 util.workspace = true
@@ -50,9 +40,8 @@ core-video.workspace = true
 coreaudio-rs = "0.12.1"
 
 [dev-dependencies]
-collections = { workspace = true, features = ["test-support"] }
-gpui = { workspace = true, features = ["test-support"] }
-simplelog.workspace = true
+collections.workspace = true
+gpui.workspace = true
 
 [build-dependencies]
 serde.workspace = true

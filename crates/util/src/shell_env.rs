@@ -1,10 +1,7 @@
-#![cfg_attr(not(unix), allow(unused))]
-
 use anyhow::{Context as _, Result};
 use collections::HashMap;
 
 /// Capture all environment variables from the login shell.
-#[cfg(unix)]
 pub fn capture(directory: &std::path::Path) -> Result<collections::HashMap<String, String>> {
     use std::os::unix::process::CommandExt;
     use std::process::Stdio;
@@ -76,7 +73,6 @@ pub fn capture(directory: &std::path::Path) -> Result<collections::HashMap<Strin
     Ok(env_map)
 }
 
-#[cfg(unix)]
 fn spawn_and_read_fd(
     mut command: std::process::Command,
     child_fd: std::os::fd::RawFd,

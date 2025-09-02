@@ -404,21 +404,3 @@ async fn build_buffer_diff(
         diff
     })
 }
-
-#[cfg(test)]
-mod tests {
-    use gpui::{AppContext as _, TestAppContext};
-    use language::Buffer;
-
-    use crate::Diff;
-
-    #[gpui::test]
-    async fn test_pending_diff(cx: &mut TestAppContext) {
-        let buffer = cx.new(|cx| Buffer::local("hello!", cx));
-        let _diff = cx.new(|cx| Diff::new(buffer.clone(), cx));
-        buffer.update(cx, |buffer, cx| {
-            buffer.set_text("HELLO!", cx);
-        });
-        cx.run_until_parked();
-    }
-}

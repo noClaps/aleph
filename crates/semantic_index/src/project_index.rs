@@ -273,8 +273,6 @@ impl ProjectIndex {
         let project = self.project.clone();
         let embedding_provider = self.embedding_provider.clone();
         cx.spawn(async move |cx| {
-            #[cfg(debug_assertions)]
-            let embedding_query_start = std::time::Instant::now();
             log::info!("Searching for {queries:?}");
             let queries: Vec<TextToEmbed> = queries
                 .iter()
@@ -292,8 +290,6 @@ impl ProjectIndex {
                 results_by_worker.push(Vec::<WorktreeSearchResult>::new());
             }
 
-            #[cfg(debug_assertions)]
-            let search_start = std::time::Instant::now();
             cx.background_executor()
                 .scoped(|cx| {
                     for results in results_by_worker.iter_mut() {
@@ -350,32 +346,9 @@ impl ProjectIndex {
                 });
                 search_results.truncate(limit);
 
-                #[cfg(debug_assertions)]
-                {
-                    let search_elapsed = search_start.elapsed();
-                    log::debug!(
-                        "searched {} entries in {:?}",
-                        search_results.len(),
-                        search_elapsed
-                    );
-                    let embedding_query_elapsed = embedding_query_start.elapsed();
-                    log::debug!("embedding query took {:?}", embedding_query_elapsed);
-                }
-
                 search_results
             })
         })
-    }
-
-    #[cfg(test)]
-    pub fn path_count(&self, cx: &App) -> Result<u64> {
-        let mut result = 0;
-        for worktree_index in self.worktree_indices.values() {
-            if let WorktreeIndexHandle::Loaded { index, .. } = worktree_index {
-                result += index.read(cx).path_count()?;
-            }
-        }
-        Ok(result)
     }
 
     pub(crate) fn worktree_index(

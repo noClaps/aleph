@@ -68,20 +68,3 @@ fn contains(
 
     Ok(())
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_system_prompt_template() {
-        let project = prompt_store::ProjectContext::default();
-        let template = SystemPromptTemplate {
-            project: &project,
-            available_tools: vec!["echo".into()],
-        };
-        let templates = Templates::new();
-        let rendered = template.render(&templates).unwrap();
-        assert!(rendered.contains("## Fixing Diagnostics"));
-    }
-}

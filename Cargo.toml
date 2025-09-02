@@ -102,7 +102,6 @@ members = [
     "crates/lsp",
     "crates/markdown",
     "crates/markdown_preview",
-    "crates/media",
     "crates/menu",
     "crates/migrator",
     "crates/mistral",
@@ -132,7 +131,6 @@ members = [
     "crates/release_channel",
     "crates/scheduler",
     "crates/remote",
-    "crates/remote_server",
     "crates/repl",
     "crates/reqwest_client",
     "crates/rich_text",
@@ -181,7 +179,6 @@ members = [
     "crates/ui_macros",
     "crates/ui_prompt",
     "crates/util",
-    "crates/util_macros",
     "crates/vercel",
     "crates/vim",
     "crates/vim_mode_setting",
@@ -314,7 +311,6 @@ lsp = { path = "crates/lsp" }
 markdown = { path = "crates/markdown" }
 markdown_preview = { path = "crates/markdown_preview" }
 svg_preview = { path = "crates/svg_preview" }
-media = { path = "crates/media" }
 menu = { path = "crates/menu" }
 migrator = { path = "crates/migrator" }
 mistral = { path = "crates/mistral" }
@@ -344,7 +340,6 @@ refineable = { path = "crates/refineable" }
 release_channel = { path = "crates/release_channel" }
 scheduler = { path = "crates/scheduler" }
 remote = { path = "crates/remote" }
-remote_server = { path = "crates/remote_server" }
 repl = { path = "crates/repl" }
 reqwest_client = { path = "crates/reqwest_client" }
 rich_text = { path = "crates/rich_text" }
@@ -388,7 +383,6 @@ ui_input = { path = "crates/ui_input" }
 ui_macros = { path = "crates/ui_macros" }
 ui_prompt = { path = "crates/ui_prompt" }
 util = { path = "crates/util" }
-util_macros = { path = "crates/util_macros" }
 vercel = { path = "crates/vercel" }
 vim = { path = "crates/vim" }
 vim_mode_setting = { path = "crates/vim_mode_setting" }
@@ -416,11 +410,9 @@ alacritty_terminal = { git = "https://github.com/zed-industries/alacritty.git", 
 any_vec = "0.14"
 anyhow = "1.0.86"
 arrayvec = { version = "0.7.4", features = ["serde"] }
-async-compat = "0.2.1"
 async-compression = { version = "0.4", features = ["gzip", "futures-io"] }
 async-dispatcher = "0.1"
 async-fs = "2.1"
-async-pipe = { git = "https://github.com/zed-industries/async-pipe-rs", rev = "82d00a04211cf4e1236029aa03e6b6ce2a74c553" }
 async-recursion = "1.0.0"
 async-tar = "0.5.0"
 async-task = "4.7"
@@ -453,7 +445,6 @@ core-foundation-sys = "0.8.6"
 core-video = { version = "0.4.3", features = ["metal"] }
 cpal = "0.16"
 crash-handler = "0.6"
-criterion = { version = "0.5", features = ["html_reports"] }
 ctor = "0.4.0"
 dap-types = { git = "https://github.com/zed-industries/dap-types", rev = "1b461b310481d01e02b2603c16d7144b926339f8" }
 dashmap = "6.0"
@@ -465,7 +456,6 @@ ec4rs = "1.1"
 emojis = "0.6.1"
 env_logger = "0.11"
 fancy-regex = "0.14.0"
-fork = "0.2.0"
 futures = "0.3"
 futures-batch = "0.6.1"
 futures-lite = "1.13"
@@ -626,20 +616,15 @@ tree-sitter-c = "0.23"
 tree-sitter-cpp = { git = "https://github.com/tree-sitter/tree-sitter-cpp", rev = "5cb9b693cfd7bfacab1d9ff4acac1a4150700609" }
 tree-sitter-css = "0.23"
 tree-sitter-diff = "0.1.0"
-tree-sitter-elixir = "0.3"
-tree-sitter-embedded-template = "0.23.0"
 tree-sitter-gitcommit = { git = "https://github.com/zed-industries/tree-sitter-git-commit", rev = "88309716a69dd13ab83443721ba6e0b491d37ee9" }
 tree-sitter-go = "0.23"
 tree-sitter-go-mod = { git = "https://github.com/camdencheek/tree-sitter-go-mod", rev = "6efb59652d30e0e9cd5f3b3a669afd6f1a926d3c", package = "tree-sitter-gomod" }
 tree-sitter-gowork = { git = "https://github.com/zed-industries/tree-sitter-go-work", rev = "acb0617bf7f4fda02c6217676cc64acb89536dc7" }
-tree-sitter-heex = { git = "https://github.com/zed-industries/tree-sitter-heex", rev = "1dd45142fbb05562e35b2040c6129c9bca346592" }
-tree-sitter-html = "0.23"
 tree-sitter-jsdoc = "0.23"
 tree-sitter-json = "0.24"
 tree-sitter-md = { git = "https://github.com/tree-sitter-grammars/tree-sitter-markdown", rev = "9a23c1a96c0513d8fc6520972beedd419a973539" }
 tree-sitter-python = { git = "https://github.com/zed-industries/tree-sitter-python", rev = "218fcbf3fda3d029225f3dec005cb497d111b35e" }
 tree-sitter-regex = "0.24"
-tree-sitter-ruby = "0.23"
 tree-sitter-rust = "0.24"
 tree-sitter-typescript = "0.23"
 tree-sitter-yaml = { git = "https://github.com/zed-industries/tree-sitter-yaml", rev = "baff0b51c64ef6a1fb1f8390f3ad6015b83ec13a" }
@@ -650,7 +635,6 @@ unindent = "0.2.0"
 url = "2.2"
 urlencoding = "2.1.2"
 uuid = { version = "1.1.2", features = ["v4", "v5", "v7", "serde"] }
-walkdir = "2.5"
 wasm-encoder = "0.221"
 wasmparser = "0.221"
 wasmtime = { version = "29", default-features = false, features = [

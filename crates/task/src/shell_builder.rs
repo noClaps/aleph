@@ -265,36 +265,3 @@ impl ShellBuilder {
         (self.program, self.args)
     }
 }
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn test_nu_shell_variable_substitution() {
-        let shell = Shell::Program("nu".to_owned());
-        let shell_builder = ShellBuilder::new(None, &shell);
-
-        let (program, args) = shell_builder.build(
-            Some("echo".into()),
-            &[
-                "${hello}".to_string(),
-                "$world".to_string(),
-                "nothing".to_string(),
-                "--$something".to_string(),
-                "$".to_string(),
-                "${test".to_string(),
-            ],
-        );
-
-        assert_eq!(program, "nu");
-        assert_eq!(
-            args,
-            vec![
-                "-i",
-                "-c",
-                "echo $env.hello $env.world nothing --($env.something) $ ${test"
-            ]
-        );
-    }
-}

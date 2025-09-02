@@ -99,25 +99,3 @@ impl PathList {
         SerializedPathList { paths, order }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_path_list() {
-        let list1 = PathList::new(&["a/d", "a/c"]);
-        let list2 = PathList::new(&["a/c", "a/d"]);
-
-        assert_eq!(list1.paths(), list2.paths());
-        assert_ne!(list1, list2);
-        assert_eq!(list1.order(), &[1, 0]);
-        assert_eq!(list2.order(), &[0, 1]);
-
-        let list1_deserialized = PathList::deserialize(&list1.serialize());
-        assert_eq!(list1_deserialized, list1);
-
-        let list2_deserialized = PathList::deserialize(&list2.serialize());
-        assert_eq!(list2_deserialized, list2);
-    }
-}

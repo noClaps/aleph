@@ -4,9 +4,6 @@ mod custom;
 mod gemini;
 mod settings;
 
-#[cfg(any(test, feature = "test-support"))]
-pub mod e2e_tests;
-
 use anyhow::Context as _;
 pub use claude::*;
 pub use custom::*;

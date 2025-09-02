@@ -160,16 +160,6 @@ impl UniformListScrollHandle {
         self.0.borrow().y_flipped
     }
 
-    /// Get the index of the topmost visible child.
-    #[cfg(any(test, feature = "test-support"))]
-    pub fn logical_scroll_top_index(&self) -> usize {
-        let this = self.0.borrow();
-        this.deferred_scroll_to_item
-            .as_ref()
-            .map(|deferred| deferred.item_index)
-            .unwrap_or_else(|| this.base_handle.logical_scroll_top().0)
-    }
-
     /// Checks if the list can be scrolled vertically.
     pub fn is_scrollable(&self) -> bool {
         if let Some(size) = self.0.borrow().last_item_size {

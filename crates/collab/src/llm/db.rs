@@ -15,8 +15,6 @@ pub struct LlmDatabase {
     pool: DatabaseConnection,
     #[allow(unused)]
     executor: Executor,
-    #[cfg(test)]
-    runtime: Option<tokio::runtime::Runtime>,
 }
 
 impl LlmDatabase {
@@ -27,8 +25,6 @@ impl LlmDatabase {
             options: options.clone(),
             pool: sea_orm::Database::connect(options).await?,
             executor,
-            #[cfg(test)]
-            runtime: None,
         })
     }
 
@@ -81,18 +77,6 @@ impl LlmDatabase {
     where
         F: Future<Output = Result<T>>,
     {
-        #[cfg(test)]
-        {
-            if let Executor::Deterministic(executor) = &self.executor {
-                executor.simulate_random_delay().await;
-            }
-
-            self.runtime.as_ref().unwrap().block_on(future)
-        }
-
-        #[cfg(not(test))]
-        {
-            future.await
-        }
+        future.await
     }
 }

@@ -1113,33 +1113,3 @@ impl EventEmitter<Event> for LogStore {}
 impl EventEmitter<Event> for DapLogView {}
 impl EventEmitter<EditorEvent> for DapLogView {}
 impl EventEmitter<SearchEvent> for DapLogView {}
-
-#[cfg(any(test, feature = "test-support"))]
-impl LogStore {
-    pub fn has_projects(&self) -> bool {
-        !self.projects.is_empty()
-    }
-
-    pub fn contained_session_ids(&self, project: &WeakEntity<Project>) -> Vec<SessionId> {
-        self.projects.get(project).map_or(vec![], |state| {
-            state.debug_sessions.keys().copied().collect()
-        })
-    }
-
-    pub fn rpc_messages_for_session_id(
-        &self,
-        project: &WeakEntity<Project>,
-        session_id: SessionId,
-    ) -> Vec<SharedString> {
-        self.projects.get(project).map_or(vec![], |state| {
-            state
-                .debug_sessions
-                .get(&session_id)
-                .expect("This session should exist if a test is calling")
-                .rpc_messages
-                .messages
-                .clone()
-                .into()
-        })
-    }
-}

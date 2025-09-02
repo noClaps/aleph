@@ -121,15 +121,6 @@ impl DapEntry {
             _ => None,
         }
     }
-
-    #[cfg(test)]
-    fn name(&self) -> &str {
-        match self {
-            DapEntry::Watcher(watcher) => &watcher.expression,
-            DapEntry::Variable(dap) => &dap.name,
-            DapEntry::Scope(dap) => &dap.name,
-        }
-    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -944,84 +935,6 @@ impl VariableList {
         self.build_entries(cx);
     }
 
-    #[track_caller]
-    #[cfg(test)]
-    pub(crate) fn assert_visual_entries(&self, expected: Vec<&str>) {
-        const INDENT: &str = "    ";
-
-        let entries = &self.entries;
-        let mut visual_entries = Vec::with_capacity(entries.len());
-        for entry in entries {
-            let state = self
-                .entry_states
-                .get(&entry.path)
-                .expect("If there's a variable entry there has to be a state that goes with it");
-
-            visual_entries.push(format!(
-                "{}{} {}{}",
-                INDENT.repeat(state.depth - 1),
-                if state.is_expanded { "v" } else { ">" },
-                entry.entry.name(),
-                if self.selection.as_ref() == Some(&entry.path) {
-                    " <=== selected"
-                } else {
-                    ""
-                }
-            ));
-        }
-
-        pretty_assertions::assert_eq!(expected, visual_entries);
-    }
-
-    #[track_caller]
-    #[cfg(test)]
-    pub(crate) fn scopes(&self) -> Vec<dap::Scope> {
-        self.entries
-            .iter()
-            .filter_map(|entry| match &entry.entry {
-                DapEntry::Scope(scope) => Some(scope),
-                _ => None,
-            })
-            .cloned()
-            .collect()
-    }
-
-    #[track_caller]
-    #[cfg(test)]
-    pub(crate) fn variables_per_scope(&self) -> Vec<(dap::Scope, Vec<dap::Variable>)> {
-        let mut scopes: Vec<(dap::Scope, Vec<_>)> = Vec::new();
-        let mut idx = 0;
-
-        for entry in self.entries.iter() {
-            match &entry.entry {
-                DapEntry::Watcher { .. } => continue,
-                DapEntry::Variable(dap) => scopes[idx].1.push(dap.clone()),
-                DapEntry::Scope(scope) => {
-                    if !scopes.is_empty() {
-                        idx += 1;
-                    }
-
-                    scopes.push((scope.clone(), Vec::new()));
-                }
-            }
-        }
-
-        scopes
-    }
-
-    #[track_caller]
-    #[cfg(test)]
-    pub(crate) fn variables(&self) -> Vec<dap::Variable> {
-        self.entries
-            .iter()
-            .filter_map(|entry| match &entry.entry {
-                DapEntry::Variable(variable) => Some(variable),
-                _ => None,
-            })
-            .cloned()
-            .collect()
-    }
-
     fn create_variable_editor(default: &str, window: &mut Window, cx: &mut App) -> Entity<Editor> {
         let editor = cx.new(|cx| {
             let mut editor = Editor::single_line(window, cx);
@@ -1604,55 +1517,5 @@ fn get_entry_color(cx: &Context<VariableList>) -> EntryColors {
         default: colors.panel_background,
         hover: colors.ghost_element_hover,
         marked_active: colors.ghost_element_selected,
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_center_truncate_string() {
-        // Test string shorter than limit - should not be truncated
-        assert_eq!(VariableList::center_truncate_string("short", 10), "short");
-
-        // Test exact length - should not be truncated
-        assert_eq!(
-            VariableList::center_truncate_string("exactly_10", 10),
-            "exactly_10"
-        );
-
-        // Test simple truncation
-        assert_eq!(
-            VariableList::center_truncate_string("value->value2->value3->value4", 20),
-            "value->v...3->value4"
-        );
-
-        // Test with very long expression
-        assert_eq!(
-            VariableList::center_truncate_string(
-                "object->property1->property2->property3->property4->property5",
-                30
-            ),
-            "object->prope...ty4->property5"
-        );
-
-        // Test edge case with limit equal to ellipsis length
-        assert_eq!(VariableList::center_truncate_string("anything", 3), "any");
-
-        // Test edge case with limit less than ellipsis length
-        assert_eq!(VariableList::center_truncate_string("anything", 2), "any");
-
-        // Test with UTF-8 characters
-        assert_eq!(
-            VariableList::center_truncate_string("café->résumé->naïve->voilà", 15),
-            "café->...>voilà"
-        );
-
-        // Test with emoji (multi-byte UTF-8)
-        assert_eq!(
-            VariableList::center_truncate_string("😀->happy->face->😎->cool", 15),
-            "😀->hap...->cool"
-        );
     }
 }

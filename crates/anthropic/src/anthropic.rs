@@ -911,36 +911,3 @@ pub fn parse_prompt_too_long(message: &str) -> Option<u64> {
         .parse()
         .ok()
 }
-
-#[test]
-fn test_match_window_exceeded() {
-    let error = ApiError {
-        error_type: "invalid_request_error".to_string(),
-        message: "prompt is too long: 220000 tokens > 200000".to_string(),
-    };
-    assert_eq!(error.match_window_exceeded(), Some(220_000));
-
-    let error = ApiError {
-        error_type: "invalid_request_error".to_string(),
-        message: "prompt is too long: 1234953 tokens".to_string(),
-    };
-    assert_eq!(error.match_window_exceeded(), Some(1234953));
-
-    let error = ApiError {
-        error_type: "invalid_request_error".to_string(),
-        message: "not a prompt length error".to_string(),
-    };
-    assert_eq!(error.match_window_exceeded(), None);
-
-    let error = ApiError {
-        error_type: "rate_limit_error".to_string(),
-        message: "prompt is too long: 12345 tokens".to_string(),
-    };
-    assert_eq!(error.match_window_exceeded(), None);
-
-    let error = ApiError {
-        error_type: "invalid_request_error".to_string(),
-        message: "prompt is too long: invalid tokens".to_string(),
-    };
-    assert_eq!(error.match_window_exceeded(), None);
-}

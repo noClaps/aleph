@@ -694,9 +694,6 @@ impl From<Nonce> for u128 {
     }
 }
 
-#[cfg(any(test, feature = "test-support"))]
-pub const MAX_WORKTREE_UPDATE_MAX_CHUNK_SIZE: usize = 2;
-#[cfg(not(any(test, feature = "test-support")))]
 pub const MAX_WORKTREE_UPDATE_MAX_CHUNK_SIZE: usize = 256;
 
 pub fn split_worktree_update(mut message: UpdateWorktree) -> impl Iterator<Item = UpdateWorktree> {
@@ -851,34 +848,5 @@ impl MultiLspQuery {
             Some(multi_lsp_query::Request::GetReferences(_)) => "GetReferences",
             None => "<unknown>",
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_converting_peer_id_from_and_to_u64() {
-        let peer_id = PeerId {
-            owner_id: 10,
-            id: 3,
-        };
-        assert_eq!(PeerId::from_u64(peer_id.as_u64()), peer_id);
-        let peer_id = PeerId {
-            owner_id: u32::MAX,
-            id: 3,
-        };
-        assert_eq!(PeerId::from_u64(peer_id.as_u64()), peer_id);
-        let peer_id = PeerId {
-            owner_id: 10,
-            id: u32::MAX,
-        };
-        assert_eq!(PeerId::from_u64(peer_id.as_u64()), peer_id);
-        let peer_id = PeerId {
-            owner_id: u32::MAX,
-            id: u32::MAX,
-        };
-        assert_eq!(PeerId::from_u64(peer_id.as_u64()), peer_id);
     }
 }

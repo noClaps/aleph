@@ -29,5 +29,4 @@ workspace-hack.workspace = true
 workspace.workspace = true
 
 [dev-dependencies]
-editor = { workspace = true, features = ["test-support"] }
-release_channel.workspace = true
+editor.workspace = true

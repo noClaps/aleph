@@ -3,9 +3,6 @@ pub mod lsp_button;
 pub mod lsp_log_view;
 mod syntax_tree_view;
 
-#[cfg(test)]
-mod lsp_log_view_tests;
-
 use gpui::{App, AppContext, Entity};
 
 pub use lsp_log_view::LspLogView;

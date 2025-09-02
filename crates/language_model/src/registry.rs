@@ -117,24 +117,6 @@ impl LanguageModelRegistry {
         cx.global::<GlobalLanguageModelRegistry>().0.read(cx)
     }
 
-    #[cfg(any(test, feature = "test-support"))]
-    pub fn test(cx: &mut App) -> crate::fake_provider::FakeLanguageModelProvider {
-        let fake_provider = crate::fake_provider::FakeLanguageModelProvider::default();
-        let registry = cx.new(|cx| {
-            let mut registry = Self::default();
-            registry.register_provider(fake_provider.clone(), cx);
-            let model = fake_provider.provided_models(cx)[0].clone();
-            let configured_model = ConfiguredModel {
-                provider: Arc::new(fake_provider.clone()),
-                model,
-            };
-            registry.set_default_model(Some(configured_model), cx);
-            registry
-        });
-        cx.set_global(GlobalLanguageModelRegistry(registry));
-        fake_provider
-    }
-
     pub fn register_provider<T: LanguageModelProvider + LanguageModelProviderState>(
         &mut self,
         provider: T,
@@ -335,31 +317,16 @@ impl LanguageModelRegistry {
     }
 
     pub fn default_model(&self) -> Option<ConfiguredModel> {
-        #[cfg(debug_assertions)]
-        if std::env::var("ZED_SIMULATE_NO_LLM_PROVIDER").is_ok() {
-            return None;
-        }
-
         self.default_model.clone()
     }
 
     pub fn inline_assistant_model(&self) -> Option<ConfiguredModel> {
-        #[cfg(debug_assertions)]
-        if std::env::var("ZED_SIMULATE_NO_LLM_PROVIDER").is_ok() {
-            return None;
-        }
-
         self.inline_assistant_model
             .clone()
             .or_else(|| self.default_model.clone())
     }
 
     pub fn commit_message_model(&self) -> Option<ConfiguredModel> {
-        #[cfg(debug_assertions)]
-        if std::env::var("ZED_SIMULATE_NO_LLM_PROVIDER").is_ok() {
-            return None;
-        }
-
         self.commit_message_model
             .clone()
             .or_else(|| self.default_fast_model.clone())
@@ -367,11 +334,6 @@ impl LanguageModelRegistry {
     }
 
     pub fn thread_summary_model(&self) -> Option<ConfiguredModel> {
-        #[cfg(debug_assertions)]
-        if std::env::var("ZED_SIMULATE_NO_LLM_PROVIDER").is_ok() {
-            return None;
-        }
-
         self.thread_summary_model
             .clone()
             .or_else(|| self.default_fast_model.clone())
@@ -383,32 +345,5 @@ impl LanguageModelRegistry {
     /// user will be able to cycle through results.
     pub fn inline_alternative_models(&self) -> &[Arc<dyn LanguageModel>] {
         &self.inline_alternatives
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::fake_provider::FakeLanguageModelProvider;
-
-    #[gpui::test]
-    fn test_register_providers(cx: &mut App) {
-        let registry = cx.new(|_| LanguageModelRegistry::default());
-
-        let provider = FakeLanguageModelProvider::default();
-        registry.update(cx, |registry, cx| {
-            registry.register_provider(provider.clone(), cx);
-        });
-
-        let providers = registry.read(cx).providers();
-        assert_eq!(providers.len(), 1);
-        assert_eq!(providers[0].id(), provider.id());
-
-        registry.update(cx, |registry, cx| {
-            registry.unregister_provider(provider.id(), cx);
-        });
-
-        let providers = registry.read(cx).providers();
-        assert!(providers.is_empty());
     }
 }

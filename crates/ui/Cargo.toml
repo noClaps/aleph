@@ -17,7 +17,6 @@ chrono.workspace = true
 component.workspace = true
 documented.workspace = true
 gpui.workspace = true
-gpui_macros.workspace = true
 icons.workspace = true
 itertools.workspace = true
 menu.workspace = true
@@ -32,7 +31,7 @@ util.workspace = true
 workspace-hack.workspace = true
 
 [dev-dependencies]
-gpui = { workspace = true, features = ["test-support"] }
+gpui.workspace = true
 
 [features]
 default = []

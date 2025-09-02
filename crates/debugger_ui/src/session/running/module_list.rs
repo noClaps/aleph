@@ -162,11 +162,6 @@ impl ModuleList {
             .into_any()
     }
 
-    #[cfg(test)]
-    pub(crate) fn modules(&self, cx: &mut Context<Self>) -> Vec<dap::Module> {
-        self.session
-            .update(cx, |session, cx| session.modules(cx).to_vec())
-    }
     fn render_vertical_scrollbar(&self, cx: &mut Context<Self>) -> Stateful<Div> {
         div()
             .occlude()

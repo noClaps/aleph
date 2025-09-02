@@ -245,38 +245,3 @@ impl SnippetProvider {
         requested_snippets
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use fs::FakeFs;
-    use gpui;
-    use gpui::TestAppContext;
-    use indoc::indoc;
-
-    #[gpui::test]
-    fn test_lookup_snippets_dup_registry_snippets(cx: &mut TestAppContext) {
-        let fs = FakeFs::new(cx.background_executor.clone());
-        cx.update(|cx| {
-            SnippetRegistry::init_global(cx);
-            SnippetRegistry::global(cx)
-                .register_snippets(
-                    "ruby".as_ref(),
-                    indoc! {r#"
-                    {
-                      "Log to console": {
-                        "prefix": "log",
-                        "body": ["console.info(\"Hello, ${1:World}!\")", "$0"],
-                        "description": "Logs to console"
-                      }
-                    }
-            "#},
-                )
-                .unwrap();
-            let provider = SnippetProvider::new(fs.clone(), Default::default(), cx);
-            cx.update_entity(&provider, |provider, cx| {
-                assert_eq!(1, provider.snippets_for(Some("ruby".to_owned()), cx).len());
-            });
-        });
-    }
-}

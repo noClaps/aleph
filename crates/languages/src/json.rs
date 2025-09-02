@@ -219,18 +219,6 @@ impl JsonLspAdapter {
             },
         ]);
 
-        #[cfg(debug_assertions)]
-        {
-            schemas.as_array_mut().unwrap().push(serde_json::json!(
-                {
-                    "fileMatch": [
-                        "zed-inspector-style.json"
-                    ],
-                    "schema": generate_inspector_style_schema(),
-                }
-            ))
-        }
-
         schemas
             .as_array_mut()
             .unwrap()
@@ -282,16 +270,6 @@ impl JsonLspAdapter {
         writer.replace(config.clone());
         Ok(config)
     }
-}
-
-#[cfg(debug_assertions)]
-fn generate_inspector_style_schema() -> serde_json_lenient::Value {
-    let schema = schemars::generate::SchemaSettings::draft2019_09()
-        .with_transform(util::schemars::DefaultDenyUnknownFields)
-        .into_generator()
-        .root_schema_for::<gpui::StyleRefinement>();
-
-    serde_json_lenient::to_value(schema).unwrap()
 }
 
 #[async_trait(?Send)]

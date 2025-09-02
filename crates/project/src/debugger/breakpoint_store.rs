@@ -853,11 +853,6 @@ impl BreakpointStore {
             Task::ready(Ok(()))
         }
     }
-
-    #[cfg(any(test, feature = "test-support"))]
-    pub(crate) fn breakpoint_paths(&self) -> Vec<Arc<Path>> {
-        self.breakpoints.keys().cloned().collect()
-    }
 }
 
 #[derive(Clone, Copy)]

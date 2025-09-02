@@ -10,7 +10,6 @@ workspace = true
 
 [features]
 default = []
-test-support = ["gpui/test-support", "fs/test-support", "settings/test-support"]
 
 [lib]
 path = "src/theme.rs"
@@ -43,6 +42,6 @@ uuid.workspace = true
 workspace-hack.workspace = true
 
 [dev-dependencies]
-fs = { workspace = true, features = ["test-support"] }
-gpui = { workspace = true, features = ["test-support"] }
-settings = { workspace = true, features = ["test-support"] }
+fs.workspace = true
+gpui.workspace = true
+settings.workspace = true

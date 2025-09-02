@@ -11,9 +11,6 @@ workspace = true
 [lib]
 path = "src/buffer_diff.rs"
 
-[features]
-test-support = []
-
 [dependencies]
 anyhow.workspace = true
 clock.workspace = true
@@ -22,7 +19,6 @@ git2.workspace = true
 gpui.workspace = true
 language.workspace = true
 log.workspace = true
-pretty_assertions.workspace = true
 rope.workspace = true
 sum_tree.workspace = true
 text.workspace = true
@@ -30,9 +26,5 @@ util.workspace = true
 workspace-hack.workspace = true
 
 [dev-dependencies]
-ctor.workspace = true
-gpui = { workspace = true, features = ["test-support"] }
-rand.workspace = true
-text = { workspace = true, features = ["test-support"] }
-unindent.workspace = true
-zlog.workspace = true
+gpui.workspace = true
+text.workspace = true

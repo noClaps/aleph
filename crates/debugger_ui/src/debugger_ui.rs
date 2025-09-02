@@ -28,9 +28,6 @@ mod persistence;
 pub(crate) mod session;
 mod stack_trace_view;
 
-#[cfg(any(test, feature = "test-support"))]
-pub mod tests;
-
 actions!(
     debugger,
     [

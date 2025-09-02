@@ -181,8 +181,6 @@ pub trait ParentElement {
 #[doc(hidden)]
 pub struct Component<C: RenderOnce> {
     component: Option<C>,
-    #[cfg(debug_assertions)]
-    source: &'static core::panic::Location<'static>,
 }
 
 impl<C: RenderOnce> Component<C> {
@@ -191,8 +189,6 @@ impl<C: RenderOnce> Component<C> {
     pub fn new(component: C) -> Self {
         Component {
             component: Some(component),
-            #[cfg(debug_assertions)]
-            source: core::panic::Location::caller(),
         }
     }
 }
@@ -206,10 +202,6 @@ impl<C: RenderOnce> Element for Component<C> {
     }
 
     fn source_location(&self) -> Option<&'static core::panic::Location<'static>> {
-        #[cfg(debug_assertions)]
-        return Some(self.source);
-
-        #[cfg(not(debug_assertions))]
         return None;
     }
 
@@ -356,21 +348,7 @@ impl<E: Element> Drawable<E> {
                     GlobalElementId(window.element_id_stack.clone())
                 });
 
-                let inspector_id;
-                #[cfg(any(feature = "inspector", debug_assertions))]
-                {
-                    inspector_id = self.element.source_location().map(|source| {
-                        let path = crate::InspectorElementPath {
-                            global_id: GlobalElementId(window.element_id_stack.clone()),
-                            source_location: source,
-                        };
-                        window.build_inspector_element_id(path)
-                    });
-                }
-                #[cfg(not(any(feature = "inspector", debug_assertions)))]
-                {
-                    inspector_id = None;
-                }
+                let inspector_id = None;
 
                 let (layout_id, request_layout) = self.element.request_layout(
                     global_id.as_ref(),

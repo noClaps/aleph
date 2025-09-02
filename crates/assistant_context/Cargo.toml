@@ -11,9 +11,6 @@ workspace = true
 [lib]
 path = "src/assistant_context.rs"
 
-[features]
-test-support = []
-
 [dependencies]
 agent_settings.workspace = true
 anyhow.workspace = true
@@ -33,7 +30,6 @@ language.workspace = true
 language_model.workspace = true
 log.workspace = true
 open_ai.workspace = true
-parking_lot.workspace = true
 paths.workspace = true
 project.workspace = true
 prompt_store.workspace = true
@@ -55,8 +51,4 @@ workspace-hack.workspace = true
 zed_env_vars.workspace = true
 
 [dev-dependencies]
-language_model = { workspace = true, features = ["test-support"] }
-pretty_assertions.workspace = true
-rand.workspace = true
-unindent.workspace = true
-workspace = { workspace = true, features = ["test-support"] }
+language_model.workspace = true

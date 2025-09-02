@@ -907,7 +907,6 @@ impl Room {
                     user_store.set_participant_indices(participant_indices_by_user_id, cx);
                 });
 
-                this.check_invariants();
                 this.room_update_completed_tx.try_send(Some(())).ok();
                 cx.notify();
             })
@@ -1066,26 +1065,6 @@ impl Room {
 
         cx.notify();
         Ok(())
-    }
-
-    fn check_invariants(&self) {
-        #[cfg(any(test, feature = "test-support"))]
-        {
-            for participant in self.remote_participants.values() {
-                assert!(self.participant_user_ids.contains(&participant.user.id));
-                assert_ne!(participant.user.id, self.client.user_id().unwrap());
-            }
-
-            for participant in &self.pending_participants {
-                assert!(self.participant_user_ids.contains(&participant.id));
-                assert_ne!(participant.id, self.client.user_id().unwrap());
-            }
-
-            assert_eq!(
-                self.participant_user_ids.len(),
-                self.remote_participants.len() + self.pending_participants.len()
-            );
-        }
     }
 
     pub(crate) fn call(

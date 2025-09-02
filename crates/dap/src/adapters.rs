@@ -136,10 +136,6 @@ impl TcpArguments {
 /// an optional build step is completed, we turn it's result into a DebugTaskDefinition by running a locator (or using a user-provided task) and resolving task variables.
 /// Finally, a [DebugTaskDefinition] has to be turned into a concrete debugger invocation ([DebugAdapterBinary]).
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(
-    any(feature = "test-support", test),
-    derive(serde::Deserialize, serde::Serialize)
-)]
 pub struct DebugTaskDefinition {
     /// The name of this debug task
     pub label: SharedString,
@@ -391,89 +387,5 @@ pub trait DebugAdapter: 'static + Send + Sync {
 
     fn prefer_thread_name(&self) -> bool {
         false
-    }
-}
-
-#[cfg(any(test, feature = "test-support"))]
-pub struct FakeAdapter {}
-
-#[cfg(any(test, feature = "test-support"))]
-impl FakeAdapter {
-    pub const ADAPTER_NAME: &'static str = "fake-adapter";
-
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-#[cfg(any(test, feature = "test-support"))]
-#[async_trait(?Send)]
-impl DebugAdapter for FakeAdapter {
-    fn name(&self) -> DebugAdapterName {
-        DebugAdapterName(Self::ADAPTER_NAME.into())
-    }
-
-    fn dap_schema(&self) -> serde_json::Value {
-        serde_json::Value::Null
-    }
-
-    async fn request_kind(
-        &self,
-        config: &serde_json::Value,
-    ) -> Result<StartDebuggingRequestArgumentsRequest> {
-        let request = config.as_object().unwrap()["request"].as_str().unwrap();
-
-        let request = match request {
-            "launch" => dap_types::StartDebuggingRequestArgumentsRequest::Launch,
-            "attach" => dap_types::StartDebuggingRequestArgumentsRequest::Attach,
-            _ => unreachable!("Wrong fake adapter input for request field"),
-        };
-
-        Ok(request)
-    }
-
-    fn adapter_language_name(&self) -> Option<LanguageName> {
-        None
-    }
-
-    async fn config_from_zed_format(&self, zed_scenario: ZedDebugConfig) -> Result<DebugScenario> {
-        let config = serde_json::to_value(zed_scenario.request).unwrap();
-
-        Ok(DebugScenario {
-            adapter: zed_scenario.adapter,
-            label: zed_scenario.label,
-            build: None,
-            config,
-            tcp_connection: None,
-        })
-    }
-
-    async fn get_binary(
-        &self,
-        _: &Arc<dyn DapDelegate>,
-        task_definition: &DebugTaskDefinition,
-        _: Option<PathBuf>,
-        _: Option<Vec<String>>,
-        _: &mut AsyncApp,
-    ) -> Result<DebugAdapterBinary> {
-        let connection = task_definition
-            .tcp_connection
-            .as_ref()
-            .map(|connection| TcpArguments {
-                host: connection.host(),
-                port: connection.port.unwrap_or(17),
-                timeout: connection.timeout,
-            });
-        Ok(DebugAdapterBinary {
-            command: Some("command".into()),
-            arguments: vec![],
-            connection,
-            envs: HashMap::default(),
-            cwd: None,
-            request_args: StartDebuggingRequestArguments {
-                request: self.request_kind(&task_definition.config).await?,
-                configuration: task_definition.config.clone(),
-            },
-        })
     }
 }

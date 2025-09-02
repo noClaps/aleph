@@ -15,6 +15,3 @@ doctest = false
 [dependencies]
 smol.workspace = true
 workspace-hack.workspace = true
-
-[dev-dependencies]
-tempfile.workspace = true

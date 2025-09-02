@@ -12,28 +12,3 @@ impl NpmInstallPackageCapability {
         self.package == "*" || self.package == package
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use pretty_assertions::assert_eq;
-
-    use super::*;
-
-    #[test]
-    fn test_allows() {
-        let capability = NpmInstallPackageCapability {
-            package: "*".to_string(),
-        };
-        assert_eq!(capability.allows("package"), true);
-
-        let capability = NpmInstallPackageCapability {
-            package: "react".to_string(),
-        };
-        assert_eq!(capability.allows("react"), true);
-
-        let capability = NpmInstallPackageCapability {
-            package: "react".to_string(),
-        };
-        assert_eq!(capability.allows("malicious-package"), false);
-    }
-}

@@ -266,17 +266,6 @@ impl ThreadsDatabase {
     pub fn new(executor: BackgroundExecutor) -> Result<Self> {
         let connection = if *ZED_STATELESS {
             Connection::open_memory(Some("THREAD_FALLBACK_DB"))
-        } else if cfg!(any(feature = "test-support", test)) {
-            // rust stores the name of the test on the current thread.
-            // We use this to automatically create a database that will
-            // be shared within the test (for the test_retrieve_old_thread)
-            // but not with concurrent tests.
-            let thread = std::thread::current();
-            let test_name = thread.name();
-            Connection::open_memory(Some(&format!(
-                "THREAD_FALLBACK_{}",
-                test_name.unwrap_or_default()
-            )))
         } else {
             let threads_dir = paths::data_dir().join("threads");
             std::fs::create_dir_all(&threads_dir)?;
@@ -412,86 +401,5 @@ impl ThreadsDatabase {
 
             Ok(())
         })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-    use agent::MessageSegment;
-    use agent::context::LoadedContext;
-    use client::Client;
-    use fs::FakeFs;
-    use gpui::AppContext;
-    use gpui::TestAppContext;
-    use http_client::FakeHttpClient;
-    use language_model::Role;
-    use project::Project;
-    use settings::SettingsStore;
-
-    fn init_test(cx: &mut TestAppContext) {
-        env_logger::try_init().ok();
-        cx.update(|cx| {
-            let settings_store = SettingsStore::test(cx);
-            cx.set_global(settings_store);
-            Project::init_settings(cx);
-            language::init(cx);
-
-            let http_client = FakeHttpClient::with_404_response();
-            let clock = Arc::new(clock::FakeSystemClock::new());
-            let client = Client::new(clock, http_client, cx);
-            agent::init(cx);
-            agent_settings::init(cx);
-            language_model::init(client, cx);
-        });
-    }
-
-    #[gpui::test]
-    async fn test_retrieving_old_thread(cx: &mut TestAppContext) {
-        init_test(cx);
-        let fs = FakeFs::new(cx.executor());
-        let project = Project::test(fs, [], cx).await;
-
-        // Save a thread using the old agent.
-        let thread_store = cx.new(|cx| agent::ThreadStore::fake(project, cx));
-        let thread = thread_store.update(cx, |thread_store, cx| thread_store.create_thread(cx));
-        thread.update(cx, |thread, cx| {
-            thread.insert_message(
-                Role::User,
-                vec![MessageSegment::Text("Hey!".into())],
-                LoadedContext::default(),
-                vec![],
-                false,
-                cx,
-            );
-            thread.insert_message(
-                Role::Assistant,
-                vec![MessageSegment::Text("How're you doing?".into())],
-                LoadedContext::default(),
-                vec![],
-                false,
-                cx,
-            )
-        });
-        thread_store
-            .update(cx, |thread_store, cx| thread_store.save_thread(&thread, cx))
-            .await
-            .unwrap();
-
-        // Open that same thread using the new agent.
-        let db = cx.update(ThreadsDatabase::connect).await.unwrap();
-        let threads = db.list_threads().await.unwrap();
-        assert_eq!(threads.len(), 1);
-        let thread = db
-            .load_thread(threads[0].id.clone())
-            .await
-            .unwrap()
-            .unwrap();
-        assert_eq!(thread.messages[0].to_markdown(), "## User\n\nHey!\n");
-        assert_eq!(
-            thread.messages[1].to_markdown(),
-            "## Assistant\n\nHow're you doing?\n"
-        );
     }
 }

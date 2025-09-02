@@ -13,9 +13,6 @@ pub use channel_chat::{
 };
 pub use channel_store::{Channel, ChannelEvent, ChannelMembership, ChannelStore};
 
-#[cfg(test)]
-mod channel_store_tests;
-
 pub fn init(client: &Arc<Client>, user_store: Entity<UserStore>, cx: &mut App) {
     channel_store::init(client, user_store, cx);
     channel_buffer::init(&client.clone().into());

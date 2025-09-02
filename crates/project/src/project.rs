@@ -18,9 +18,6 @@ pub mod terminals;
 pub mod toolchain_store;
 pub mod worktree_store;
 
-#[cfg(test)]
-mod project_tests;
-
 mod direnv;
 mod environment;
 use buffer_diff::BufferDiff;
@@ -57,8 +54,6 @@ use debugger::{
     session::Session,
 };
 pub use environment::ProjectEnvironment;
-#[cfg(test)]
-use futures::future::join_all;
 use futures::{
     StreamExt,
     channel::mpsc::{self, UnboundedReceiver},
@@ -131,8 +126,6 @@ use worktree_store::{WorktreeStore, WorktreeStoreEvent};
 
 pub use fs::*;
 pub use language::Location;
-#[cfg(any(test, feature = "test-support"))]
-pub use prettier::FORMAT_SUFFIX as TEST_PRETTIER_FORMAT_SUFFIX;
 pub use task_inventory::{
     BasicContextProvider, ContextProviderWithTasks, DebugScenarioContext, Inventory, TaskContexts,
     TaskSourceKind,
@@ -925,12 +918,6 @@ impl DirectoryLister {
         }
     }
 }
-
-#[cfg(any(test, feature = "test-support"))]
-pub const DEFAULT_COMPLETION_CONTEXT: CompletionContext = CompletionContext {
-    trigger_kind: lsp::CompletionTriggerKind::INVOKED,
-    trigger_character: None,
-};
 
 /// An LSP diagnostics associated with a certain language server.
 #[derive(Clone, Debug, Default)]
@@ -1733,87 +1720,6 @@ impl Project {
         }
     }
 
-    #[cfg(any(test, feature = "test-support"))]
-    pub async fn example(
-        root_paths: impl IntoIterator<Item = &Path>,
-        cx: &mut AsyncApp,
-    ) -> Entity<Project> {
-        use clock::FakeSystemClock;
-
-        let fs = Arc::new(RealFs::new(None, cx.background_executor().clone()));
-        let languages = LanguageRegistry::test(cx.background_executor().clone());
-        let clock = Arc::new(FakeSystemClock::new());
-        let http_client = http_client::FakeHttpClient::with_404_response();
-        let client = cx
-            .update(|cx| client::Client::new(clock, http_client.clone(), cx))
-            .unwrap();
-        let user_store = cx.new(|cx| UserStore::new(client.clone(), cx)).unwrap();
-        let project = cx
-            .update(|cx| {
-                Project::local(
-                    client,
-                    node_runtime::NodeRuntime::unavailable(),
-                    user_store,
-                    Arc::new(languages),
-                    fs,
-                    None,
-                    cx,
-                )
-            })
-            .unwrap();
-        for path in root_paths {
-            let (tree, _) = project
-                .update(cx, |project, cx| {
-                    project.find_or_create_worktree(path, true, cx)
-                })
-                .unwrap()
-                .await
-                .unwrap();
-            tree.read_with(cx, |tree, _| tree.as_local().unwrap().scan_complete())
-                .unwrap()
-                .await;
-        }
-        project
-    }
-
-    #[cfg(any(test, feature = "test-support"))]
-    pub async fn test(
-        fs: Arc<dyn Fs>,
-        root_paths: impl IntoIterator<Item = &Path>,
-        cx: &mut gpui::TestAppContext,
-    ) -> Entity<Project> {
-        use clock::FakeSystemClock;
-
-        let languages = LanguageRegistry::test(cx.executor());
-        let clock = Arc::new(FakeSystemClock::new());
-        let http_client = http_client::FakeHttpClient::with_404_response();
-        let client = cx.update(|cx| client::Client::new(clock, http_client.clone(), cx));
-        let user_store = cx.new(|cx| UserStore::new(client.clone(), cx));
-        let project = cx.update(|cx| {
-            Project::local(
-                client,
-                node_runtime::NodeRuntime::unavailable(),
-                user_store,
-                Arc::new(languages),
-                fs,
-                None,
-                cx,
-            )
-        });
-        for path in root_paths {
-            let (tree, _) = project
-                .update(cx, |project, cx| {
-                    project.find_or_create_worktree(path, true, cx)
-                })
-                .await
-                .unwrap();
-
-            tree.read_with(cx, |tree, _| tree.as_local().unwrap().scan_complete())
-                .await;
-        }
-        project
-    }
-
     pub fn dap_store(&self) -> Entity<DapStore> {
         self.dap_store.clone()
     }
@@ -1911,14 +1817,6 @@ impl Project {
         self.environment.update(cx, |environment, cx| {
             environment.remove_environment_error(abs_path, cx);
         });
-    }
-
-    #[cfg(any(test, feature = "test-support"))]
-    pub fn has_open_buffer(&self, path: impl Into<ProjectPath>, cx: &App) -> bool {
-        self.buffer_store
-            .read(cx)
-            .get_by_path(&path.into())
-            .is_some()
     }
 
     pub fn fs(&self) -> &Arc<dyn Fs> {
@@ -2584,19 +2482,6 @@ impl Project {
         })
     }
 
-    #[cfg(any(test, feature = "test-support"))]
-    pub fn open_local_buffer_with_lsp(
-        &mut self,
-        abs_path: impl AsRef<Path>,
-        cx: &mut Context<Self>,
-    ) -> Task<Result<(Entity<Buffer>, lsp_store::OpenLspBufferHandle)>> {
-        if let Some((worktree, relative_path)) = self.find_worktree(abs_path.as_ref(), cx) {
-            self.open_buffer_with_lsp((worktree.read(cx).id(), relative_path), cx)
-        } else {
-            Task::ready(Err(anyhow!("no such path")))
-        }
-    }
-
     pub fn open_buffer(
         &mut self,
         path: impl Into<ProjectPath>,
@@ -2608,22 +2493,6 @@ impl Project {
 
         self.buffer_store.update(cx, |buffer_store, cx| {
             buffer_store.open_buffer(path.into(), cx)
-        })
-    }
-
-    #[cfg(any(test, feature = "test-support"))]
-    pub fn open_buffer_with_lsp(
-        &mut self,
-        path: impl Into<ProjectPath>,
-        cx: &mut Context<Self>,
-    ) -> Task<Result<(Entity<Buffer>, lsp_store::OpenLspBufferHandle)>> {
-        let buffer = self.open_buffer(path, cx);
-        cx.spawn(async move |this, cx| {
-            let buffer = buffer.await?;
-            let handle = this.update(cx, |project, cx| {
-                project.register_buffer_with_language_servers(&buffer, cx)
-            })?;
-            Ok((buffer, handle))
         })
     }
 
@@ -5163,30 +5032,6 @@ impl Project {
         &self.git_store
     }
 
-    #[cfg(test)]
-    fn git_scans_complete(&self, cx: &Context<Self>) -> Task<()> {
-        cx.spawn(async move |this, cx| {
-            let scans_complete = this
-                .read_with(cx, |this, cx| {
-                    this.worktrees(cx)
-                        .filter_map(|worktree| Some(worktree.read(cx).as_local()?.scan_complete()))
-                        .collect::<Vec<_>>()
-                })
-                .unwrap();
-            join_all(scans_complete).await;
-            let barriers = this
-                .update(cx, |this, cx| {
-                    let repos = this.repositories(cx).values().cloned().collect::<Vec<_>>();
-                    repos
-                        .into_iter()
-                        .map(|repo| repo.update(cx, |repo, _| repo.barrier()))
-                        .collect::<Vec<_>>()
-                })
-                .unwrap();
-            join_all(barriers).await;
-        })
-    }
-
     pub fn active_repository(&self, cx: &App) -> Option<Entity<Repository>> {
         self.git_store.read(cx).active_repository()
     }
@@ -5610,153 +5455,4 @@ fn provide_inline_values(
     }
 
     variables
-}
-
-#[cfg(test)]
-mod disable_ai_settings_tests {
-    use super::*;
-    use gpui::TestAppContext;
-    use settings::{Settings, SettingsSources};
-
-    #[gpui::test]
-    async fn test_disable_ai_settings_security(cx: &mut TestAppContext) {
-        fn disable_setting(value: Option<bool>) -> DisableAiSettingContent {
-            DisableAiSettingContent { disable_ai: value }
-        }
-        cx.update(|cx| {
-            // Test 1: Default is false (AI enabled)
-            let sources = SettingsSources {
-                default: &DisableAiSettingContent {
-                    disable_ai: Some(false),
-                },
-                global: None,
-                extensions: None,
-                user: None,
-                release_channel: None,
-                operating_system: None,
-                profile: None,
-                server: None,
-                project: &[],
-            };
-            let settings = DisableAiSettings::load(sources, cx).unwrap();
-            assert!(!settings.disable_ai, "Default should allow AI");
-
-            // Test 2: Global true, local false -> still disabled (local cannot re-enable)
-            let global_true = disable_setting(Some(true));
-            let local_false = disable_setting(Some(false));
-            let sources = SettingsSources {
-                default: &disable_setting(Some(false)),
-                global: None,
-                extensions: None,
-                user: Some(&global_true),
-                release_channel: None,
-                operating_system: None,
-                profile: None,
-                server: None,
-                project: &[&local_false],
-            };
-            let settings = DisableAiSettings::load(sources, cx).unwrap();
-            assert!(
-                settings.disable_ai,
-                "Local false cannot override global true"
-            );
-
-            // Test 3: Global false, local true -> disabled (local can make more restrictive)
-            let global_false = disable_setting(Some(false));
-            let local_true = disable_setting(Some(true));
-            let sources = SettingsSources {
-                default: &disable_setting(Some(false)),
-                global: None,
-                extensions: None,
-                user: Some(&global_false),
-                release_channel: None,
-                operating_system: None,
-                profile: None,
-                server: None,
-                project: &[&local_true],
-            };
-            let settings = DisableAiSettings::load(sources, cx).unwrap();
-            assert!(settings.disable_ai, "Local true can override global false");
-
-            // Test 4: Server can only make more restrictive (set to true)
-            let user_false = disable_setting(Some(false));
-            let server_true = disable_setting(Some(true));
-            let sources = SettingsSources {
-                default: &disable_setting(Some(false)),
-                global: None,
-                extensions: None,
-                user: Some(&user_false),
-                release_channel: None,
-                operating_system: None,
-                profile: None,
-                server: Some(&server_true),
-                project: &[],
-            };
-            let settings = DisableAiSettings::load(sources, cx).unwrap();
-            assert!(
-                settings.disable_ai,
-                "Server can set to true even if user is false"
-            );
-
-            // Test 5: Server false cannot override user true
-            let user_true = disable_setting(Some(true));
-            let server_false = disable_setting(Some(false));
-            let sources = SettingsSources {
-                default: &disable_setting(Some(false)),
-                global: None,
-                extensions: None,
-                user: Some(&user_true),
-                release_channel: None,
-                operating_system: None,
-                profile: None,
-                server: Some(&server_false),
-                project: &[],
-            };
-            let settings = DisableAiSettings::load(sources, cx).unwrap();
-            assert!(
-                settings.disable_ai,
-                "Server false cannot override user true"
-            );
-
-            // Test 6: Multiple local settings, any true disables AI
-            let global_false = disable_setting(Some(false));
-            let local_false3 = disable_setting(Some(false));
-            let local_true2 = disable_setting(Some(true));
-            let local_false4 = disable_setting(Some(false));
-            let sources = SettingsSources {
-                default: &disable_setting(Some(false)),
-                global: None,
-                extensions: None,
-                user: Some(&global_false),
-                release_channel: None,
-                operating_system: None,
-                profile: None,
-                server: None,
-                project: &[&local_false3, &local_true2, &local_false4],
-            };
-            let settings = DisableAiSettings::load(sources, cx).unwrap();
-            assert!(settings.disable_ai, "Any local true should disable AI");
-
-            // Test 7: All three sources can independently disable AI
-            let user_false2 = disable_setting(Some(false));
-            let server_false2 = disable_setting(Some(false));
-            let local_true3 = disable_setting(Some(true));
-            let sources = SettingsSources {
-                default: &disable_setting(Some(false)),
-                global: None,
-                extensions: None,
-                user: Some(&user_false2),
-                release_channel: None,
-                operating_system: None,
-                profile: None,
-                server: Some(&server_false2),
-                project: &[&local_true3],
-            };
-            let settings = DisableAiSettings::load(sources, cx).unwrap();
-            assert!(
-                settings.disable_ai,
-                "Local can disable even if user and server are false"
-            );
-        });
-    }
 }

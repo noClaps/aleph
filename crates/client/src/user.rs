@@ -289,12 +289,6 @@ impl UserStore {
         }
     }
 
-    #[cfg(feature = "test-support")]
-    pub fn clear_cache(&mut self) {
-        self.users.clear();
-        self.by_github_login.clear();
-    }
-
     async fn handle_update_invite_info(
         this: Entity<Self>,
         message: TypedEnvelope<proto::UpdateInviteInfo>,
@@ -693,18 +687,6 @@ impl UserStore {
     }
 
     pub fn plan(&self) -> Option<cloud_llm_client::Plan> {
-        #[cfg(debug_assertions)]
-        if let Ok(plan) = std::env::var("ZED_SIMULATE_PLAN").as_ref() {
-            return match plan.as_str() {
-                "free" => Some(cloud_llm_client::Plan::ZedFree),
-                "trial" => Some(cloud_llm_client::Plan::ZedProTrial),
-                "pro" => Some(cloud_llm_client::Plan::ZedPro),
-                _ => {
-                    panic!("ZED_SIMULATE_PLAN must be one of 'free', 'trial', or 'pro'");
-                }
-            };
-        }
-
         self.plan_info.as_ref().map(|info| info.plan)
     }
 

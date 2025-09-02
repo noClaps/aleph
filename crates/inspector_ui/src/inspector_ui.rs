@@ -1,12 +1,3 @@
-#[cfg(debug_assertions)]
-mod div_inspector;
-#[cfg(debug_assertions)]
-mod inspector;
-
-#[cfg(debug_assertions)]
-pub use inspector::init;
-
-#[cfg(not(debug_assertions))]
 pub fn init(_app_state: std::sync::Arc<workspace::AppState>, cx: &mut gpui::App) {
     use std::any::TypeId;
     use workspace::notifications::NotifyResultExt as _;

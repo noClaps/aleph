@@ -12,9 +12,6 @@ workspace = true
 path = "src/language_model.rs"
 doctest = false
 
-[features]
-test-support = []
-
 [dependencies]
 anthropic = { workspace = true, features = ["schemars"] }
 open_router.workspace = true
@@ -42,4 +39,4 @@ util.workspace = true
 workspace-hack.workspace = true
 
 [dev-dependencies]
-gpui = { workspace = true, features = ["test-support"] }
+gpui.workspace = true

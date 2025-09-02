@@ -37,6 +37,3 @@ util.workspace = true
 wasm-encoder.workspace = true
 wasmparser.workspace = true
 workspace-hack.workspace = true
-
-[dev-dependencies]
-pretty_assertions.workspace = true

@@ -685,16 +685,7 @@ pub struct TextRun {
     pub strikethrough: Option<StrikethroughStyle>,
 }
 
-#[cfg(test)]
-impl TextRun {
-    fn with_len(&self, len: usize) -> Self {
-        let mut this = self.clone();
-        this.len = len;
-        this
-    }
-}
-
-/// An identifier for a specific glyph, as returned by [`WindowTextSystem::layout_line`].
+/// An identifier for a specific glyph, as returned by [`TextSystem::layout_line`].
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 #[repr(C)]
 pub struct GlyphId(pub(crate) u32);

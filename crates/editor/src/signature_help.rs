@@ -272,11 +272,6 @@ impl SignatureHelpState {
         self.hidden_by = None;
     }
 
-    #[cfg(test)]
-    pub fn popover(&self) -> Option<&SignatureHelpPopover> {
-        self.popover.as_ref()
-    }
-
     pub fn popover_mut(&mut self) -> Option<&mut SignatureHelpPopover> {
         self.popover.as_mut()
     }
@@ -305,13 +300,6 @@ impl SignatureHelpState {
         self.popover
             .as_ref()
             .is_some_and(|popover| popover.signatures.len() > 1)
-    }
-}
-
-#[cfg(test)]
-impl SignatureHelpState {
-    pub fn task(&self) -> Option<&Task<()>> {
-        self.task.as_ref()
     }
 }
 

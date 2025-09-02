@@ -12,19 +12,9 @@ workspace = true
 path = "src/dap.rs"
 doctest = false
 
-[features]
-test-support = [
-    "gpui/test-support",
-    "util/test-support",
-    "task/test-support",
-    "async-pipe",
-    "settings/test-support",
-]
-
 [dependencies]
 anyhow.workspace = true
 async-compression.workspace = true
-async-pipe = { workspace = true, optional = true }
 async-tar.workspace = true
 async-trait.workspace = true
 client.workspace = true
@@ -53,9 +43,7 @@ workspace-hack.workspace = true
 libc.workspace = true
 
 [dev-dependencies]
-async-pipe.workspace = true
-gpui = { workspace = true, features = ["test-support"] }
-settings = { workspace = true, features = ["test-support"] }
-task = { workspace = true, features = ["test-support"] }
-util = { workspace = true, features = ["test-support"] }
-zlog.workspace = true
+gpui.workspace = true
+settings.workspace = true
+task.workspace = true
+util.workspace = true

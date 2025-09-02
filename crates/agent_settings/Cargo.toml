@@ -23,5 +23,5 @@ settings.workspace = true
 workspace-hack.workspace = true
 
 [dev-dependencies]
-gpui = { workspace = true, features = ["test-support"] }
-settings = { workspace = true, features = ["test-support"] }
+gpui.workspace = true
+settings.workspace = true

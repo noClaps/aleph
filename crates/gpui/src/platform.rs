@@ -4,9 +4,6 @@ mod keystroke;
 
 mod mac;
 
-#[cfg(any(test, feature = "test-support"))]
-mod test;
-
 use crate::{
     Action, AnyWindowHandle, App, AsyncWindowContext, BackgroundExecutor, Bounds,
     DEFAULT_WINDOW_SIZE, DevicePixels, DispatchEventResult, Font, FontId, FontMetrics, FontRun,
@@ -47,11 +44,6 @@ pub use keystroke::*;
 
 pub(crate) use mac::*;
 pub use semantic_version::SemanticVersion;
-#[cfg(any(test, feature = "test-support"))]
-pub(crate) use test::*;
-
-#[cfg(any(test, feature = "test-support"))]
-pub use test::{TestDispatcher, TestScreenCaptureSource, TestScreenCaptureStream};
 
 /// Returns a background executor for the current platform.
 pub fn background_executor() -> BackgroundExecutor {
@@ -82,16 +74,10 @@ pub(crate) trait Platform: 'static {
         None
     }
 
-    #[cfg(feature = "screen-capture")]
-    fn is_screen_capture_supported(&self) -> bool;
-    #[cfg(not(feature = "screen-capture"))]
     fn is_screen_capture_supported(&self) -> bool {
         false
     }
-    #[cfg(feature = "screen-capture")]
-    fn screen_capture_sources(&self)
-    -> oneshot::Receiver<Result<Vec<Rc<dyn ScreenCaptureSource>>>>;
-    #[cfg(not(feature = "screen-capture"))]
+
     fn screen_capture_sources(
         &self,
     ) -> oneshot::Receiver<anyhow::Result<Vec<Rc<dyn ScreenCaptureSource>>>> {
@@ -442,12 +428,7 @@ pub(crate) trait PlatformWindow: HasWindowHandle + HasDisplayHandle {
     fn set_client_inset(&self, _inset: Pixels) {}
     fn gpu_specs(&self) -> Option<GpuSpecs>;
 
-    fn update_ime_position(&self, _bounds: Bounds<Pixels>);
-
-    #[cfg(any(test, feature = "test-support"))]
-    fn as_test(&mut self) -> Option<&mut TestWindow> {
-        None
-    }
+    fn update_ime_position(&self, _bounds: Bounds<ScaledPixels>);
 }
 
 /// This type is public so that our test macro can generate and use it, but it should not
@@ -462,11 +443,6 @@ pub trait PlatformDispatcher: Send + Sync {
     fn unparker(&self) -> Unparker;
     fn now(&self) -> Instant {
         Instant::now()
-    }
-
-    #[cfg(any(test, feature = "test-support"))]
-    fn as_test(&self) -> Option<&TestDispatcher> {
-        None
     }
 }
 
@@ -1009,7 +985,6 @@ pub(crate) struct WindowParams {
     pub bounds: Bounds<Pixels>,
 
     /// The titlebar configuration of the window
-    #[cfg_attr(feature = "wayland", allow(dead_code))]
     pub titlebar: Option<TitlebarOptions>,
 
     /// The kind of window to create
@@ -1028,7 +1003,6 @@ pub(crate) struct WindowParams {
 
     pub show: bool,
 
-    #[cfg_attr(feature = "wayland", allow(dead_code))]
     pub display_id: Option<DisplayId>,
 
     pub window_min_size: Option<Size<Pixels>>,

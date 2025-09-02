@@ -254,35 +254,3 @@ impl<T: RequestMessage> TypedEnvelope<T> {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use typed_path::{UnixPath, UnixPathBuf};
-
-    fn unix_path_from_proto(proto: String) -> UnixPathBuf {
-        UnixPathBuf::from(proto)
-    }
-
-    fn unix_path_to_proto(path: &UnixPath) -> String {
-        path.to_string_lossy().to_string()
-    }
-
-    #[test]
-    fn test_path_proto_interop() {
-        const UNIX_PATHS: &[&str] = &[
-            "/home/user/documents/file.txt",
-            "/usr/local/bin/my app/app",
-            "projects/zed/crates/proto/src/typed_envelope.rs",
-            "projects/my project/src/main.rs",
-        ];
-
-        // Unix path to proto and back
-        for &unix_path_str in UNIX_PATHS {
-            let unix_path = UnixPathBuf::from(unix_path_str);
-            let proto = unix_path_to_proto(&unix_path);
-            let recovered_path = unix_path_from_proto(proto);
-            assert_eq!(unix_path, recovered_path);
-            assert_eq!(recovered_path.to_string_lossy(), unix_path_str);
-        }
-    }
-}

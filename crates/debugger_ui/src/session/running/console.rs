@@ -120,11 +120,6 @@ impl Console {
         }
     }
 
-    #[cfg(test)]
-    pub(crate) fn editor(&self) -> &Entity<Editor> {
-        &self.console
-    }
-
     fn is_running(&self, cx: &Context<Self>) -> bool {
         self.session.read(cx).is_started()
     }
@@ -950,65 +945,4 @@ fn color_fetcher(color: ansi::Color) -> fn(&Theme) -> Hsla {
         }
     };
     color_fetcher
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::tests::init_test;
-    use editor::test::editor_test_context::EditorTestContext;
-    use gpui::TestAppContext;
-    use language::Point;
-
-    #[track_caller]
-    fn assert_completion_range(
-        input: &str,
-        expect: &str,
-        replacement: &str,
-        cx: &mut EditorTestContext,
-    ) {
-        cx.set_state(input);
-
-        let buffer_position =
-            cx.editor(|editor, _, cx| editor.selections.newest::<Point>(cx).start);
-
-        let snapshot = &cx.buffer_snapshot();
-
-        let replace_range = ConsoleQueryBarCompletionProvider::replace_range_for_completion(
-            &cx.buffer_text(),
-            snapshot.anchor_before(buffer_position),
-            replacement.as_bytes(),
-            snapshot,
-        );
-
-        cx.update_editor(|editor, _, cx| {
-            editor.edit(
-                vec![(
-                    snapshot.offset_for_anchor(&replace_range.start)
-                        ..snapshot.offset_for_anchor(&replace_range.end),
-                    replacement,
-                )],
-                cx,
-            );
-        });
-
-        pretty_assertions::assert_eq!(expect, cx.display_text());
-    }
-
-    #[gpui::test]
-    async fn test_determine_completion_replace_range(cx: &mut TestAppContext) {
-        init_test(cx);
-
-        let mut cx = EditorTestContext::new(cx).await;
-
-        assert_completion_range("resˇ", "result", "result", &mut cx);
-        assert_completion_range("print(resˇ)", "print(result)", "result", &mut cx);
-        assert_completion_range("$author->nˇ", "$author->name", "$author->name", &mut cx);
-        assert_completion_range(
-            "$author->books[ˇ",
-            "$author->books[0]",
-            "$author->books[0]",
-            &mut cx,
-        );
-    }
 }

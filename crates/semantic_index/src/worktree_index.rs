@@ -191,15 +191,4 @@ impl WorktreeIndex {
 
         Ok(())
     }
-
-    #[cfg(test)]
-    pub fn path_count(&self) -> Result<u64> {
-        use anyhow::Context as _;
-
-        let txn = self
-            .db_connection
-            .read_txn()
-            .context("failed to create read transaction")?;
-        Ok(self.embedding_index().db().len(&txn)?)
-    }
 }

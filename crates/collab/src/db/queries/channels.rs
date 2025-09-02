@@ -7,39 +7,6 @@ use rpc::{
 use sea_orm::{ActiveValue, DbBackend, TryGetableMany};
 
 impl Database {
-    #[cfg(test)]
-    pub async fn all_channels(&self) -> Result<Vec<(ChannelId, String)>> {
-        self.transaction(move |tx| async move {
-            let mut channels = Vec::new();
-            let mut rows = channel::Entity::find().stream(&*tx).await?;
-            while let Some(row) = rows.next().await {
-                let row = row?;
-                channels.push((row.id, row.name));
-            }
-            Ok(channels)
-        })
-        .await
-    }
-
-    #[cfg(test)]
-    pub async fn create_root_channel(&self, name: &str, creator_id: UserId) -> Result<ChannelId> {
-        Ok(self.create_channel(name, None, creator_id).await?.0.id)
-    }
-
-    #[cfg(test)]
-    pub async fn create_sub_channel(
-        &self,
-        name: &str,
-        parent: ChannelId,
-        creator_id: UserId,
-    ) -> Result<ChannelId> {
-        Ok(self
-            .create_channel(name, Some(parent), creator_id)
-            .await?
-            .0
-            .id)
-    }
-
     /// Creates a new channel.
     pub async fn create_channel(
         &self,
@@ -222,22 +189,6 @@ impl Database {
             let channel = model.update(&*tx).await?;
 
             Ok(channel)
-        })
-        .await
-    }
-
-    #[cfg(test)]
-    pub async fn set_channel_requires_zed_cla(
-        &self,
-        channel_id: ChannelId,
-        requires_zed_cla: bool,
-    ) -> Result<()> {
-        self.transaction(move |tx| async move {
-            let channel = self.get_channel_internal(channel_id, &tx).await?;
-            let mut model = channel.into_active_model();
-            model.requires_zed_cla = ActiveValue::Set(requires_zed_cla);
-            model.update(&*tx).await?;
-            Ok(())
         })
         .await
     }
@@ -698,7 +649,7 @@ impl Database {
                     .find_also_related(user::Entity)
                     .filter(channel_member::Column::ChannelId.eq(channel.root_id()));
 
-                if cfg!(any(test, feature = "sqlite")) && self.pool.get_database_backend() == DbBackend::Sqlite {
+                if cfg!(feature = "sqlite") && self.pool.get_database_backend() == DbBackend::Sqlite {
                     query = query.filter(Expr::cust_with_values(
                         "UPPER(github_login) LIKE ?",
                         [Self::fuzzy_like_string(&filter.to_uppercase())],

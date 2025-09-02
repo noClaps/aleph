@@ -5,14 +5,6 @@ edition.workspace = true
 publish.workspace = true
 license = "GPL-3.0-or-later"
 
-[features]
-test-support = [
-    "client/test-support",
-    "editor/test-support",
-    "gpui/test-support",
-    "workspace/test-support",
-]
-
 [lints]
 workspace = true
 
@@ -33,9 +25,7 @@ menu.workspace = true
 project.workspace = true
 schemars.workspace = true
 serde.workspace = true
-serde_json.workspace = true
 settings.workspace = true
-smol.workspace = true
 theme.workspace = true
 ui.workspace = true
 util.workspace = true
@@ -44,8 +34,6 @@ zed_actions.workspace = true
 workspace-hack.workspace = true
 
 [dev-dependencies]
-client = { workspace = true, features = ["test-support"] }
-editor = { workspace = true, features = ["test-support"] }
-gpui = { workspace = true, features = ["test-support"] }
-unindent.workspace = true
-workspace = { workspace = true, features = ["test-support"] }
+editor.workspace = true
+gpui.workspace = true
+workspace.workspace = true

@@ -123,8 +123,6 @@ use util::{
 
 pub use fs::*;
 pub use language::Location;
-#[cfg(any(test, feature = "test-support"))]
-pub use prettier::FORMAT_SUFFIX as TEST_PRETTIER_FORMAT_SUFFIX;
 pub use worktree::{
     Entry, EntryKind, FS_WATCH_LATENCY, File, LocalWorktree, PathChange, ProjectEntryId,
     UpdatedEntriesSet, UpdatedGitRepositoriesSet, Worktree, WorktreeId, WorktreeSettings,
@@ -320,26 +318,9 @@ impl LocalLspStore {
             let adapter = adapter.clone();
             let server_name = adapter.name.clone();
             let stderr_capture = stderr_capture.clone();
-            #[cfg(any(test, feature = "test-support"))]
-            let lsp_store = self.weak.clone();
             let pending_workspace_folders = pending_workspace_folders.clone();
             async move |cx| {
                 let binary = binary.await?;
-                #[cfg(any(test, feature = "test-support"))]
-                if let Some(server) = lsp_store
-                    .update(&mut cx.clone(), |this, cx| {
-                        this.languages.create_fake_language_server(
-                            server_id,
-                            &server_name,
-                            binary.clone(),
-                            &mut cx.to_async(),
-                        )
-                    })
-                    .ok()
-                    .flatten()
-                {
-                    return Ok(server);
-                }
 
                 let code_action_kinds = adapter.code_action_kinds();
                 lsp::LanguageServer::new(
@@ -7233,15 +7214,7 @@ impl LspStore {
                 }
                 Some(lsp::TextDocumentSyncKind::INCREMENTAL) => build_incremental_change(),
                 _ => {
-                    #[cfg(any(test, feature = "test-support"))]
-                    {
-                        build_incremental_change()
-                    }
-
-                    #[cfg(not(any(test, feature = "test-support")))]
-                    {
-                        continue;
-                    }
+                    continue;
                 }
             };
 
@@ -7564,33 +7537,6 @@ impl LspStore {
                 )
             })
             .collect();
-    }
-
-    #[cfg(test)]
-    pub fn update_diagnostic_entries(
-        &mut self,
-        server_id: LanguageServerId,
-        abs_path: PathBuf,
-        result_id: Option<String>,
-        version: Option<i32>,
-        diagnostics: Vec<DiagnosticEntry<Unclipped<PointUtf16>>>,
-        cx: &mut Context<Self>,
-    ) -> anyhow::Result<()> {
-        self.merge_diagnostic_entries(
-            vec![DocumentDiagnosticsUpdate {
-                diagnostics: DocumentDiagnostics {
-                    diagnostics,
-                    document_abs_path: abs_path,
-                    version,
-                },
-                result_id,
-                server_id,
-                disk_based_sources: Cow::Borrowed(&[]),
-            }],
-            |_, _, _| false,
-            cx,
-        )?;
-        Ok(())
     }
 
     pub fn merge_diagnostic_entries<'a>(
@@ -10687,29 +10633,6 @@ impl LspStore {
         )
     }
 
-    #[cfg(any(test, feature = "test-support"))]
-    pub fn update_diagnostics(
-        &mut self,
-        server_id: LanguageServerId,
-        diagnostics: lsp::PublishDiagnosticsParams,
-        result_id: Option<String>,
-        source_kind: DiagnosticSourceKind,
-        disk_based_sources: &[String],
-        cx: &mut Context<Self>,
-    ) -> Result<()> {
-        self.merge_lsp_diagnostics(
-            source_kind,
-            vec![DocumentDiagnosticsUpdate {
-                diagnostics,
-                result_id,
-                server_id,
-                disk_based_sources: Cow::Borrowed(disk_based_sources),
-            }],
-            |_, _, _| false,
-            cx,
-        )
-    }
-
     pub fn merge_lsp_diagnostics(
         &mut self,
         source_kind: DiagnosticSourceKind,
@@ -12228,12 +12151,6 @@ impl LspStore {
         }
     }
 
-    #[cfg(any(test, feature = "test-support"))]
-    pub fn forget_code_lens_task(&mut self, buffer_id: BufferId) -> Option<CodeLensTask> {
-        let data = self.lsp_code_lens.get_mut(&buffer_id)?;
-        Some(data.update.take()?.1)
-    }
-
     pub fn downstream_client(&self) -> Option<(AnyProtoClient, u64)> {
         self.downstream_client.clone()
     }
@@ -13488,46 +13405,4 @@ fn ensure_uniform_list_compatible_label(label: &mut CodeLabel) {
     }
 
     label.text = new_text;
-}
-
-#[cfg(test)]
-mod tests {
-    use language::HighlightId;
-
-    use super::*;
-
-    #[test]
-    fn test_glob_literal_prefix() {
-        assert_eq!(glob_literal_prefix(Path::new("**/*.js")), Path::new(""));
-        assert_eq!(
-            glob_literal_prefix(Path::new("node_modules/**/*.js")),
-            Path::new("node_modules")
-        );
-        assert_eq!(
-            glob_literal_prefix(Path::new("foo/{bar,baz}.js")),
-            Path::new("foo")
-        );
-        assert_eq!(
-            glob_literal_prefix(Path::new("foo/bar/baz.js")),
-            Path::new("foo/bar/baz.js")
-        );
-    }
-
-    #[test]
-    fn test_multi_len_chars_normalization() {
-        let mut label = CodeLabel {
-            text: "myElˇ (parameter) myElˇ: {\n    foo: string;\n}".to_string(),
-            runs: vec![(0..6, HighlightId(1))],
-            filter_range: 0..6,
-        };
-        ensure_uniform_list_compatible_label(&mut label);
-        assert_eq!(
-            label,
-            CodeLabel {
-                text: "myElˇ (parameter) myElˇ: { foo: string; }".to_string(),
-                runs: vec![(0..6, HighlightId(1))],
-                filter_range: 0..6,
-            }
-        );
-    }
 }

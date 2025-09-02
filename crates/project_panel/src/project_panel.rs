@@ -5702,6 +5702,3 @@ impl ClipboardEntry {
         }
     }
 }
-
-#[cfg(test)]
-mod project_panel_tests;

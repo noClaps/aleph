@@ -11,9 +11,6 @@ workspace = true
 [lib]
 path = "src/markdown_preview.rs"
 
-[features]
-test-support = []
-
 [dependencies]
 anyhow.workspace = true
 async-recursion.workspace = true
@@ -26,7 +23,6 @@ language.workspace = true
 linkify.workspace = true
 log.workspace = true
 markup5ever_rcdom.workspace = true
-pretty_assertions.workspace = true
 pulldown-cmark.workspace = true
 settings.workspace = true
 theme.workspace = true
@@ -36,4 +32,4 @@ workspace-hack.workspace = true
 workspace.workspace = true
 
 [dev-dependencies]
-editor = { workspace = true, features = ["test-support"] }
+editor.workspace = true

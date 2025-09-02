@@ -140,17 +140,6 @@ pub(crate) enum SerializedPaneGroup {
     Pane(SerializedPane),
 }
 
-#[cfg(test)]
-impl Default for SerializedPaneGroup {
-    fn default() -> Self {
-        Self::Pane(SerializedPane {
-            children: vec![SerializedItem::default()],
-            active: false,
-            pinned_count: 0,
-        })
-    }
-}
-
 impl SerializedPaneGroup {
     #[async_recursion(?Send)]
     pub(crate) async fn deserialize(
@@ -334,18 +323,6 @@ impl SerializedItem {
             item_id,
             active,
             preview,
-        }
-    }
-}
-
-#[cfg(test)]
-impl Default for SerializedItem {
-    fn default() -> Self {
-        SerializedItem {
-            kind: Arc::from("Terminal"),
-            item_id: 100000,
-            active: false,
-            preview: false,
         }
     }
 }

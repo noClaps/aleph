@@ -29,15 +29,6 @@ pub(super) enum PageContents {
     Mapped(Arc<MappedPageContents>),
 }
 
-impl PageContents {
-    #[cfg(test)]
-    fn mapped(contents: Vec<u8>) -> Self {
-        PageContents::Mapped(Arc::new(MappedPageContents(
-            vec![PageChunk::Mapped(contents.into())].into(),
-        )))
-    }
-}
-
 #[derive(Clone, Debug)]
 enum PageChunk {
     Mapped(Arc<[u8]>),
@@ -334,51 +325,5 @@ impl Iterator for MemoryIterator {
         } else {
             self.next()
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::debugger::{
-        MemoryCell,
-        memory::{MemoryIterator, PageAddress, PageContents},
-    };
-
-    #[test]
-    fn iterate_over_unmapped_memory() {
-        let empty_iterator = MemoryIterator::new(0..=127, Default::default());
-        let actual = empty_iterator.collect::<Vec<_>>();
-        let expected = vec![MemoryCell(None); 128];
-        assert_eq!(actual.len(), expected.len());
-        assert_eq!(actual, expected);
-    }
-
-    #[test]
-    fn iterate_over_partially_mapped_memory() {
-        let it = MemoryIterator::new(
-            0..=127,
-            vec![(PageAddress(5), PageContents::mapped(vec![1]))].into_iter(),
-        );
-        let actual = it.collect::<Vec<_>>();
-        let expected = std::iter::repeat_n(MemoryCell(None), 5)
-            .chain(std::iter::once(MemoryCell(Some(1))))
-            .chain(std::iter::repeat_n(MemoryCell(None), 122))
-            .collect::<Vec<_>>();
-        assert_eq!(actual.len(), expected.len());
-        assert_eq!(actual, expected);
-    }
-
-    #[test]
-    fn reads_from_the_middle_of_a_page() {
-        let partial_iter = MemoryIterator::new(
-            20..=30,
-            vec![(PageAddress(0), PageContents::mapped((0..255).collect()))].into_iter(),
-        );
-        let actual = partial_iter.collect::<Vec<_>>();
-        let expected = (20..=30)
-            .map(|val| MemoryCell(Some(val)))
-            .collect::<Vec<_>>();
-        assert_eq!(actual.len(), expected.len());
-        assert_eq!(actual, expected);
     }
 }

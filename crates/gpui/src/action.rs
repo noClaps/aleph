@@ -279,19 +279,6 @@ impl ActionRegistry {
         }
     }
 
-    #[cfg(test)]
-    pub(crate) fn load_action<A: Action>(&mut self) {
-        self.insert_action(MacroActionData {
-            name: A::name_for_type(),
-            type_id: TypeId::of::<A>(),
-            build: A::build,
-            json_schema: A::action_json_schema,
-            deprecated_aliases: A::deprecated_aliases(),
-            deprecation_message: A::deprecation_message(),
-            documentation: A::documentation(),
-        });
-    }
-
     fn insert_action(&mut self, action: MacroActionData) {
         let name = action.name;
         if self.by_name.contains_key(name) {

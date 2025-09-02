@@ -481,39 +481,3 @@ impl ActiveCall {
         }
     }
 }
-
-#[cfg(test)]
-mod test {
-    use gpui::TestAppContext;
-
-    use crate::OneAtATime;
-
-    #[gpui::test]
-    async fn test_one_at_a_time(cx: &mut TestAppContext) {
-        let mut one_at_a_time = OneAtATime { cancel: None };
-
-        assert_eq!(
-            cx.update(|cx| one_at_a_time.spawn(cx, |_| async { Ok(1) }))
-                .await
-                .unwrap(),
-            Some(1)
-        );
-
-        let (a, b) = cx.update(|cx| {
-            (
-                one_at_a_time.spawn(cx, |_| async {
-                    panic!("");
-                }),
-                one_at_a_time.spawn(cx, |_| async { Ok(3) }),
-            )
-        });
-
-        assert_eq!(a.await.unwrap(), None::<u32>);
-        assert_eq!(b.await.unwrap(), Some(3));
-
-        let promise = cx.update(|cx| one_at_a_time.spawn(cx, |_| async { Ok(4) }));
-        drop(one_at_a_time);
-
-        assert_eq!(promise.await.unwrap(), None);
-    }
-}

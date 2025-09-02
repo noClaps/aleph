@@ -424,26 +424,6 @@ impl SshRemoteConnection {
             self.ssh_path_style,
         );
 
-        #[cfg(debug_assertions)]
-        if let Some(remote_server_path) =
-            super::build_remote_server_from_source(&self.ssh_platform, delegate.as_ref(), cx)
-                .await?
-        {
-            let tmp_path = RemotePathBuf::new(
-                paths::remote_server_dir_relative().join(format!(
-                    "download-{}-{}",
-                    std::process::id(),
-                    remote_server_path.file_name().unwrap().to_string_lossy()
-                )),
-                self.ssh_path_style,
-            );
-            self.upload_local_server_binary(&remote_server_path, &tmp_path, delegate, cx)
-                .await?;
-            self.extract_server_binary(&dst_path, &tmp_path, delegate, cx)
-                .await?;
-            return Ok(dst_path);
-        }
-
         if self
             .socket
             .run_command(&dst_path.to_string(), &["version"])

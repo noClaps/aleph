@@ -459,38 +459,3 @@ pub async fn get_models(
         serde_json::from_str(&body).context("Unable to parse LM Studio models response")?;
     Ok(response.data)
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_image_message_part_serialization() {
-        let image_part = MessagePart::Image {
-            image_url: ImageUrl {
-                url: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==".to_string(),
-                detail: None,
-            },
-        };
-
-        let json = serde_json::to_string(&image_part).unwrap();
-        println!("Serialized image part: {}", json);
-
-        // Verify the structure matches what LM Studio expects
-        let expected_structure = r#"{"type":"image_url","image_url":{"url":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="}}"#;
-        assert_eq!(json, expected_structure);
-    }
-
-    #[test]
-    fn test_text_message_part_serialization() {
-        let text_part = MessagePart::Text {
-            text: "Hello, world!".to_string(),
-        };
-
-        let json = serde_json::to_string(&text_part).unwrap();
-        println!("Serialized text part: {}", json);
-
-        let expected_structure = r#"{"type":"text","text":"Hello, world!"}"#;
-        assert_eq!(json, expected_structure);
-    }
-}

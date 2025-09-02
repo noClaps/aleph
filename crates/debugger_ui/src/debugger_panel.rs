@@ -121,11 +121,6 @@ impl DebugPanel {
         });
     }
 
-    #[cfg(test)]
-    pub(crate) fn sessions(&self) -> impl Iterator<Item = Entity<DebugSession>> {
-        self.sessions_with_children.keys().cloned()
-    }
-
     pub fn active_session(&self) -> Option<Entity<DebugSession>> {
         self.active_session.clone()
     }

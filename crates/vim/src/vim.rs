@@ -1,8 +1,5 @@
 //! Vim support for Zed.
 
-#[cfg(test)]
-mod test;
-
 mod change_list;
 mod command;
 mod digraph;

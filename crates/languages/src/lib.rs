@@ -384,15 +384,6 @@ fn register_language(
     );
 }
 
-#[cfg(any(test, feature = "test-support"))]
-pub fn language(name: &str, grammar: tree_sitter::Language) -> Arc<Language> {
-    Arc::new(
-        Language::new(load_config(name), Some(grammar))
-            .with_queries(load_queries(name))
-            .unwrap(),
-    )
-}
-
 fn load_config(name: &str) -> LanguageConfig {
     let config_toml = String::from_utf8(
         LanguageDir::get(&format!("{}/config.toml", name))
@@ -407,7 +398,7 @@ fn load_config(name: &str) -> LanguageConfig {
         .with_context(|| format!("failed to load config.toml for language {name:?}"))
         .unwrap();
 
-    #[cfg(not(any(feature = "load-grammars", test)))]
+    #[cfg(not(feature = "load-grammars"))]
     {
         config = LanguageConfig {
             name: config.name,

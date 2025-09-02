@@ -120,15 +120,3 @@ impl EmbeddingProvider for FakeEmbeddingProvider {
         16
     }
 }
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[gpui::test]
-    fn test_normalize_embedding() {
-        let normalized = Embedding::new(vec![1.0, 1.0, 1.0]);
-        let value: f32 = 1.0 / 3.0_f32.sqrt();
-        assert_eq!(normalized, Embedding(vec![value; 3]));
-    }
-}

@@ -1040,20 +1040,7 @@ impl Thread {
         cx.notify()
     }
 
-    #[cfg(any(test, feature = "test-support"))]
-    pub fn last_message(&self) -> Option<Message> {
-        if let Some(message) = self.pending_message.clone() {
-            Some(Message::Agent(message))
-        } else {
-            self.messages.last().cloned()
-        }
-    }
-
-    pub fn add_default_tools(
-        &mut self,
-        environment: Rc<dyn ThreadEnvironment>,
-        cx: &mut Context<Self>,
-    ) {
+    pub fn add_default_tools(&mut self, cx: &mut Context<Self>) {
         let language_registry = self.project.read(cx).languages().clone();
         self.add_tool(CopyPathTool::new(self.project.clone()));
         self.add_tool(CreateDirectoryTool::new(self.project.clone()));
@@ -2379,15 +2366,6 @@ pub struct ToolCallEventStream {
 }
 
 impl ToolCallEventStream {
-    #[cfg(test)]
-    pub fn test() -> (Self, ToolCallEventStreamReceiver) {
-        let (events_tx, events_rx) = mpsc::unbounded::<Result<ThreadEvent>>();
-
-        let stream = ToolCallEventStream::new("test_id".into(), ThreadEventStream(events_tx), None);
-
-        (stream, ToolCallEventStreamReceiver(events_rx))
-    }
-
     fn new(
         tool_use_id: LanguageModelToolUseId,
         stream: ThreadEventStream,
@@ -2472,73 +2450,6 @@ impl ToolCallEventStream {
             "allow" => Ok(()),
             _ => Err(anyhow!("Permission to run tool denied by user")),
         })
-    }
-}
-
-#[cfg(test)]
-pub struct ToolCallEventStreamReceiver(mpsc::UnboundedReceiver<Result<ThreadEvent>>);
-
-#[cfg(test)]
-impl ToolCallEventStreamReceiver {
-    pub async fn expect_authorization(&mut self) -> ToolCallAuthorization {
-        let event = self.0.next().await;
-        if let Some(Ok(ThreadEvent::ToolCallAuthorization(auth))) = event {
-            auth
-        } else {
-            panic!("Expected ToolCallAuthorization but got: {:?}", event);
-        }
-    }
-
-    pub async fn expect_update_fields(&mut self) -> acp::ToolCallUpdateFields {
-        let event = self.0.next().await;
-        if let Some(Ok(ThreadEvent::ToolCallUpdate(acp_thread::ToolCallUpdate::UpdateFields(
-            update,
-        )))) = event
-        {
-            update.fields
-        } else {
-            panic!("Expected update fields but got: {:?}", event);
-        }
-    }
-
-    pub async fn expect_diff(&mut self) -> Entity<acp_thread::Diff> {
-        let event = self.0.next().await;
-        if let Some(Ok(ThreadEvent::ToolCallUpdate(acp_thread::ToolCallUpdate::UpdateDiff(
-            update,
-        )))) = event
-        {
-            update.diff
-        } else {
-            panic!("Expected diff but got: {:?}", event);
-        }
-    }
-
-    pub async fn expect_terminal(&mut self) -> Entity<acp_thread::Terminal> {
-        let event = self.0.next().await;
-        if let Some(Ok(ThreadEvent::ToolCallUpdate(acp_thread::ToolCallUpdate::UpdateTerminal(
-            update,
-        )))) = event
-        {
-            update.terminal
-        } else {
-            panic!("Expected terminal but got: {:?}", event);
-        }
-    }
-}
-
-#[cfg(test)]
-impl std::ops::Deref for ToolCallEventStreamReceiver {
-    type Target = mpsc::UnboundedReceiver<Result<ThreadEvent>>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-#[cfg(test)]
-impl std::ops::DerefMut for ToolCallEventStreamReceiver {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
     }
 }
 

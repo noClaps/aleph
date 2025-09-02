@@ -24,7 +24,6 @@ use std::{
     sync::Arc,
     time::Duration,
 };
-#[cfg(unix)]
 use tokio::signal::unix::SignalKind;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{
@@ -160,7 +159,6 @@ async fn main() -> Result<()> {
                     ),
             );
 
-            #[cfg(unix)]
             let signal = async move {
                 let mut sigterm = tokio::signal::unix::signal(SignalKind::terminate())
                     .expect("failed to listen for interrupt signal");

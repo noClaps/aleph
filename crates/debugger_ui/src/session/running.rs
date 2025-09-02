@@ -1459,16 +1459,6 @@ impl RunningState {
         &self.stack_frame_list
     }
 
-    #[cfg(test)]
-    pub fn console(&self) -> &Entity<Console> {
-        &self.console
-    }
-
-    #[cfg(test)]
-    pub(crate) fn module_list(&self) -> &Entity<ModuleList> {
-        &self.module_list
-    }
-
     pub(crate) fn activate_item(
         &mut self,
         item: DebuggerPaneItem,
@@ -1492,16 +1482,6 @@ impl RunningState {
         pane.update(cx, |this, cx| {
             this.activate_item(variable_list_position, true, true, window, cx);
         });
-    }
-
-    #[cfg(test)]
-    pub(crate) fn variable_list(&self) -> &Entity<VariableList> {
-        &self.variable_list
-    }
-
-    #[cfg(test)]
-    pub(crate) fn serialized_layout(&self, cx: &App) -> SerializedLayout {
-        persistence::build_serialized_layout(&self.panes.root, self.dock_axis, cx)
     }
 
     pub fn capabilities(&self, cx: &App) -> Capabilities {

@@ -17,7 +17,6 @@ publish.workspace = true
 [dependencies]
 ahash = { version = "0.8", features = ["serde"] }
 aho-corasick = { version = "1" }
-anstream = { version = "0.6" }
 arrayvec = { version = "0.7", features = ["serde"] }
 async-compression = { version = "0.4", default-features = false, features = ["deflate", "deflate64", "futures-io", "gzip"] }
 async-std = { version = "1", features = ["attributes", "unstable"] }
@@ -36,6 +35,7 @@ base64ct = { version = "1", default-features = false, features = ["std"] }
 bigdecimal = { version = "0.4", features = ["serde"] }
 bitflags = { version = "2", default-features = false, features = ["serde", "std"] }
 bstr = { version = "1" }
+bytemuck = { version = "1", default-features = false, features = ["aarch64_simd", "extern_crate_alloc"] }
 byteorder = { version = "1" }
 bytes = { version = "1" }
 chrono = { version = "0.4", features = ["serde"] }
@@ -56,14 +56,13 @@ event-listener = { version = "5" }
 event-listener-strategy = { version = "0.5" }
 flate2 = { version = "1", features = ["zlib-rs"] }
 form_urlencoded = { version = "1" }
-futures = { version = "0.3", features = ["io-compat"] }
 futures-channel = { version = "0.3", features = ["sink"] }
 futures-core = { version = "0.3" }
 futures-executor = { version = "0.3" }
 futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }
 futures-task = { version = "0.3", default-features = false, features = ["std"] }
-futures-util = { version = "0.3", features = ["channel", "io-compat", "sink"] }
+futures-util = { version = "0.3", features = ["channel", "io", "sink"] }
 getrandom = { version = "0.2", default-features = false, features = ["std"] }
 half = { version = "2" }
 handlebars = { version = "4", features = ["rust-embed"] }
@@ -105,6 +104,7 @@ regalloc2 = { version = "0.11", features = ["checker", "enable-serde"] }
 regex = { version = "1" }
 regex-automata = { version = "0.4" }
 regex-syntax = { version = "0.8" }
+rodio = { version = "0.21", default-features = false, features = ["playback", "tracing", "wav", "wav_output"] }
 rust_decimal = { version = "1", default-features = false, features = ["maths", "serde", "std"] }
 rustix = { version = "0.38", default-features = false, features = ["fs", "net", "std"] }
 rustls = { version = "0.23", features = ["ring"] }
@@ -129,7 +129,6 @@ time = { version = "0.3", features = ["local-offset", "macros", "serde-well-know
 tokio = { version = "1", features = ["full"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["tls12"] }
 tokio-stream = { version = "0.1", features = ["fs"] }
-tokio-util = { version = "0.7", features = ["codec", "compat", "io"] }
 toml_edit = { version = "0.22", features = ["serde"] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-core = { version = "0.1" }
@@ -147,7 +146,6 @@ winnow = { version = "0.7", features = ["simd"] }
 [build-dependencies]
 ahash = { version = "0.8", features = ["serde"] }
 aho-corasick = { version = "1" }
-anstream = { version = "0.6" }
 arrayvec = { version = "0.7", features = ["serde"] }
 async-compression = { version = "0.4", default-features = false, features = ["deflate", "deflate64", "futures-io", "gzip"] }
 async-std = { version = "1", features = ["attributes", "unstable"] }
@@ -166,6 +164,7 @@ base64ct = { version = "1", default-features = false, features = ["std"] }
 bigdecimal = { version = "0.4", features = ["serde"] }
 bitflags = { version = "2", default-features = false, features = ["serde", "std"] }
 bstr = { version = "1" }
+bytemuck = { version = "1", default-features = false, features = ["aarch64_simd", "extern_crate_alloc"] }
 byteorder = { version = "1" }
 bytes = { version = "1" }
 cc = { version = "1", default-features = false, features = ["parallel"] }
@@ -187,14 +186,13 @@ event-listener = { version = "5" }
 event-listener-strategy = { version = "0.5" }
 flate2 = { version = "1", features = ["zlib-rs"] }
 form_urlencoded = { version = "1" }
-futures = { version = "0.3", features = ["io-compat"] }
 futures-channel = { version = "0.3", features = ["sink"] }
 futures-core = { version = "0.3" }
 futures-executor = { version = "0.3" }
 futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }
 futures-task = { version = "0.3", default-features = false, features = ["std"] }
-futures-util = { version = "0.3", features = ["channel", "io-compat", "sink"] }
+futures-util = { version = "0.3", features = ["channel", "io", "sink"] }
 getrandom = { version = "0.2", default-features = false, features = ["std"] }
 half = { version = "2" }
 handlebars = { version = "4", features = ["rust-embed"] }
@@ -240,6 +238,7 @@ regalloc2 = { version = "0.11", features = ["checker", "enable-serde"] }
 regex = { version = "1" }
 regex-automata = { version = "0.4" }
 regex-syntax = { version = "0.8" }
+rodio = { version = "0.21", default-features = false, features = ["playback", "tracing", "wav", "wav_output"] }
 rust_decimal = { version = "1", default-features = false, features = ["maths", "serde", "std"] }
 rustix = { version = "0.38", default-features = false, features = ["fs", "net", "std"] }
 rustls = { version = "0.23", features = ["ring"] }
@@ -270,7 +269,6 @@ time-macros = { version = "0.2", default-features = false, features = ["formatti
 tokio = { version = "1", features = ["full"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["tls12"] }
 tokio-stream = { version = "0.1", features = ["fs"] }
-tokio-util = { version = "0.7", features = ["codec", "compat", "io"] }
 toml_edit = { version = "0.22", features = ["serde"] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-core = { version = "0.1" }

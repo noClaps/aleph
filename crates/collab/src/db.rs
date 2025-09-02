@@ -1,8 +1,6 @@
 mod ids;
 mod queries;
 mod tables;
-#[cfg(test)]
-pub mod tests;
 
 use crate::{Error, Result};
 use anyhow::{Context as _, anyhow};
@@ -37,21 +35,11 @@ use time::PrimitiveDateTime;
 use tokio::sync::{Mutex, OwnedMutexGuard};
 use worktree_settings_file::LocalSettingsKind;
 
-#[cfg(test)]
-pub use tests::TestDb;
-
 pub use ids::*;
 pub use queries::contributors::ContributorSelector;
 pub use sea_orm::ConnectOptions;
 pub use tables::user::Model as User;
 pub use tables::*;
-
-#[cfg(test)]
-pub struct DatabaseTestOptions {
-    pub executor: gpui::BackgroundExecutor,
-    pub runtime: tokio::runtime::Runtime,
-    pub query_failure_probability: parking_lot::Mutex<f64>,
-}
 
 /// Database gives you a handle that lets you access the database.
 /// It handles pooling internally.
@@ -62,8 +50,6 @@ pub struct Database {
     projects: DashMap<ProjectId, Arc<Mutex<()>>>,
     notification_kinds_by_id: HashMap<NotificationKindId, &'static str>,
     notification_kinds_by_name: HashMap<String, NotificationKindId>,
-    #[cfg(test)]
-    test_options: Option<DatabaseTestOptions>,
 }
 
 // The `Database` type has so many methods that its impl blocks are split into
@@ -79,19 +65,11 @@ impl Database {
             projects: DashMap::with_capacity(16384),
             notification_kinds_by_id: HashMap::default(),
             notification_kinds_by_name: HashMap::default(),
-            #[cfg(test)]
-            test_options: None,
         })
     }
 
     pub fn options(&self) -> &ConnectOptions {
         &self.options
-    }
-
-    #[cfg(test)]
-    pub fn reset(&self) {
-        self.rooms.clear();
-        self.projects.clear();
     }
 
     pub async fn transaction<F, Fut, T>(&self, f: F) -> Result<T>
@@ -249,24 +227,7 @@ impl Database {
     where
         F: Future<Output = Result<T>>,
     {
-        #[cfg(test)]
-        {
-            use rand::prelude::*;
-
-            let test_options = self.test_options.as_ref().unwrap();
-            test_options.executor.simulate_random_delay().await;
-            let fail_probability = *test_options.query_failure_probability.lock();
-            if test_options.executor.rng().random_bool(fail_probability) {
-                return Err(anyhow!("simulated query failure"))?;
-            }
-
-            test_options.runtime.block_on(future)
-        }
-
-        #[cfg(not(test))]
-        {
-            future.await
-        }
+        future.await
     }
 }
 

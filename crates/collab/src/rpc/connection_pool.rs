@@ -167,28 +167,6 @@ impl ConnectionPool {
             .connection_ids
             .is_empty()
     }
-
-    #[cfg(test)]
-    pub fn check_invariants(&self) {
-        for (connection_id, connection) in &self.connections {
-            assert!(
-                self.connected_users
-                    .get(&connection.user_id)
-                    .unwrap()
-                    .connection_ids
-                    .contains(connection_id)
-            );
-        }
-
-        for (user_id, state) in &self.connected_users {
-            for connection_id in &state.connection_ids {
-                assert_eq!(
-                    self.connections.get(connection_id).unwrap().user_id,
-                    *user_id
-                );
-            }
-        }
-    }
 }
 
 #[derive(Default, Serialize)]

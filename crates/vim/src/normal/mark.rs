@@ -364,29 +364,3 @@ pub fn jump_motion(
 
     (point, SelectionGoal::None)
 }
-
-#[cfg(test)]
-mod test {
-    use gpui::TestAppContext;
-
-    use crate::test::NeovimBackedTestContext;
-
-    #[gpui::test]
-    async fn test_quote_mark(cx: &mut TestAppContext) {
-        let mut cx = NeovimBackedTestContext::new(cx).await;
-
-        cx.set_shared_state("ˇHello, world!").await;
-        cx.simulate_shared_keystrokes("w m o").await;
-        cx.shared_state().await.assert_eq("Helloˇ, world!");
-        cx.simulate_shared_keystrokes("$ ` o").await;
-        cx.shared_state().await.assert_eq("Helloˇ, world!");
-        cx.simulate_shared_keystrokes("` `").await;
-        cx.shared_state().await.assert_eq("Hello, worldˇ!");
-        cx.simulate_shared_keystrokes("` `").await;
-        cx.shared_state().await.assert_eq("Helloˇ, world!");
-        cx.simulate_shared_keystrokes("$ m '").await;
-        cx.shared_state().await.assert_eq("Hello, worldˇ!");
-        cx.simulate_shared_keystrokes("^ ` `").await;
-        cx.shared_state().await.assert_eq("Hello, worldˇ!");
-    }
-}

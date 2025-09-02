@@ -22,13 +22,7 @@ util.workspace = true
 workspace-hack.workspace = true
 
 [dev-dependencies]
-ctor.workspace = true
-gpui = { workspace = true, features = ["test-support"] }
-rand.workspace = true
-util = { workspace = true, features = ["test-support"] }
-criterion.workspace = true
-zlog.workspace = true
+util.workspace = true
 
-[[bench]]
-name = "rope_benchmark"
-harness = false
+[package.metadata.cargo-shear]
+ignored = ["log"]

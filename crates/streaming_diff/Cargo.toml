@@ -15,7 +15,3 @@ path = "src/streaming_diff.rs"
 ordered-float.workspace = true
 rope.workspace = true
 workspace-hack.workspace = true
-
-[dev-dependencies]
-rand.workspace = true
-util = { workspace = true, features = ["test-support"] }

@@ -1,5 +1,3 @@
-#[cfg(test)]
-mod assistant_context_tests;
 mod context_store;
 
 use agent_settings::{AgentSettings, SUMMARIZE_THREAD_PROMPT};

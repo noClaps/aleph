@@ -26,15 +26,6 @@ pub struct VsCodeSettings {
 }
 
 impl VsCodeSettings {
-    #[cfg(any(test, feature = "test-support"))]
-    pub fn from_str(content: &str, source: VsCodeSettingsSource) -> Result<Self> {
-        Ok(Self {
-            source,
-            path: Path::new("/example-path/Code/User/settings.json").into(),
-            content: serde_json_lenient::from_str(content)?,
-        })
-    }
-
     pub async fn load_user_settings(source: VsCodeSettingsSource, fs: Arc<dyn Fs>) -> Result<Self> {
         let candidate_paths = match source {
             VsCodeSettingsSource::VsCode => vscode_settings_file_paths(),

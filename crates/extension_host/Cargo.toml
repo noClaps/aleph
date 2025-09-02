@@ -12,9 +12,6 @@ workspace = true
 path = "src/extension_host.rs"
 doctest = false
 
-[features]
-test-support = []
-
 [dependencies]
 anyhow.workspace = true
 async-compression.workspace = true
@@ -55,20 +52,7 @@ wasmtime.workspace = true
 workspace-hack.workspace = true
 
 [dev-dependencies]
-criterion.workspace = true
-ctor.workspace = true
-fs = { workspace = true, features = ["test-support"] }
-gpui = { workspace = true, features = ["test-support"] }
-language = { workspace = true, features = ["test-support"] }
-language_extension.workspace = true
-parking_lot.workspace = true
-project = { workspace = true, features = ["test-support"] }
-rand.workspace = true
-reqwest_client.workspace = true
-theme = { workspace = true, features = ["test-support"] }
-theme_extension.workspace = true
-zlog.workspace = true
-
-[[bench]]
-name = "extension_compilation_benchmark"
-harness = false
+fs.workspace = true
+gpui.workspace = true
+language.workspace = true
+project.workspace = true

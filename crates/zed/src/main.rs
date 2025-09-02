@@ -1331,37 +1331,6 @@ fn watch_themes(fs: Arc<dyn fs::Fs>, cx: &mut App) {
     .detach()
 }
 
-#[cfg(debug_assertions)]
-fn watch_languages(fs: Arc<dyn fs::Fs>, languages: Arc<LanguageRegistry>, cx: &mut App) {
-    use std::time::Duration;
-
-    let path = {
-        let p = Path::new("crates/languages/src");
-        let Ok(full_path) = p.canonicalize() else {
-            return;
-        };
-        full_path
-    };
-
-    cx.spawn(async move |_| {
-        let (mut events, _) = fs.watch(path.as_path(), Duration::from_millis(100)).await;
-        while let Some(event) = events.next().await {
-            let has_language_file = event.iter().any(|event| {
-                event
-                    .path
-                    .extension()
-                    .map(|ext| ext.to_string_lossy().as_ref() == "scm")
-                    .unwrap_or(false)
-            });
-            if has_language_file {
-                languages.reload();
-            }
-        }
-    })
-    .detach()
-}
-
-#[cfg(not(debug_assertions))]
 fn watch_languages(_fs: Arc<dyn fs::Fs>, _languages: Arc<LanguageRegistry>, _cx: &mut App) {}
 
 fn dump_all_gpui_actions() {

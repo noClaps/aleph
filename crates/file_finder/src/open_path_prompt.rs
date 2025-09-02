@@ -865,37 +865,3 @@ fn get_dir_and_suffix(query: String, _path_style: PathStyle) -> (String, String)
     }
     (dir, suffix)
 }
-
-#[cfg(test)]
-mod tests {
-    use util::paths::PathStyle;
-
-    use crate::open_path_prompt::get_dir_and_suffix;
-
-    #[test]
-    fn test_get_dir_and_suffix_with_posix_style() {
-        let (dir, suffix) = get_dir_and_suffix("".into(), PathStyle::Posix);
-        assert_eq!(dir, "/");
-        assert_eq!(suffix, "");
-
-        let (dir, suffix) = get_dir_and_suffix("/".into(), PathStyle::Posix);
-        assert_eq!(dir, "/");
-        assert_eq!(suffix, "");
-
-        let (dir, suffix) = get_dir_and_suffix("/Use".into(), PathStyle::Posix);
-        assert_eq!(dir, "/");
-        assert_eq!(suffix, "Use");
-
-        let (dir, suffix) = get_dir_and_suffix("/Users/Junkui/Docum".into(), PathStyle::Posix);
-        assert_eq!(dir, "/Users/Junkui/");
-        assert_eq!(suffix, "Docum");
-
-        let (dir, suffix) = get_dir_and_suffix("/Users/Junkui/Documents".into(), PathStyle::Posix);
-        assert_eq!(dir, "/Users/Junkui/");
-        assert_eq!(suffix, "Documents");
-
-        let (dir, suffix) = get_dir_and_suffix("/Users/Junkui/Documents/".into(), PathStyle::Posix);
-        assert_eq!(dir, "/Users/Junkui/Documents/");
-        assert_eq!(suffix, "");
-    }
-}

@@ -31,10 +31,5 @@ pub fn init(cx: &mut App) {
         registry.add_adapter(Arc::from(JsDebugAdapter::default()));
         registry.add_adapter(Arc::from(GoDebugAdapter::default()));
         registry.add_adapter(Arc::from(GdbDebugAdapter));
-
-        #[cfg(any(test, feature = "test-support"))]
-        {
-            registry.add_adapter(Arc::from(dap::FakeAdapter {}));
-        }
     })
 }

@@ -5,9 +5,6 @@ mod request;
 mod role;
 mod telemetry;
 
-#[cfg(any(test, feature = "test-support"))]
-pub mod fake_provider;
-
 use anthropic::{AnthropicError, parse_prompt_too_long};
 use anyhow::{Result, anyhow};
 use client::Client;
@@ -654,11 +651,6 @@ pub trait LanguageModel: Send + Sync {
     fn cache_configuration(&self) -> Option<LanguageModelCacheConfiguration> {
         None
     }
-
-    #[cfg(any(test, feature = "test-support"))]
-    fn as_fake(&self) -> &fake_provider::FakeLanguageModel {
-        unimplemented!()
-    }
 }
 
 pub trait LanguageModelExt: LanguageModel {
@@ -813,106 +805,5 @@ impl From<Arc<str>> for LanguageModelProviderId {
 impl From<Arc<str>> for LanguageModelProviderName {
     fn from(value: Arc<str>) -> Self {
         Self(SharedString::from(value))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_from_cloud_failure_with_upstream_http_error() {
-        let error = LanguageModelCompletionError::from_cloud_failure(
-            String::from("anthropic").into(),
-            "upstream_http_error".to_string(),
-            r#"{"code":"upstream_http_error","message":"Received an error from the Anthropic API: upstream connect error or disconnect/reset before headers. reset reason: connection timeout","upstream_status":503}"#.to_string(),
-            None,
-        );
-
-        match error {
-            LanguageModelCompletionError::ServerOverloaded { provider, .. } => {
-                assert_eq!(provider.0, "anthropic");
-            }
-            _ => panic!(
-                "Expected ServerOverloaded error for 503 status, got: {:?}",
-                error
-            ),
-        }
-
-        let error = LanguageModelCompletionError::from_cloud_failure(
-            String::from("anthropic").into(),
-            "upstream_http_error".to_string(),
-            r#"{"code":"upstream_http_error","message":"Internal server error","upstream_status":500}"#.to_string(),
-            None,
-        );
-
-        match error {
-            LanguageModelCompletionError::ApiInternalServerError { provider, message } => {
-                assert_eq!(provider.0, "anthropic");
-                assert_eq!(message, "Internal server error");
-            }
-            _ => panic!(
-                "Expected ApiInternalServerError for 500 status, got: {:?}",
-                error
-            ),
-        }
-    }
-
-    #[test]
-    fn test_from_cloud_failure_with_standard_format() {
-        let error = LanguageModelCompletionError::from_cloud_failure(
-            String::from("anthropic").into(),
-            "upstream_http_503".to_string(),
-            "Service unavailable".to_string(),
-            None,
-        );
-
-        match error {
-            LanguageModelCompletionError::ServerOverloaded { provider, .. } => {
-                assert_eq!(provider.0, "anthropic");
-            }
-            _ => panic!("Expected ServerOverloaded error for upstream_http_503"),
-        }
-    }
-
-    #[test]
-    fn test_upstream_http_error_connection_timeout() {
-        let error = LanguageModelCompletionError::from_cloud_failure(
-            String::from("anthropic").into(),
-            "upstream_http_error".to_string(),
-            r#"{"code":"upstream_http_error","message":"Received an error from the Anthropic API: upstream connect error or disconnect/reset before headers. reset reason: connection timeout","upstream_status":503}"#.to_string(),
-            None,
-        );
-
-        match error {
-            LanguageModelCompletionError::ServerOverloaded { provider, .. } => {
-                assert_eq!(provider.0, "anthropic");
-            }
-            _ => panic!(
-                "Expected ServerOverloaded error for connection timeout with 503 status, got: {:?}",
-                error
-            ),
-        }
-
-        let error = LanguageModelCompletionError::from_cloud_failure(
-            String::from("anthropic").into(),
-            "upstream_http_error".to_string(),
-            r#"{"code":"upstream_http_error","message":"Received an error from the Anthropic API: upstream connect error or disconnect/reset before headers. reset reason: connection timeout","upstream_status":500}"#.to_string(),
-            None,
-        );
-
-        match error {
-            LanguageModelCompletionError::ApiInternalServerError { provider, message } => {
-                assert_eq!(provider.0, "anthropic");
-                assert_eq!(
-                    message,
-                    "Received an error from the Anthropic API: upstream connect error or disconnect/reset before headers. reset reason: connection timeout"
-                );
-            }
-            _ => panic!(
-                "Expected ApiInternalServerError for connection timeout with 500 status, got: {:?}",
-                error
-            ),
-        }
     }
 }

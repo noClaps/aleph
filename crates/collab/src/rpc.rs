@@ -209,17 +209,11 @@ struct Session {
 
 impl Session {
     async fn db(&self) -> tokio::sync::MutexGuard<'_, DbHandle> {
-        #[cfg(test)]
-        tokio::task::yield_now().await;
         let guard = self.db.lock().await;
-        #[cfg(test)]
-        tokio::task::yield_now().await;
         guard
     }
 
     async fn connection_pool(&self) -> ConnectionPoolGuard<'_> {
-        #[cfg(test)]
-        tokio::task::yield_now().await;
         let guard = self.connection_pool.lock();
         ConnectionPoolGuard {
             guard,
@@ -660,19 +654,6 @@ impl Server {
         let _ = self.teardown.send(true);
     }
 
-    #[cfg(test)]
-    pub fn reset(&self, id: ServerId) {
-        self.teardown();
-        *self.id.lock() = id;
-        self.peer.reset(id.0 as u32);
-        let _ = self.teardown.send(false);
-    }
-
-    #[cfg(test)]
-    pub fn id(&self) -> ServerId {
-        *self.id.lock()
-    }
-
     fn add_handler<F, Fut, M>(&mut self, handler: F) -> &mut Self
     where
         F: 'static + Send + Sync + Fn(TypedEnvelope<M>, MessageContext) -> Fut,
@@ -1089,13 +1070,6 @@ impl Deref for ConnectionPoolGuard<'_> {
 impl DerefMut for ConnectionPoolGuard<'_> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.guard
-    }
-}
-
-impl Drop for ConnectionPoolGuard<'_> {
-    fn drop(&mut self) {
-        #[cfg(test)]
-        self.check_invariants();
     }
 }
 

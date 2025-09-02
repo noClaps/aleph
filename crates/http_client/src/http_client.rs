@@ -13,8 +13,6 @@ use futures::{
 };
 use http::request::Builder;
 use parking_lot::Mutex;
-#[cfg(feature = "test-support")]
-use std::fmt;
 use std::{any::type_name, sync::Arc};
 pub use url::Url;
 
@@ -88,11 +86,6 @@ pub trait HttpClient: 'static + Send + Sync {
 
     fn proxy(&self) -> Option<&Url>;
 
-    #[cfg(feature = "test-support")]
-    fn as_fake(&self) -> &FakeHttpClient {
-        panic!("called as_fake on {}", type_name::<Self>())
-    }
-
     fn send_multipart_form<'a>(
         &'a self,
         _url: &str,
@@ -145,11 +138,6 @@ impl HttpClient for HttpClientWithProxy {
 
     fn type_name(&self) -> &'static str {
         self.client.type_name()
-    }
-
-    #[cfg(feature = "test-support")]
-    fn as_fake(&self) -> &FakeHttpClient {
-        self.client.as_fake()
     }
 
     fn send_multipart_form<'a>(
@@ -288,11 +276,6 @@ impl HttpClient for HttpClientWithUrl {
         self.client.type_name()
     }
 
-    #[cfg(feature = "test-support")]
-    fn as_fake(&self) -> &FakeHttpClient {
-        self.client.as_fake()
-    }
-
     fn send_multipart_form<'a>(
         &'a self,
         url: &str,
@@ -350,107 +333,5 @@ impl HttpClient for BlockedHttpClient {
 
     fn type_name(&self) -> &'static str {
         type_name::<Self>()
-    }
-
-    #[cfg(feature = "test-support")]
-    fn as_fake(&self) -> &FakeHttpClient {
-        panic!("called as_fake on {}", type_name::<Self>())
-    }
-}
-
-#[cfg(feature = "test-support")]
-type FakeHttpHandler = Arc<
-    dyn Fn(Request<AsyncBody>) -> BoxFuture<'static, anyhow::Result<Response<AsyncBody>>>
-        + Send
-        + Sync
-        + 'static,
->;
-
-#[cfg(feature = "test-support")]
-pub struct FakeHttpClient {
-    handler: Mutex<Option<FakeHttpHandler>>,
-    user_agent: HeaderValue,
-}
-
-#[cfg(feature = "test-support")]
-impl FakeHttpClient {
-    pub fn create<Fut, F>(handler: F) -> Arc<HttpClientWithUrl>
-    where
-        Fut: futures::Future<Output = anyhow::Result<Response<AsyncBody>>> + Send + 'static,
-        F: Fn(Request<AsyncBody>) -> Fut + Send + Sync + 'static,
-    {
-        Arc::new(HttpClientWithUrl {
-            base_url: Mutex::new("http://test.example".into()),
-            client: HttpClientWithProxy {
-                client: Arc::new(Self {
-                    handler: Mutex::new(Some(Arc::new(move |req| Box::pin(handler(req))))),
-                    user_agent: HeaderValue::from_static(type_name::<Self>()),
-                }),
-                proxy: None,
-            },
-        })
-    }
-
-    pub fn with_404_response() -> Arc<HttpClientWithUrl> {
-        Self::create(|_| async move {
-            Ok(Response::builder()
-                .status(404)
-                .body(Default::default())
-                .unwrap())
-        })
-    }
-
-    pub fn with_200_response() -> Arc<HttpClientWithUrl> {
-        Self::create(|_| async move {
-            Ok(Response::builder()
-                .status(200)
-                .body(Default::default())
-                .unwrap())
-        })
-    }
-
-    pub fn replace_handler<Fut, F>(&self, new_handler: F)
-    where
-        Fut: futures::Future<Output = anyhow::Result<Response<AsyncBody>>> + Send + 'static,
-        F: Fn(FakeHttpHandler, Request<AsyncBody>) -> Fut + Send + Sync + 'static,
-    {
-        let mut handler = self.handler.lock();
-        let old_handler = handler.take().unwrap();
-        *handler = Some(Arc::new(move |req| {
-            Box::pin(new_handler(old_handler.clone(), req))
-        }));
-    }
-}
-
-#[cfg(feature = "test-support")]
-impl fmt::Debug for FakeHttpClient {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("FakeHttpClient").finish()
-    }
-}
-
-#[cfg(feature = "test-support")]
-impl HttpClient for FakeHttpClient {
-    fn send(
-        &self,
-        req: Request<AsyncBody>,
-    ) -> BoxFuture<'static, anyhow::Result<Response<AsyncBody>>> {
-        ((self.handler.lock().as_ref().unwrap())(req)) as _
-    }
-
-    fn user_agent(&self) -> Option<&HeaderValue> {
-        Some(&self.user_agent)
-    }
-
-    fn proxy(&self) -> Option<&Url> {
-        None
-    }
-
-    fn type_name(&self) -> &'static str {
-        type_name::<Self>()
-    }
-
-    fn as_fake(&self) -> &FakeHttpClient {
-        self
     }
 }

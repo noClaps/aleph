@@ -12,9 +12,6 @@ workspace = true
 path = "src/agent.rs"
 doctest = false
 
-[features]
-test-support = ["gpui/test-support", "language/test-support"]
-
 [dependencies]
 action_log.workspace = true
 agent_settings.workspace = true
@@ -54,7 +51,6 @@ smol.workspace = true
 sqlez.workspace = true
 telemetry.workspace = true
 text.workspace = true
-theme.workspace = true
 thiserror.workspace = true
 util.workspace = true
 uuid.workspace = true
@@ -63,12 +59,8 @@ zed_env_vars.workspace = true
 zstd.workspace = true
 
 [dev-dependencies]
-assistant_tools.workspace = true
-gpui = { workspace = true, "features" = ["test-support"] }
+gpui.workspace = true
 indoc.workspace = true
-language = { workspace = true, "features" = ["test-support"] }
-language_model = { workspace = true, "features" = ["test-support"] }
-parking_lot.workspace = true
-pretty_assertions.workspace = true
-project = { workspace = true, features = ["test-support"] }
-workspace = { workspace = true, features = ["test-support"] }
+language.workspace = true
+language_model.workspace = true
+project.workspace = true

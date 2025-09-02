@@ -63,10 +63,6 @@ impl ProjectEnvironment {
         worktree_store: &Entity<WorktreeStore>,
         cx: &mut Context<Self>,
     ) -> Shared<Task<Option<HashMap<String, String>>>> {
-        if cfg!(any(test, feature = "test-support")) {
-            return Task::ready(Some(HashMap::default())).shared();
-        }
-
         if let Some(cli_environment) = self.get_cli_environment() {
             log::debug!("using project environment variables from CLI");
             return Task::ready(Some(cli_environment)).shared();
@@ -89,10 +85,6 @@ impl ProjectEnvironment {
         worktree: Entity<Worktree>,
         cx: &mut Context<Self>,
     ) -> Shared<Task<Option<HashMap<String, String>>>> {
-        if cfg!(any(test, feature = "test-support")) {
-            return Task::ready(Some(HashMap::default())).shared();
-        }
-
         if let Some(cli_environment) = self.get_cli_environment() {
             log::debug!("using project environment variables from CLI");
             return Task::ready(Some(cli_environment)).shared();
@@ -123,10 +115,6 @@ impl ProjectEnvironment {
         abs_path: Arc<Path>,
         cx: &mut Context<Self>,
     ) -> Shared<Task<Option<HashMap<String, String>>>> {
-        if cfg!(any(test, feature = "test-support")) {
-            return Task::ready(Some(HashMap::default())).shared();
-        }
-
         if let Some(cli_environment) = self.get_cli_environment() {
             log::debug!("using project environment variables from CLI");
             return Task::ready(Some(cli_environment)).shared();
@@ -211,21 +199,6 @@ async fn load_directory_shell_environment(
     }
 }
 
-#[cfg(any(test, feature = "test-support"))]
-async fn load_shell_environment(
-    _dir: &Path,
-    _load_direnv: &DirenvSettings,
-) -> (
-    Option<HashMap<String, String>>,
-    Option<EnvironmentErrorMessage>,
-) {
-    let fake_env = [("ZED_FAKE_TEST_ENV".into(), "true".into())]
-        .into_iter()
-        .collect();
-    (Some(fake_env), None)
-}
-
-#[cfg(not(any(test, feature = "test-support")))]
 async fn load_shell_environment(
     dir: &Path,
     load_direnv: &DirenvSettings,

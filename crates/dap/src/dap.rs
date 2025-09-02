@@ -20,8 +20,6 @@ pub type ScopeId = u64;
 pub type VariableReference = u64;
 pub type StackFrameId = u64;
 
-#[cfg(any(test, feature = "test-support"))]
-pub use adapters::FakeAdapter;
 use task::{DebugScenario, TcpArgumentsTemplate};
 
 pub async fn configure_tcp_connection(

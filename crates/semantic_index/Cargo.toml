@@ -12,17 +12,10 @@ workspace = true
 [lib]
 path = "src/semantic_index.rs"
 
-[[example]]
-name = "index"
-path = "examples/index.rs"
-crate-type = ["bin"]
-
 [dependencies]
 anyhow.workspace = true
 arrayvec.workspace = true
 blake3.workspace = true
-client.workspace = true
-clock.workspace = true
 collections.workspace = true
 feature_flags.workspace = true
 fs.workspace = true
@@ -46,24 +39,18 @@ streaming-iterator.workspace = true
 theme.workspace = true
 tree-sitter.workspace = true
 ui.workspace = true
-unindent.workspace = true
 util.workspace = true
 workspace.workspace = true
 worktree.workspace = true
 workspace-hack.workspace = true
 
 [dev-dependencies]
-client = { workspace = true, features = ["test-support"] }
-fs = { workspace = true, features = ["test-support"] }
+fs.workspace = true
 futures.workspace = true
-gpui = { workspace = true, features = ["test-support"] }
-http_client = { workspace = true, features = ["test-support"] }
-language = { workspace = true, features = ["test-support"] }
-languages.workspace = true
-project = { workspace = true, features = ["test-support"] }
-tempfile.workspace = true
-reqwest_client.workspace = true
-util = { workspace = true, features = ["test-support"] }
-workspace = { workspace = true, features = ["test-support"] }
-worktree = { workspace = true, features = ["test-support"] }
-zlog.workspace = true
+gpui.workspace = true
+http_client.workspace = true
+language.workspace = true
+project.workspace = true
+util.workspace = true
+workspace.workspace = true
+worktree.workspace = true

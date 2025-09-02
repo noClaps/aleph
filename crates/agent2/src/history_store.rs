@@ -190,10 +190,6 @@ impl HistoryStore {
     }
 
     fn update_entries(&mut self, cx: &mut Context<Self>) {
-        #[cfg(debug_assertions)]
-        if std::env::var("ZED_SIMULATE_NO_THREAD_HISTORY").is_ok() {
-            return;
-        }
         let mut history_entries = Vec::new();
         history_entries.extend(self.threads.iter().cloned().map(HistoryEntry::AcpThread));
         history_entries.extend(
@@ -214,11 +210,6 @@ impl HistoryStore {
     }
 
     pub fn recently_opened_entries(&self, cx: &App) -> Vec<HistoryEntry> {
-        #[cfg(debug_assertions)]
-        if std::env::var("ZED_SIMULATE_NO_THREAD_HISTORY").is_ok() {
-            return Vec::new();
-        }
-
         let thread_entries = self.threads.iter().flat_map(|thread| {
             self.recently_opened_entries
                 .iter()
@@ -276,9 +267,6 @@ impl HistoryStore {
                 .timer(SAVE_RECENTLY_OPENED_ENTRIES_DEBOUNCE)
                 .await;
 
-            if cfg!(any(feature = "test-support", test)) {
-                return;
-            }
             KEY_VALUE_STORE
                 .write_kvp(RECENTLY_OPENED_THREADS_KEY.to_owned(), content)
                 .await
@@ -288,9 +276,6 @@ impl HistoryStore {
 
     fn load_recently_opened_entries(cx: &AsyncApp) -> Task<Result<VecDeque<HistoryEntryId>>> {
         cx.background_spawn(async move {
-            if cfg!(any(feature = "test-support", test)) {
-                anyhow::bail!("history store does not persist in tests");
-            }
             let json = KEY_VALUE_STORE
                 .read_kvp(RECENTLY_OPENED_THREADS_KEY)?
                 .unwrap_or("[]".to_string());

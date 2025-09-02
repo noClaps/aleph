@@ -40,4 +40,4 @@ workspace.workspace = true
 workspace-hack.workspace = true
 
 [dev-dependencies]
-gpui = { workspace = true, features = ["test-support"] }
+gpui.workspace = true

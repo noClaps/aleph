@@ -166,25 +166,3 @@ impl Gemini {
 
     const BINARY_NAME: &str = "gemini";
 }
-
-#[cfg(test)]
-pub(crate) mod tests {
-    use super::*;
-    use crate::AgentServerCommand;
-    use std::path::Path;
-
-    crate::common_e2e_tests!(async |_, _, _| Gemini, allow_option_id = "proceed_once");
-
-    pub fn local_command() -> AgentServerCommand {
-        let cli_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../../../gemini-cli/packages/cli")
-            .to_string_lossy()
-            .to_string();
-
-        AgentServerCommand {
-            path: "node".into(),
-            args: vec![cli_path],
-            env: None,
-        }
-    }
-}

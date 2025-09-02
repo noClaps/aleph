@@ -212,37 +212,3 @@ fn heading_entry(now: NaiveTime, hour_format: &Option<HourFormat>) -> String {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    mod heading_entry_tests {
-        use super::super::*;
-
-        #[test]
-        fn test_heading_entry_defaults_to_hour_12() {
-            let naive_time = NaiveTime::from_hms_milli_opt(15, 0, 0, 0).unwrap();
-            let actual_heading_entry = heading_entry(naive_time, &None);
-            let expected_heading_entry = "# 3:00 PM";
-
-            assert_eq!(actual_heading_entry, expected_heading_entry);
-        }
-
-        #[test]
-        fn test_heading_entry_is_hour_12() {
-            let naive_time = NaiveTime::from_hms_milli_opt(15, 0, 0, 0).unwrap();
-            let actual_heading_entry = heading_entry(naive_time, &Some(HourFormat::Hour12));
-            let expected_heading_entry = "# 3:00 PM";
-
-            assert_eq!(actual_heading_entry, expected_heading_entry);
-        }
-
-        #[test]
-        fn test_heading_entry_is_hour_24() {
-            let naive_time = NaiveTime::from_hms_milli_opt(15, 0, 0, 0).unwrap();
-            let actual_heading_entry = heading_entry(naive_time, &Some(HourFormat::Hour24));
-            let expected_heading_entry = "# 15:00";
-
-            assert_eq!(actual_heading_entry, expected_heading_entry);
-        }
-    }
-}

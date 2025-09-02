@@ -41,8 +41,3 @@ util.workspace = true
 workspace.workspace = true
 worktree.workspace = true
 workspace-hack.workspace = true
-
-[dev-dependencies]
-pretty_assertions.workspace = true
-settings.workspace = true
-zlog.workspace = true

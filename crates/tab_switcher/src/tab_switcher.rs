@@ -1,6 +1,3 @@
-#[cfg(test)]
-mod tab_switcher_tests;
-
 use collections::HashMap;
 use editor::items::{
     entry_diagnostic_aware_icon_decoration_and_color, entry_git_aware_label_color,
