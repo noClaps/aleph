@@ -11,3 +11,4 @@ This fork removes:
 - AI providers:
   - Zeta
 - Tests, benchmarks and examples (who needs them anyway)
+- Custom fonts (IBM Plex Sans and Lilex)
