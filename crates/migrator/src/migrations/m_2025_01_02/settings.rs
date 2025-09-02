@@ -49,14 +49,8 @@ fn replace_deprecated_settings_values(
 }
 
 static UPDATED_SETTINGS: LazyLock<HashMap<(&str, &str), Vec<(&str, &str)>>> = LazyLock::new(|| {
-    HashMap::from_iter([
-        (
-            ("chat_panel", "button"),
-            vec![("true", "\"always\""), ("false", "\"never\"")],
-        ),
-        (
-            ("scrollbar", "diagnostics"),
-            vec![("true", "\"all\""), ("false", "\"none\"")],
-        ),
-    ])
+    HashMap::from_iter([(
+        ("scrollbar", "diagnostics"),
+        vec![("true", "\"all\""), ("false", "\"none\"")],
+    )])
 });

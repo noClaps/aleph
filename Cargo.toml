@@ -34,8 +34,6 @@ members = [
     "crates/cloud_api_client",
     "crates/cloud_api_types",
     "crates/cloud_llm_client",
-    "crates/collab",
-    "crates/collab_ui",
     "crates/collections",
     "crates/command_palette",
     "crates/command_palette_hooks",
@@ -95,8 +93,6 @@ members = [
     "crates/language_selector",
     "crates/language_tools",
     "crates/languages",
-    "crates/line_ending_selector",
-    "crates/livekit_api",
     "crates/livekit_client",
     "crates/lmstudio",
     "crates/lsp",
@@ -133,7 +129,6 @@ members = [
     "crates/remote",
     "crates/repl",
     "crates/reqwest_client",
-    "crates/rich_text",
     "crates/rope",
     "crates/rpc",
     "crates/rules_library",
@@ -247,7 +242,6 @@ clock = { path = "crates/clock" }
 cloud_api_client = { path = "crates/cloud_api_client" }
 cloud_api_types = { path = "crates/cloud_api_types" }
 cloud_llm_client = { path = "crates/cloud_llm_client" }
-collab_ui = { path = "crates/collab_ui" }
 collections = { path = "crates/collections" }
 command_palette = { path = "crates/command_palette" }
 command_palette_hooks = { path = "crates/command_palette_hooks" }
@@ -303,8 +297,6 @@ language_models = { path = "crates/language_models" }
 language_selector = { path = "crates/language_selector" }
 language_tools = { path = "crates/language_tools" }
 languages = { path = "crates/languages" }
-line_ending_selector = { path = "crates/line_ending_selector" }
-livekit_api = { path = "crates/livekit_api" }
 livekit_client = { path = "crates/livekit_client" }
 lmstudio = { path = "crates/lmstudio" }
 lsp = { path = "crates/lsp" }
@@ -342,7 +334,6 @@ scheduler = { path = "crates/scheduler" }
 remote = { path = "crates/remote" }
 repl = { path = "crates/repl" }
 reqwest_client = { path = "crates/reqwest_client" }
-rich_text = { path = "crates/rich_text" }
 rodio = { version = "0.21.1", default-features = false }
 rope = { path = "crates/rope" }
 rpc = { path = "crates/rpc" }
@@ -447,7 +438,6 @@ cpal = "0.16"
 crash-handler = "0.6"
 ctor = "0.4.0"
 dap-types = { git = "https://github.com/zed-industries/dap-types", rev = "1b461b310481d01e02b2603c16d7144b926339f8" }
-dashmap = "6.0"
 derive_more = "0.99.17"
 dirs = "4.0"
 documented = "0.9.1"
@@ -479,7 +469,6 @@ itertools = "0.14.0"
 jj-lib = { git = "https://github.com/jj-vcs/jj", rev = "e18eb8e05efaa153fad5ef46576af145bba1807f" }
 json_dotpath = "1.1"
 jsonschema = "0.30.0"
-jsonwebtoken = "9.3"
 jupyter-protocol = { git = "https://github.com/ConradIrwin/runtimed", rev = "7130c804216b6914355d15d0b91ea91f6babd734" }
 jupyter-websocket-client = { git = "https://github.com/ConradIrwin/runtimed", rev = "7130c804216b6914355d15d0b91ea91f6babd734" }
 libc = "0.2"
@@ -492,7 +481,6 @@ markup5ever_rcdom = "0.3.0"
 metal = "0.29"
 minidumper = "0.8"
 moka = { version = "0.12.10", features = ["sync"] }
-nanoid = "0.4"
 nbformat = { git = "https://github.com/ConradIrwin/runtimed", rev = "7130c804216b6914355d15d0b91ea91f6babd734" }
 nix = "0.29"
 num-format = "0.4.4"
@@ -564,7 +552,6 @@ runtimelib = { git = "https://github.com/ConradIrwin/runtimed", rev = "7130c8042
     "async-dispatcher-runtime",
 ] }
 rust-embed = { version = "8.4", features = ["include-exclude"] }
-rustc-demangle = "0.1.23"
 rustc-hash = "2.1.0"
 rustls = { version = "0.23.26" }
 rustls-platform-verifier = "0.5.0"
@@ -591,7 +578,6 @@ stacksafe = "0.1"
 streaming-iterator = "0.1"
 strsim = "0.11"
 strum = { version = "0.27.0", features = ["derive"] }
-subtle = "2.5.0"
 syn = { version = "2.0.101", features = ["full", "extra-traits"] }
 sysinfo = "0.31.0"
 take-until = "0.2.0"
@@ -609,7 +595,6 @@ tiny_http = "0.8"
 tokio = { version = "1" }
 tokio-tungstenite = { version = "0.26", features = ["__rustls-tls"] }
 toml = "0.8"
-tower-http = "0.4.4"
 tree-sitter = { version = "0.25.6", features = ["wasm"] }
 tree-sitter-bash = "0.25.0"
 tree-sitter-c = "0.23"
@@ -701,7 +686,6 @@ project_symbols = { codegen-units = 1 }
 refineable = { codegen-units = 1 }
 release_channel = { codegen-units = 1 }
 reqwest_client = { codegen-units = 1 }
-rich_text = { codegen-units = 1 }
 semantic_version = { codegen-units = 1 }
 session = { codegen-units = 1 }
 snippet = { codegen-units = 1 }

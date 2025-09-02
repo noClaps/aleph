@@ -735,24 +735,6 @@
     // Set to 0 to collapse all items that have children, 1 or higher to collapse items at that depth or deeper.
     "expand_outlines_with_depth": 100
   },
-  "collaboration_panel": {
-    // Whether to show the collaboration panel button in the status bar.
-    "button": true,
-    // Where to dock the collaboration panel. Can be 'left' or 'right'.
-    "dock": "left",
-    // Default width of the collaboration panel.
-    "default_width": 240
-  },
-  "chat_panel": {
-    // When to show the chat panel button in the status bar.
-    // Can be 'never', 'always', or 'when_in_call',
-    // or a boolean (interpreted as 'never'/'always').
-    "button": "when_in_call",
-    // Where to dock the chat panel. Can be 'left' or 'right'.
-    "dock": "right",
-    // Default width of the chat panel.
-    "default_width": 240
-  },
   "git_panel": {
     // Whether to show the git panel button in the status bar.
     "button": true,
@@ -789,14 +771,6 @@
     // Whether to automatically replace emoji shortcodes with emoji characters.
     // For example: typing `:wave:` gets replaced with `👋`.
     "auto_replace_emoji_shortcode": true
-  },
-  "notification_panel": {
-    // Whether to show the notification panel button in the status bar.
-    "button": true,
-    // Where to dock the notification panel. Can be 'left' or 'right'.
-    "dock": "right",
-    // Default width of the notification panel.
-    "default_width": 380
   },
   "agent": {
     // Whether the agent is enabled.
