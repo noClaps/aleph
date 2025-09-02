@@ -2265,15 +2265,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "block2"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "340d2f0bdb2a43c1d3cd40513185b2bd7def0aa1052f956455114bc98f82dcf2"
-dependencies = [
- "objc2",
-]
-
-[[package]]
 name = "blocking"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2419,20 +2410,6 @@ name = "bytemuck"
 version = "1.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6b1fc10dbac614ebc03540c9dbd60e83887fda27794998c6528f1782047d540"
-dependencies = [
- "bytemuck_derive",
-]
-
-[[package]]
-name = "bytemuck_derive"
-version = "1.9.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ecc273b49b3205b83d648f0690daa588925572cc5063745bfe547fe7ec8e1a1"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.101",
-]
 
 [[package]]
 name = "byteorder"
@@ -7254,9 +7231,6 @@ name = "heck"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
-dependencies = [
- "unicode-segmentation",
-]
 
 [[package]]
 name = "heck"
@@ -10452,23 +10426,7 @@ version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "900831247d2fe1a09a683278e5384cfb8c80c79fe6b166f9d14bfdde0ea1b03c"
 dependencies = [
- "bitflags 2.9.0",
  "objc2",
- "objc2-core-foundation",
-]
-
-[[package]]
-name = "objc2-metal"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f246c183239540aab1782457b35ab2040d4259175bd1d0c58e46ada7b47a874"
-dependencies = [
- "bitflags 2.9.0",
- "block2",
- "dispatch2",
- "objc2",
- "objc2-core-foundation",
- "objc2-foundation",
 ]
 
 [[package]]
@@ -18717,14 +18675,12 @@ dependencies = [
  "bit-vec 0.8.0",
  "bitflags 2.9.0",
  "bstr",
- "bytemuck",
  "byteorder",
  "bytes 1.10.1",
  "cc",
  "chrono",
  "clap",
  "clap_builder",
- "codespan-reporting",
  "concurrent-queue",
  "core-foundation 0.9.4",
  "core-foundation-sys",
@@ -18739,7 +18695,6 @@ dependencies = [
  "event-listener 5.4.0",
  "event-listener-strategy",
  "flate2",
- "foldhash",
  "form_urlencoded",
  "futures 0.3.31",
  "futures-channel",
@@ -18750,16 +18705,12 @@ dependencies = [
  "futures-task",
  "futures-util",
  "getrandom 0.2.15",
- "getrandom 0.3.2",
- "gimli",
  "half",
  "handlebars 4.5.0",
  "hashbrown 0.14.5",
  "hashbrown 0.15.3",
- "heck 0.4.1",
  "hmac",
  "hyper 0.14.32",
- "hyper-rustls 0.27.5",
  "idna",
  "indexmap",
  "itertools 0.12.1",
@@ -18775,7 +18726,6 @@ dependencies = [
  "memchr",
  "mime_guess",
  "miniz_oxide",
- "naga",
  "nix 0.29.0",
  "nom 7.1.3",
  "num-bigint",
@@ -18783,11 +18733,6 @@ dependencies = [
  "num-iter",
  "num-rational",
  "num-traits",
- "objc2",
- "objc2-core-foundation",
- "objc2-foundation",
- "objc2-metal",
- "object",
  "once_cell",
  "percent-encoding",
  "phf",
@@ -18804,18 +18749,14 @@ dependencies = [
  "regex",
  "regex-automata",
  "regex-syntax",
- "ring",
  "rust_decimal",
  "rustc-hash 1.1.0",
  "rustix 0.38.44",
- "rustix 1.0.7",
  "rustls 0.23.26",
  "rustls-webpki 0.103.1",
  "scopeguard",
  "sea-orm",
  "sea-query-binder",
- "security-framework 3.2.0",
- "security-framework-sys",
  "semver",
  "serde",
  "serde_derive",
@@ -18833,17 +18774,14 @@ dependencies = [
  "subtle",
  "syn 1.0.109",
  "syn 2.0.101",
- "sync_wrapper 1.0.2",
  "thiserror 2.0.12",
  "time",
  "time-macros",
  "tokio",
  "tokio-rustls 0.26.2",
- "tokio-socks",
  "tokio-stream",
  "tokio-util",
  "toml_edit",
- "tower 0.5.2",
  "tracing",
  "tracing-core",
  "tungstenite 0.26.2",

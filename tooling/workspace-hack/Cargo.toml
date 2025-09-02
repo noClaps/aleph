@@ -38,13 +38,14 @@ bit-set = { version = "0.8", default-features = false, features = ["std"] }
 bit-vec = { version = "0.8", default-features = false, features = ["std"] }
 bitflags = { version = "2", default-features = false, features = ["serde", "std"] }
 bstr = { version = "1" }
-bytemuck = { version = "1", default-features = false, features = ["aarch64_simd", "derive", "extern_crate_alloc"] }
 byteorder = { version = "1" }
 bytes = { version = "1" }
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["cargo", "derive", "string", "wrap_help"] }
 clap_builder = { version = "4", default-features = false, features = ["cargo", "color", "std", "string", "suggestions", "usage", "wrap_help"] }
 concurrent-queue = { version = "2" }
+core-foundation = { version = "0.9" }
+core-foundation-sys = { version = "0.8" }
 cranelift-codegen = { version = "0.116", default-features = false, features = ["host-arch", "incremental-cache", "std", "timing", "unwind"] }
 crc32fast = { version = "1" }
 crossbeam-epoch = { version = "0.9" }
@@ -65,7 +66,7 @@ futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }
 futures-task = { version = "0.3", default-features = false, features = ["std"] }
 futures-util = { version = "0.3", features = ["channel", "io-compat", "sink"] }
-getrandom-6f8ce4dd05d13bba = { package = "getrandom", version = "0.2", default-features = false, features = ["std"] }
+getrandom = { version = "0.2", default-features = false, features = ["std"] }
 half = { version = "2", features = ["num-traits"] }
 handlebars = { version = "4", features = ["rust-embed"] }
 hashbrown-3575ec1268b04181 = { package = "hashbrown", version = "0.15", features = ["serde"] }
@@ -74,6 +75,7 @@ hmac = { version = "0.12", default-features = false, features = ["reset"] }
 hyper = { version = "0.14", features = ["client", "http1", "http2", "runtime", "server", "stream"] }
 idna = { version = "1" }
 indexmap = { version = "2", features = ["serde"] }
+itertools-5ef9efb8ec2df382 = { package = "itertools", version = "0.12" }
 jiff = { version = "0.2" }
 lazy_static = { version = "1", default-features = false, features = ["spin_no_std"] }
 libc = { version = "0.2", features = ["extra_traits"] }
@@ -85,6 +87,7 @@ md-5 = { version = "0.10" }
 memchr = { version = "2" }
 mime_guess = { version = "2" }
 miniz_oxide = { version = "0.8", features = ["simd"] }
+nix = { version = "0.29", features = ["pthread", "signal", "user"] }
 nom = { version = "7" }
 num-bigint = { version = "0.4" }
 num-integer = { version = "0.1", features = ["i128"] }
@@ -97,7 +100,7 @@ phf = { version = "0.11", features = ["macros"] }
 phf_shared = { version = "0.11" }
 prost = { version = "0.9" }
 prost-types = { version = "0.9" }
-rand-c38e5c1d305a1b54 = { package = "rand", version = "0.8", features = ["small_rng"] }
+rand = { version = "0.8", features = ["small_rng"] }
 rand_chacha = { version = "0.3" }
 rand_core = { version = "0.6", default-features = false, features = ["std"] }
 regalloc2 = { version = "0.11", features = ["checker", "enable-serde"] }
@@ -106,9 +109,10 @@ regex-automata = { version = "0.4" }
 regex-syntax = { version = "0.8" }
 rust_decimal = { version = "1", default-features = false, features = ["maths", "serde", "std"] }
 rustc-hash = { version = "1" }
-rustix-d585fab2519d2d1 = { package = "rustix", version = "0.38", default-features = false, features = ["fs", "net", "std"] }
+rustix = { version = "0.38", default-features = false, features = ["fs", "net", "std"] }
 rustls = { version = "0.23", features = ["ring"] }
 rustls-webpki = { version = "0.103", default-features = false, features = ["aws-lc-rs", "ring", "std"] }
+scopeguard = { version = "1" }
 sea-orm = { version = "1", features = ["runtime-tokio-rustls", "sqlx-postgres", "sqlx-sqlite"] }
 sea-query-binder = { version = "0.7", default-features = false, features = ["postgres-array", "sqlx-postgres", "sqlx-sqlite", "with-bigdecimal", "with-chrono", "with-json", "with-rust_decimal", "with-time", "with-uuid"] }
 semver = { version = "1", features = ["serde"] }
@@ -127,6 +131,7 @@ thiserror = { version = "2" }
 time = { version = "0.3", features = ["local-offset", "macros", "serde-well-known"] }
 tokio = { version = "1", features = ["full"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["tls12"] }
+tokio-stream = { version = "0.1", features = ["fs"] }
 tokio-util = { version = "0.7", features = ["codec", "compat", "io"] }
 toml_edit = { version = "0.22", features = ["serde"] }
 tracing = { version = "0.1", features = ["log"] }
@@ -166,7 +171,6 @@ bit-set = { version = "0.8", default-features = false, features = ["std"] }
 bit-vec = { version = "0.8", default-features = false, features = ["std"] }
 bitflags = { version = "2", default-features = false, features = ["serde", "std"] }
 bstr = { version = "1" }
-bytemuck = { version = "1", default-features = false, features = ["aarch64_simd", "derive", "extern_crate_alloc"] }
 byteorder = { version = "1" }
 bytes = { version = "1" }
 cc = { version = "1", default-features = false, features = ["parallel"] }
@@ -174,6 +178,8 @@ chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["cargo", "derive", "string", "wrap_help"] }
 clap_builder = { version = "4", default-features = false, features = ["cargo", "color", "std", "string", "suggestions", "usage", "wrap_help"] }
 concurrent-queue = { version = "2" }
+core-foundation = { version = "0.9" }
+core-foundation-sys = { version = "0.8" }
 cranelift-codegen = { version = "0.116", default-features = false, features = ["host-arch", "incremental-cache", "std", "timing", "unwind"] }
 crc32fast = { version = "1" }
 crossbeam-epoch = { version = "0.9" }
@@ -194,17 +200,17 @@ futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }
 futures-task = { version = "0.3", default-features = false, features = ["std"] }
 futures-util = { version = "0.3", features = ["channel", "io-compat", "sink"] }
-getrandom-6f8ce4dd05d13bba = { package = "getrandom", version = "0.2", default-features = false, features = ["std"] }
+getrandom = { version = "0.2", default-features = false, features = ["std"] }
 half = { version = "2", features = ["num-traits"] }
 handlebars = { version = "4", features = ["rust-embed"] }
 hashbrown-3575ec1268b04181 = { package = "hashbrown", version = "0.15", features = ["serde"] }
 hashbrown-582f2526e08bb6a0 = { package = "hashbrown", version = "0.14", features = ["raw"] }
-heck = { version = "0.4", features = ["unicode"] }
 hmac = { version = "0.12", default-features = false, features = ["reset"] }
 hyper = { version = "0.14", features = ["client", "http1", "http2", "runtime", "server", "stream"] }
 idna = { version = "1" }
 indexmap = { version = "2", features = ["serde"] }
 itertools-594e8ee84c453af0 = { package = "itertools", version = "0.13" }
+itertools-5ef9efb8ec2df382 = { package = "itertools", version = "0.12" }
 jiff = { version = "0.2" }
 lazy_static = { version = "1", default-features = false, features = ["spin_no_std"] }
 libc = { version = "0.2", features = ["extra_traits"] }
@@ -216,6 +222,7 @@ md-5 = { version = "0.10" }
 memchr = { version = "2" }
 mime_guess = { version = "2" }
 miniz_oxide = { version = "0.8", features = ["simd"] }
+nix = { version = "0.29", features = ["pthread", "signal", "user"] }
 nom = { version = "7" }
 num-bigint = { version = "0.4" }
 num-integer = { version = "0.1", features = ["i128"] }
@@ -231,7 +238,7 @@ proc-macro2 = { version = "1" }
 prost = { version = "0.9" }
 prost-types = { version = "0.9" }
 quote = { version = "1" }
-rand-c38e5c1d305a1b54 = { package = "rand", version = "0.8", features = ["small_rng"] }
+rand = { version = "0.8", features = ["small_rng"] }
 rand_chacha = { version = "0.3" }
 rand_core = { version = "0.6", default-features = false, features = ["std"] }
 regalloc2 = { version = "0.11", features = ["checker", "enable-serde"] }
@@ -240,9 +247,10 @@ regex-automata = { version = "0.4" }
 regex-syntax = { version = "0.8" }
 rust_decimal = { version = "1", default-features = false, features = ["maths", "serde", "std"] }
 rustc-hash = { version = "1" }
-rustix-d585fab2519d2d1 = { package = "rustix", version = "0.38", default-features = false, features = ["fs", "net", "std"] }
+rustix = { version = "0.38", default-features = false, features = ["fs", "net", "std"] }
 rustls = { version = "0.23", features = ["ring"] }
 rustls-webpki = { version = "0.103", default-features = false, features = ["aws-lc-rs", "ring", "std"] }
+scopeguard = { version = "1" }
 sea-orm = { version = "1", features = ["runtime-tokio-rustls", "sqlx-postgres", "sqlx-sqlite"] }
 sea-query-binder = { version = "0.7", default-features = false, features = ["postgres-array", "sqlx-postgres", "sqlx-sqlite", "with-bigdecimal", "with-chrono", "with-json", "with-rust_decimal", "with-time", "with-uuid"] }
 semver = { version = "1", features = ["serde"] }
@@ -267,6 +275,7 @@ time = { version = "0.3", features = ["local-offset", "macros", "serde-well-know
 time-macros = { version = "0.2", default-features = false, features = ["formatting", "parsing", "serde"] }
 tokio = { version = "1", features = ["full"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["tls12"] }
+tokio-stream = { version = "0.1", features = ["fs"] }
 tokio-util = { version = "0.7", features = ["codec", "compat", "io"] }
 toml_edit = { version = "0.22", features = ["serde"] }
 tracing = { version = "0.1", features = ["log"] }
@@ -281,63 +290,5 @@ wasmtime = { version = "29", default-features = false, features = ["async", "com
 wasmtime-cranelift = { version = "29", default-features = false, features = ["component-model", "gc-drc", "incremental-cache"] }
 wasmtime-environ = { version = "29", default-features = false, features = ["compile", "component-model", "demangle", "gc-drc"] }
 winnow = { version = "0.7", features = ["simd"] }
-
-[target.aarch64-apple-darwin.dependencies]
-codespan-reporting = { version = "0.12" }
-core-foundation = { version = "0.9" }
-core-foundation-sys = { version = "0.8" }
-foldhash = { version = "0.1", default-features = false, features = ["std"] }
-getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
-gimli = { version = "0.31", default-features = false, features = ["read", "std", "write"] }
-hyper-rustls = { version = "0.27", default-features = false, features = ["http1", "http2", "native-tokio", "ring", "tls12"] }
-itertools-5ef9efb8ec2df382 = { package = "itertools", version = "0.12" }
-naga = { version = "25", features = ["msl-out", "wgsl-in"] }
-nix-b73a96c0a5f6a7d9 = { package = "nix", version = "0.29", features = ["fs", "pthread", "signal", "user"] }
-objc2 = { version = "0.6" }
-objc2-core-foundation = { version = "0.3", default-features = false, features = ["CFArray", "CFCGTypes", "CFData", "CFDate", "CFDictionary", "CFRunLoop", "CFString", "CFURL", "objc2", "std"] }
-objc2-foundation = { version = "0.3", default-features = false, features = ["NSArray", "NSAttributedString", "NSBundle", "NSCoder", "NSData", "NSDate", "NSDictionary", "NSEnumerator", "NSError", "NSGeometry", "NSNotification", "NSNull", "NSObjCRuntime", "NSObject", "NSProcessInfo", "NSRange", "NSRunLoop", "NSString", "NSURL", "NSUndoManager", "NSValue", "objc2-core-foundation", "std"] }
-objc2-metal = { version = "0.3" }
-object = { version = "0.36", default-features = false, features = ["archive", "read_core", "unaligned", "write"] }
-ring = { version = "0.17", features = ["std"] }
-rustix-d585fab2519d2d1 = { package = "rustix", version = "0.38", features = ["event", "mm", "param", "pipe", "process", "termios", "time"] }
-rustix-dff4ba8e3ae991db = { package = "rustix", version = "1", features = ["fs", "net", "process", "termios", "time"] }
-scopeguard = { version = "1" }
-security-framework = { version = "3", features = ["OSX_10_14"] }
-security-framework-sys = { version = "2", features = ["OSX_10_14"] }
-sync_wrapper = { version = "1", default-features = false, features = ["futures"] }
-tokio-rustls = { version = "0.26", default-features = false, features = ["logging", "ring"] }
-tokio-socks = { version = "0.5", features = ["futures-io"] }
-tokio-stream = { version = "0.1", features = ["fs"] }
-tower = { version = "0.5", default-features = false, features = ["timeout", "util"] }
-
-[target.aarch64-apple-darwin.build-dependencies]
-codespan-reporting = { version = "0.12" }
-core-foundation = { version = "0.9" }
-core-foundation-sys = { version = "0.8" }
-foldhash = { version = "0.1", default-features = false, features = ["std"] }
-getrandom-468e82937335b1c9 = { package = "getrandom", version = "0.3", default-features = false, features = ["std"] }
-gimli = { version = "0.31", default-features = false, features = ["read", "std", "write"] }
-hyper-rustls = { version = "0.27", default-features = false, features = ["http1", "http2", "native-tokio", "ring", "tls12"] }
-itertools-5ef9efb8ec2df382 = { package = "itertools", version = "0.12" }
-naga = { version = "25", features = ["msl-out", "wgsl-in"] }
-nix-b73a96c0a5f6a7d9 = { package = "nix", version = "0.29", features = ["fs", "pthread", "signal", "user"] }
-objc2 = { version = "0.6" }
-objc2-core-foundation = { version = "0.3", default-features = false, features = ["CFArray", "CFCGTypes", "CFData", "CFDate", "CFDictionary", "CFRunLoop", "CFString", "CFURL", "objc2", "std"] }
-objc2-foundation = { version = "0.3", default-features = false, features = ["NSArray", "NSAttributedString", "NSBundle", "NSCoder", "NSData", "NSDate", "NSDictionary", "NSEnumerator", "NSError", "NSGeometry", "NSNotification", "NSNull", "NSObjCRuntime", "NSObject", "NSProcessInfo", "NSRange", "NSRunLoop", "NSString", "NSURL", "NSUndoManager", "NSValue", "objc2-core-foundation", "std"] }
-objc2-metal = { version = "0.3" }
-object = { version = "0.36", default-features = false, features = ["archive", "read_core", "unaligned", "write"] }
-proc-macro2 = { version = "1", default-features = false, features = ["span-locations"] }
-ring = { version = "0.17", features = ["std"] }
-rustix-d585fab2519d2d1 = { package = "rustix", version = "0.38", features = ["event", "mm", "param", "pipe", "process", "termios", "time"] }
-rustix-dff4ba8e3ae991db = { package = "rustix", version = "1", features = ["fs", "net", "process", "termios", "time"] }
-scopeguard = { version = "1" }
-security-framework = { version = "3", features = ["OSX_10_14"] }
-security-framework-sys = { version = "2", features = ["OSX_10_14"] }
-sync_wrapper = { version = "1", default-features = false, features = ["futures"] }
-tokio-rustls = { version = "0.26", default-features = false, features = ["logging", "ring"] }
-tokio-socks = { version = "0.5", features = ["futures-io"] }
-tokio-stream = { version = "0.1", features = ["fs"] }
-tower = { version = "0.5", default-features = false, features = ["timeout", "util"] }
-
 
 ### END HAKARI SECTION
