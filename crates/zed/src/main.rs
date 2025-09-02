@@ -472,13 +472,6 @@ pub fn main() {
         auto_update::init(client.http_client(), cx);
         dap_adapters::init(cx);
         auto_update_ui::init(cx);
-        reliability::init(
-            client.http_client(),
-            system_id.as_ref().map(|id| id.to_string()),
-            installation_id.clone().map(|id| id.to_string()),
-            session_id.clone(),
-            cx,
-        );
 
         SystemAppearance::init(cx);
         theme::init(theme::LoadThemes::All(Box::new(Assets)), cx);
