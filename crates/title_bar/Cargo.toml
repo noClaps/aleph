@@ -14,7 +14,6 @@ doctest = false
 
 [features]
 default = []
-stories = ["dep:story"]
 
 [dependencies]
 anyhow.workspace = true
@@ -33,7 +32,6 @@ serde.workspace = true
 settings.workspace = true
 keymap_editor.workspace = true
 smallvec.workspace = true
-story = { workspace = true, optional = true }
 telemetry.workspace = true
 theme.workspace = true
 ui.workspace = true

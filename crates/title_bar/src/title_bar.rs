@@ -6,9 +6,6 @@ mod platforms;
 mod system_window_tabs;
 mod title_bar_settings;
 
-#[cfg(feature = "stories")]
-mod stories;
-
 use crate::{
     application_menu::{ApplicationMenu, show_menus},
     platform_title_bar::PlatformTitleBar,
@@ -41,9 +38,6 @@ use workspace::{Workspace, notifications::NotifyResultExt};
 use zed_actions::{OpenRecent, OpenRemote};
 
 pub use onboarding_banner::restore_banner;
-
-#[cfg(feature = "stories")]
-pub use stories::*;
 
 const MAX_PROJECT_NAME_LENGTH: usize = 40;
 const MAX_BRANCH_NAME_LENGTH: usize = 40;

@@ -38,9 +38,6 @@ mod tab_bar;
 mod toggle;
 mod tooltip;
 
-#[cfg(feature = "stories")]
-mod stories;
-
 pub use avatar::*;
 pub use badge::*;
 pub use banner::*;
@@ -80,6 +77,3 @@ pub use tab::*;
 pub use tab_bar::*;
 pub use toggle::*;
 pub use tooltip::*;
-
-#[cfg(feature = "stories")]
-pub use stories::*;
