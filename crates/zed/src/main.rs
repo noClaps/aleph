@@ -505,7 +505,7 @@ pub fn main() {
         web_search::init(cx);
         web_search_providers::init(app_state.client.clone(), cx);
         snippet_provider::init(cx);
-        edit_prediction_registry::init(app_state.client.clone(), app_state.user_store.clone(), cx);
+        edit_prediction_registry::init(app_state.user_store.clone(), cx);
         let prompt_builder = PromptBuilder::load(app_state.fs.clone(), stdout_is_a_pty(), cx);
         agent_ui::init(
             app_state.fs.clone(),
@@ -570,7 +570,6 @@ pub fn main() {
         settings_ui::init(cx);
         keymap_editor::init(cx);
         extensions_ui::init(cx);
-        zeta::init(cx);
         inspector_ui::init(app_state.clone(), cx);
 
         cx.observe_global::<SettingsStore>({

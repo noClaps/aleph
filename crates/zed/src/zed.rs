@@ -360,7 +360,6 @@ pub fn initialize_workspace(
         let edit_prediction_button = cx.new(|cx| {
             edit_prediction_button::EditPredictionButton::new(
                 app_state.fs.clone(),
-                app_state.user_store.clone(),
                 edit_prediction_menu_handle.clone(),
                 cx,
             )
@@ -4403,7 +4402,7 @@ mod tests {
                 "workspace",
                 "zed",
                 "zed_predict_onboarding",
-                "zeta",
+                "window",
             ];
             assert_eq!(
                 all_namespaces,

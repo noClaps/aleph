@@ -99,9 +99,18 @@
       "ctrl-l": "editor::ScrollCursorCenter",
       "alt-left": "editor::MoveToPreviousWordStart",
       "alt-right": "editor::MoveToNextWordEnd",
-      "cmd-left": ["editor::MoveToBeginningOfLine", { "stop_at_soft_wraps": true, "stop_at_indent": true }],
-      "ctrl-a": ["editor::MoveToBeginningOfLine", { "stop_at_soft_wraps": false, "stop_at_indent": true }],
-      "home": ["editor::MoveToBeginningOfLine", { "stop_at_soft_wraps": true, "stop_at_indent": true }],
+      "cmd-left": [
+        "editor::MoveToBeginningOfLine",
+        { "stop_at_soft_wraps": true, "stop_at_indent": true }
+      ],
+      "ctrl-a": [
+        "editor::MoveToBeginningOfLine",
+        { "stop_at_soft_wraps": false, "stop_at_indent": true }
+      ],
+      "home": [
+        "editor::MoveToBeginningOfLine",
+        { "stop_at_soft_wraps": true, "stop_at_indent": true }
+      ],
       "cmd-right": ["editor::MoveToEndOfLine", { "stop_at_soft_wraps": true }],
       "ctrl-e": ["editor::MoveToEndOfLine", { "stop_at_soft_wraps": false }],
       "end": ["editor::MoveToEndOfLine", { "stop_at_soft_wraps": true }],
@@ -127,12 +136,30 @@
       "cmd-l": "editor::SelectLine",
       "cmd-shift-i": "editor::Format",
       "alt-shift-o": "editor::OrganizeImports",
-      "cmd-shift-left": ["editor::SelectToBeginningOfLine", { "stop_at_soft_wraps": true, "stop_at_indent": true }],
-      "shift-home": ["editor::SelectToBeginningOfLine", { "stop_at_soft_wraps": true, "stop_at_indent": true }],
-      "ctrl-shift-a": ["editor::SelectToBeginningOfLine", { "stop_at_soft_wraps": true, "stop_at_indent": true }],
-      "cmd-shift-right": ["editor::SelectToEndOfLine", { "stop_at_soft_wraps": true }],
-      "shift-end": ["editor::SelectToEndOfLine", { "stop_at_soft_wraps": true }],
-      "ctrl-shift-e": ["editor::SelectToEndOfLine", { "stop_at_soft_wraps": true }],
+      "cmd-shift-left": [
+        "editor::SelectToBeginningOfLine",
+        { "stop_at_soft_wraps": true, "stop_at_indent": true }
+      ],
+      "shift-home": [
+        "editor::SelectToBeginningOfLine",
+        { "stop_at_soft_wraps": true, "stop_at_indent": true }
+      ],
+      "ctrl-shift-a": [
+        "editor::SelectToBeginningOfLine",
+        { "stop_at_soft_wraps": true, "stop_at_indent": true }
+      ],
+      "cmd-shift-right": [
+        "editor::SelectToEndOfLine",
+        { "stop_at_soft_wraps": true }
+      ],
+      "shift-end": [
+        "editor::SelectToEndOfLine",
+        { "stop_at_soft_wraps": true }
+      ],
+      "ctrl-shift-e": [
+        "editor::SelectToEndOfLine",
+        { "stop_at_soft_wraps": true }
+      ],
       "ctrl-v": ["editor::MovePageDown", { "center_cursor": true }],
       "ctrl-shift-v": ["editor::MovePageUp", { "center_cursor": true }],
       "ctrl-cmd-space": "editor::ShowCharacterPalette",
@@ -160,7 +187,10 @@
       "cmd-k z": "editor::ToggleSoftWrap",
       "cmd-f": "buffer_search::Deploy",
       "cmd-alt-f": "buffer_search::DeployReplace",
-      "cmd-alt-l": ["buffer_search::Deploy", { "selection_search_enabled": true }],
+      "cmd-alt-l": [
+        "buffer_search::Deploy",
+        { "selection_search_enabled": true }
+      ],
       "cmd-e": ["buffer_search::Deploy", { "focus": false }],
       "cmd->": "agent::QuoteSelection",
       "cmd-<": "assistant::InsertIntoEditor",
@@ -546,12 +576,21 @@
       // To use `ctrl-cmd-d` or `ctrl-k ctrl-cmd-d` in Zed you must execute this command and then restart:
       //   defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 70 '<dict><key>enabled</key><false/></dict>'
       "ctrl-cmd-d": ["editor::SelectPrevious", { "replace_newest": false }], // editor.action.addSelectionToPreviousFindMatch
-      "cmd-k ctrl-cmd-d": ["editor::SelectPrevious", { "replace_newest": true }], // editor.action.moveSelectionToPreviousFindMatch
+      "cmd-k ctrl-cmd-d": [
+        "editor::SelectPrevious",
+        { "replace_newest": true }
+      ], // editor.action.moveSelectionToPreviousFindMatch
       "cmd-k cmd-i": "editor::Hover",
       "cmd-k cmd-b": "editor::BlameHover",
       "cmd-/": ["editor::ToggleComments", { "advance_downwards": false }],
-      "f8": ["editor::GoToDiagnostic", { "severity": { "min": "hint", "max": "error" } }],
-      "shift-f8": ["editor::GoToPreviousDiagnostic", { "severity": { "min": "hint", "max": "error" } }],
+      "f8": [
+        "editor::GoToDiagnostic",
+        { "severity": { "min": "hint", "max": "error" } }
+      ],
+      "shift-f8": [
+        "editor::GoToPreviousDiagnostic",
+        { "severity": { "min": "hint", "max": "error" } }
+      ],
       "f2": "editor::Rename",
       "f12": "editor::GoToDefinition",
       "alt-f12": "editor::GoToDefinitionSplit",
@@ -640,8 +679,14 @@
       // Change the default action on `menu::Confirm` by setting the parameter
       // "alt-cmd-o": ["projects::OpenRecent", {"create_new_window": true }],
       "alt-cmd-o": ["projects::OpenRecent", { "create_new_window": false }],
-      "ctrl-cmd-o": ["projects::OpenRemote", { "from_existing_connection": false, "create_new_window": false }],
-      "ctrl-cmd-shift-o": ["projects::OpenRemote", { "from_existing_connection": true, "create_new_window": false }],
+      "ctrl-cmd-o": [
+        "projects::OpenRemote",
+        { "from_existing_connection": false, "create_new_window": false }
+      ],
+      "ctrl-cmd-shift-o": [
+        "projects::OpenRemote",
+        { "from_existing_connection": true, "create_new_window": false }
+      ],
       "cmd-ctrl-b": "branches::OpenRecent",
       "ctrl-~": "workspace::NewTerminal",
       "cmd-s": "workspace::Save",
@@ -1184,26 +1229,6 @@
       "ctrl-alt-left": "pane::SplitLeft",
       "ctrl-alt-right": "pane::SplitRight",
       "cmd-alt-r": "terminal::RerunTask"
-    }
-  },
-  {
-    "context": "RateCompletionModal",
-    "use_key_equivalents": true,
-    "bindings": {
-      "cmd-shift-enter": "zeta::ThumbsUpActiveCompletion",
-      "cmd-shift-backspace": "zeta::ThumbsDownActiveCompletion",
-      "shift-down": "zeta::NextEdit",
-      "shift-up": "zeta::PreviousEdit",
-      "right": "zeta::PreviewCompletion"
-    }
-  },
-  {
-    "context": "RateCompletionModal > Editor",
-    "use_key_equivalents": true,
-    "bindings": {
-      "escape": "zeta::FocusCompletions",
-      "cmd-shift-enter": "zeta::ThumbsUpActiveCompletion",
-      "cmd-shift-backspace": "zeta::ThumbsDownActiveCompletion"
     }
   },
   {

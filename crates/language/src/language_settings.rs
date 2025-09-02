@@ -217,17 +217,11 @@ pub enum EditPredictionProvider {
     #[default]
     Copilot,
     Supermaven,
-    Zed,
 }
 
 impl EditPredictionProvider {
     pub fn is_zed(&self) -> bool {
-        match self {
-            EditPredictionProvider::Zed => true,
-            EditPredictionProvider::None
-            | EditPredictionProvider::Copilot
-            | EditPredictionProvider::Supermaven => false,
-        }
+        false
     }
 }
 

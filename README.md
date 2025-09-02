@@ -8,3 +8,5 @@ A minimal fork of the [Zed](https://zed.dev) code editor.
 This fork removes:
 
 - Support for all platforms other than macOS arm64
+- AI providers:
+  - Zeta
