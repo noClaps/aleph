@@ -16,13 +16,9 @@ use vim_mode_setting::VimModeSetting;
 
 use crate::theme_preview::{ThemePreviewStyle, ThemePreviewTile};
 
-const LIGHT_THEMES: [&str; 3] = ["One Light", "Ayu Light", "Gruvbox Light"];
-const DARK_THEMES: [&str; 3] = ["One Dark", "Ayu Dark", "Gruvbox Dark"];
-const FAMILY_NAMES: [SharedString; 3] = [
-    SharedString::new_static("One"),
-    SharedString::new_static("Ayu"),
-    SharedString::new_static("Gruvbox"),
-];
+const LIGHT_THEMES: [&str; 1] = ["ZeroLimits"];
+const DARK_THEMES: [&str; 1] = ["ZeroLimits"];
+const FAMILY_NAMES: [SharedString; 1] = [SharedString::new_static("ZeroLimits")];
 
 fn get_theme_family_themes(theme_name: &str) -> Option<(&'static str, &'static str)> {
     for i in 0..LIGHT_THEMES.len() {
@@ -41,8 +37,8 @@ fn render_theme_section(tab_index: &mut isize, cx: &mut App) -> impl IntoElement
             Appearance::Light => ThemeMode::Light,
             Appearance::Dark => ThemeMode::Dark,
         },
-        light: ThemeName("One Light".into()),
-        dark: ThemeName("One Dark".into()),
+        light: ThemeName("ZeroLimits".into()),
+        dark: ThemeName("ZeroLimits".into()),
     });
 
     let theme_mode = theme_selection

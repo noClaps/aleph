@@ -1,4 +1,3 @@
-use crate::fallback_themes::zed_default_dark;
 use crate::{
     Appearance, DEFAULT_ICON_THEME_NAME, IconTheme, IconThemeNotFoundError, SyntaxTheme, Theme,
     ThemeNotFoundError, ThemeRegistry, ThemeStyleContent,
@@ -134,8 +133,8 @@ pub struct ThemeSettings {
 }
 
 impl ThemeSettings {
-    const DEFAULT_LIGHT_THEME: &'static str = "One Light";
-    const DEFAULT_DARK_THEME: &'static str = "One Dark";
+    const DEFAULT_LIGHT_THEME: &'static str = "ZeroLimits";
+    const DEFAULT_DARK_THEME: &'static str = "ZeroLimits";
 
     /// Returns the name of the default theme for the given [`Appearance`].
     pub fn default_theme(appearance: Appearance) -> &'static str {
@@ -867,7 +866,6 @@ impl settings::Settings for ThemeSettings {
             theme_selection: defaults.theme.clone(),
             active_theme: themes
                 .get(defaults.theme.as_ref().unwrap().theme(*system_appearance))
-                .or(themes.get(&zed_default_dark().name))
                 .unwrap(),
             experimental_theme_overrides: None,
             theme_overrides: HashMap::default(),

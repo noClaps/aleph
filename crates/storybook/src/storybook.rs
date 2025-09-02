@@ -65,7 +65,7 @@ fn main() {
 
         StorySelector::Component(stories[selection])
     });
-    let theme_name = args.theme.unwrap_or("One Dark".to_string());
+    let theme_name = args.theme.unwrap_or("ZeroLimits".to_string());
 
     gpui::Application::new().with_assets(Assets).run(move |cx| {
         load_embedded_fonts(cx).unwrap();

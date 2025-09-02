@@ -7,8 +7,8 @@
   // - "dark": Use the theme indicated by the "dark" field
   "theme": {
     "mode": "system",
-    "light": "One Light",
-    "dark": "One Dark"
+    "light": "ZeroLimits",
+    "dark": "ZeroLimits"
   },
   "icon_theme": "Zed (Default)",
   // The name of a base set of key bindings to use.
@@ -1965,7 +1965,7 @@
   //   "Presenting": {
   //     "agent_font_size": 20.0,
   //     "buffer_font_size": 20.0,
-  //     "theme": "One Light",
+  //     "theme": "ZeroLimits",
   //     "ui_font_size": 20.0
   //   },
   //   "Python (ty)": {

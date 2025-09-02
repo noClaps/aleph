@@ -12,3 +12,4 @@ This fork removes:
   - Zeta
 - Tests, benchmarks and examples (who needs them anyway)
 - Custom fonts (IBM Plex Sans and Lilex)
+- Themes (replace all with ZeroLimits theme)

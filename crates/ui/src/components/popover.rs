@@ -32,9 +32,6 @@ pub const POPOVER_Y_PADDING: Pixels = px(8.);
 /// Used to display a list of options when the user clicks an element. The menu is
 /// positioned relative the element that was clicked, and clicking an item in the
 /// dropdown should change the value of the element that was clicked.
-///
-/// Example: A theme select control. Displays "One Dark", clicking it opens a list of themes.
-/// When one is selected, the theme select control displays the selected theme.
 #[derive(IntoElement)]
 pub struct Popover {
     children: SmallVec<[AnyElement; 2]>,

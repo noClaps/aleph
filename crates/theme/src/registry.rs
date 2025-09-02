@@ -13,8 +13,8 @@ use util::ResultExt;
 
 use crate::{
     Appearance, AppearanceContent, ChevronIcons, DEFAULT_ICON_THEME_NAME, DirectoryIcons,
-    IconDefinition, IconTheme, Theme, ThemeFamily, ThemeFamilyContent, default_icon_theme,
-    read_icon_theme, read_user_theme, refine_theme_family,
+    IconDefinition, IconTheme, Theme, ThemeFamilyContent, default_icon_theme, read_icon_theme,
+    read_user_theme, refine_theme_family,
 };
 
 /// The metadata for a theme.
@@ -89,10 +89,6 @@ impl ThemeRegistry {
             assets,
         };
 
-        // We're loading the Zed default theme, as we need a theme to be loaded
-        // for tests.
-        registry.insert_theme_families([crate::fallback_themes::zed_default_themes()]);
-
         let default_icon_theme = crate::default_icon_theme();
         registry
             .state
@@ -111,12 +107,6 @@ impl ThemeRegistry {
     /// Sets the flag indicating that the extensions have loaded.
     pub fn set_extensions_loaded(&self) {
         self.state.write().extensions_loaded = true;
-    }
-
-    fn insert_theme_families(&self, families: impl IntoIterator<Item = ThemeFamily>) {
-        for family in families.into_iter() {
-            self.insert_themes(family.themes);
-        }
     }
 
     fn insert_themes(&self, themes: impl IntoIterator<Item = Theme>) {

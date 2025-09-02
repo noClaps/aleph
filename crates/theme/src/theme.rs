@@ -145,8 +145,6 @@ impl ActiveTheme for App {
 
 /// A theme family is a grouping of themes under a single name.
 ///
-/// For example, the "One" theme family contains the "One Light" and "One Dark" themes.
-///
 /// It can also be used to package themes with many variants.
 ///
 /// For example, the "Atelier" theme family contains "Cave", "Dune", "Estuary", "Forest", "Heath", etc.
