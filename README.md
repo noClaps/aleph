@@ -9,6 +9,7 @@ This fork removes:
 
 - Support for all platforms other than macOS arm64
 - AI providers:
+  - Anthropic
   - Zeta
 - Tests, benchmarks and examples (who needs them anyway)
 - Custom fonts (IBM Plex Sans and Lilex)

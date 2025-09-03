@@ -163,7 +163,6 @@ pub enum ModelVendor {
     #[serde(alias = "Azure OpenAI")]
     OpenAI,
     Google,
-    Anthropic,
     #[serde(rename = "xAI")]
     XAI,
 }

@@ -249,22 +249,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "anthropic"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "futures",
- "http_client",
- "schemars",
- "serde",
- "serde_json",
- "strum 0.27.1",
- "thiserror 2.0.12",
- "workspace-hack",
-]
-
-[[package]]
 name = "any_vec"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6934,7 +6918,6 @@ dependencies = [
 name = "language_model"
 version = "0.1.0"
 dependencies = [
- "anthropic",
  "anyhow",
  "base64 0.22.1",
  "client",
@@ -6946,8 +6929,6 @@ dependencies = [
  "http_client",
  "icons",
  "image",
- "log",
- "open_router",
  "parking_lot",
  "proto",
  "schemars",
@@ -6965,7 +6946,6 @@ name = "language_models"
 version = "0.1.0"
 dependencies = [
  "ai_onboarding",
- "anthropic",
  "anyhow",
  "aws-config",
  "aws-credential-types",
@@ -6995,7 +6975,6 @@ dependencies = [
  "ollama",
  "open_ai",
  "open_router",
- "partial-json-fixer",
  "release_channel",
  "schemars",
  "serde",
@@ -8908,12 +8887,6 @@ checksum = "1c464266693329dd5a8715098c7f86e6c5fd5d985018b8318f53d9c6c2b21a31"
 dependencies = [
  "num-traits",
 ]
-
-[[package]]
-name = "partial-json-fixer"
-version = "0.5.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "35ffd90b3f3b6477db7478016b9efb1b7e9d38eafd095f0542fe0ec2ea884a13"
 
 [[package]]
 name = "password-hash"

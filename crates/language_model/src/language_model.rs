@@ -5,7 +5,6 @@ mod request;
 mod role;
 mod telemetry;
 
-use anthropic::{AnthropicError, parse_prompt_too_long};
 use anyhow::{Result, anyhow};
 use client::Client;
 use cloud_llm_client::{CompletionMode, CompletionRequestStatus};
@@ -32,11 +31,6 @@ pub use crate::registry::*;
 pub use crate::request::*;
 pub use crate::role::*;
 pub use crate::telemetry::*;
-
-pub const ANTHROPIC_PROVIDER_ID: LanguageModelProviderId =
-    LanguageModelProviderId::new("anthropic");
-pub const ANTHROPIC_PROVIDER_NAME: LanguageModelProviderName =
-    LanguageModelProviderName::new("Anthropic");
 
 pub const GOOGLE_PROVIDER_ID: LanguageModelProviderId = LanguageModelProviderId::new("google");
 pub const GOOGLE_PROVIDER_NAME: LanguageModelProviderName =
@@ -203,14 +197,7 @@ impl LanguageModelCompletionError {
         message: String,
         retry_after: Option<Duration>,
     ) -> Self {
-        if let Some(tokens) = parse_prompt_too_long(&message) {
-            // TODO: currently Anthropic PAYLOAD_TOO_LARGE response may cause INTERNAL_SERVER_ERROR
-            // to be reported. This is a temporary workaround to handle this in the case where the
-            // token limit has been exceeded.
-            Self::PromptTooLarge {
-                tokens: Some(tokens),
-            }
-        } else if code == "upstream_http_error" {
+        if code == "upstream_http_error" {
             if let Some((upstream_status, inner_message)) =
                 Self::parse_upstream_error_json(&message)
             {
@@ -248,9 +235,7 @@ impl LanguageModelCompletionError {
             StatusCode::UNAUTHORIZED => Self::AuthenticationError { provider, message },
             StatusCode::FORBIDDEN => Self::PermissionError { provider, message },
             StatusCode::NOT_FOUND => Self::ApiEndpointNotFound { provider },
-            StatusCode::PAYLOAD_TOO_LARGE => Self::PromptTooLarge {
-                tokens: parse_prompt_too_long(&message),
-            },
+            StatusCode::PAYLOAD_TOO_LARGE => Self::PromptTooLarge { tokens: None },
             StatusCode::TOO_MANY_REQUESTS => Self::RateLimitExceeded {
                 provider,
                 retry_after,
@@ -268,144 +253,6 @@ impl LanguageModelCompletionError {
                 provider,
                 status_code,
                 message,
-            },
-        }
-    }
-}
-
-impl From<AnthropicError> for LanguageModelCompletionError {
-    fn from(error: AnthropicError) -> Self {
-        let provider = ANTHROPIC_PROVIDER_NAME;
-        match error {
-            AnthropicError::SerializeRequest(error) => Self::SerializeRequest { provider, error },
-            AnthropicError::BuildRequestBody(error) => Self::BuildRequestBody { provider, error },
-            AnthropicError::HttpSend(error) => Self::HttpSend { provider, error },
-            AnthropicError::DeserializeResponse(error) => {
-                Self::DeserializeResponse { provider, error }
-            }
-            AnthropicError::ReadResponse(error) => Self::ApiReadResponseError { provider, error },
-            AnthropicError::HttpResponseError {
-                status_code,
-                message,
-            } => Self::HttpResponseError {
-                provider,
-                status_code,
-                message,
-            },
-            AnthropicError::RateLimit { retry_after } => Self::RateLimitExceeded {
-                provider,
-                retry_after: Some(retry_after),
-            },
-            AnthropicError::ServerOverloaded { retry_after } => Self::ServerOverloaded {
-                provider,
-                retry_after,
-            },
-            AnthropicError::ApiError(api_error) => api_error.into(),
-        }
-    }
-}
-
-impl From<anthropic::ApiError> for LanguageModelCompletionError {
-    fn from(error: anthropic::ApiError) -> Self {
-        use anthropic::ApiErrorCode::*;
-        let provider = ANTHROPIC_PROVIDER_NAME;
-        match error.code() {
-            Some(code) => match code {
-                InvalidRequestError => Self::BadRequestFormat {
-                    provider,
-                    message: error.message,
-                },
-                AuthenticationError => Self::AuthenticationError {
-                    provider,
-                    message: error.message,
-                },
-                PermissionError => Self::PermissionError {
-                    provider,
-                    message: error.message,
-                },
-                NotFoundError => Self::ApiEndpointNotFound { provider },
-                RequestTooLarge => Self::PromptTooLarge {
-                    tokens: parse_prompt_too_long(&error.message),
-                },
-                RateLimitError => Self::RateLimitExceeded {
-                    provider,
-                    retry_after: None,
-                },
-                ApiError => Self::ApiInternalServerError {
-                    provider,
-                    message: error.message,
-                },
-                OverloadedError => Self::ServerOverloaded {
-                    provider,
-                    retry_after: None,
-                },
-            },
-            None => Self::Other(error.into()),
-        }
-    }
-}
-
-impl From<OpenRouterError> for LanguageModelCompletionError {
-    fn from(error: OpenRouterError) -> Self {
-        let provider = LanguageModelProviderName::new("OpenRouter");
-        match error {
-            OpenRouterError::SerializeRequest(error) => Self::SerializeRequest { provider, error },
-            OpenRouterError::BuildRequestBody(error) => Self::BuildRequestBody { provider, error },
-            OpenRouterError::HttpSend(error) => Self::HttpSend { provider, error },
-            OpenRouterError::DeserializeResponse(error) => {
-                Self::DeserializeResponse { provider, error }
-            }
-            OpenRouterError::ReadResponse(error) => Self::ApiReadResponseError { provider, error },
-            OpenRouterError::RateLimit { retry_after } => Self::RateLimitExceeded {
-                provider,
-                retry_after: Some(retry_after),
-            },
-            OpenRouterError::ServerOverloaded { retry_after } => Self::ServerOverloaded {
-                provider,
-                retry_after,
-            },
-            OpenRouterError::ApiError(api_error) => api_error.into(),
-        }
-    }
-}
-
-impl From<open_router::ApiError> for LanguageModelCompletionError {
-    fn from(error: open_router::ApiError) -> Self {
-        use open_router::ApiErrorCode::*;
-        let provider = LanguageModelProviderName::new("OpenRouter");
-        match error.code {
-            InvalidRequestError => Self::BadRequestFormat {
-                provider,
-                message: error.message,
-            },
-            AuthenticationError => Self::AuthenticationError {
-                provider,
-                message: error.message,
-            },
-            PaymentRequiredError => Self::AuthenticationError {
-                provider,
-                message: format!("Payment required: {}", error.message),
-            },
-            PermissionError => Self::PermissionError {
-                provider,
-                message: error.message,
-            },
-            RequestTimedOut => Self::HttpResponseError {
-                provider,
-                status_code: StatusCode::REQUEST_TIMEOUT,
-                message: error.message,
-            },
-            RateLimitError => Self::RateLimitExceeded {
-                provider,
-                retry_after: None,
-            },
-            ApiError => Self::ApiInternalServerError {
-                provider,
-                message: error.message,
-            },
-            OverloadedError => Self::ServerOverloaded {
-                provider,
-                retry_after: None,
             },
         }
     }

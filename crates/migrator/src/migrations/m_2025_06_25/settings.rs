@@ -45,7 +45,7 @@ const SETTINGS_NESTED_VERSION_PATTERN: &str = r#"(document
         )
     )
     (#eq? @language_models "language_models")
-    (#match? @provider "^(anthropic|openai)$")
+    (#match? @provider "^(openai)$")
     (#eq? @version_key "version")
 )"#;
 

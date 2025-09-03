@@ -37,8 +37,6 @@ use util::ResultExt;
 use crate::AllLanguageModelSettings;
 use crate::ui::InstructionListItem;
 
-use super::anthropic::ApiKey;
-
 const PROVIDER_ID: LanguageModelProviderId = language_model::GOOGLE_PROVIDER_ID;
 const PROVIDER_NAME: LanguageModelProviderName = language_model::GOOGLE_PROVIDER_NAME;
 
@@ -199,33 +197,6 @@ impl GoogleLanguageModelProvider {
             http_client: self.http_client.clone(),
             request_limiter: RateLimiter::new(4),
         })
-    }
-
-    pub fn api_key(cx: &mut App) -> Task<Result<ApiKey>> {
-        let credentials_provider = <dyn CredentialsProvider>::global(cx);
-        let api_url = AllLanguageModelSettings::get_global(cx)
-            .google
-            .api_url
-            .clone();
-
-        if let Ok(key) = std::env::var(GEMINI_API_KEY_VAR) {
-            Task::ready(Ok(ApiKey {
-                key,
-                from_env: true,
-            }))
-        } else {
-            cx.spawn(async move |cx| {
-                let (_, api_key) = credentials_provider
-                    .read_credentials(&api_url, cx)
-                    .await?
-                    .ok_or(AuthenticateError::CredentialsNotFound)?;
-
-                Ok(ApiKey {
-                    key: String::from_utf8(api_key).context("invalid {PROVIDER_NAME} API key")?,
-                    from_env: false,
-                })
-            })
-        }
     }
 }
 

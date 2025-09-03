@@ -131,7 +131,6 @@ impl FromStr for Plan {
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 pub enum LanguageModelProvider {
-    Anthropic,
     OpenAi,
     Google,
 }

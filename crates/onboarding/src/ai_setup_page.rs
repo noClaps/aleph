@@ -19,7 +19,7 @@ use util::ResultExt;
 use workspace::{ModalView, Workspace};
 use zed_actions::agent::OpenSettings;
 
-const FEATURED_PROVIDERS: [&str; 4] = ["anthropic", "google", "openai", "ollama"];
+const FEATURED_PROVIDERS: [&str; 3] = ["google", "openai", "ollama"];
 
 fn render_llm_provider_section(
     tab_index: &mut isize,

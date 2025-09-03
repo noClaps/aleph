@@ -9,7 +9,6 @@ use settings::{Settings, SettingsKey, SettingsSources, SettingsUi};
 
 use crate::provider::{
     self,
-    anthropic::AnthropicSettings,
     bedrock::AmazonBedrockSettings,
     cloud::{self, ZedDotDevSettings},
     deepseek::DeepSeekSettings,
@@ -31,7 +30,6 @@ pub fn init_settings(cx: &mut App) {
 
 #[derive(Default)]
 pub struct AllLanguageModelSettings {
-    pub anthropic: AnthropicSettings,
     pub bedrock: AmazonBedrockSettings,
     pub deepseek: DeepSeekSettings,
     pub google: GoogleSettings,
@@ -51,7 +49,6 @@ pub struct AllLanguageModelSettings {
 )]
 #[settings_key(key = "language_models")]
 pub struct AllLanguageModelSettingsContent {
-    pub anthropic: Option<AnthropicSettingsContent>,
     pub bedrock: Option<AmazonBedrockSettingsContent>,
     pub deepseek: Option<DeepseekSettingsContent>,
     pub google: Option<GoogleSettingsContent>,
@@ -65,12 +62,6 @@ pub struct AllLanguageModelSettingsContent {
     pub x_ai: Option<XAiSettingsContent>,
     #[serde(rename = "zed.dev")]
     pub zed_dot_dev: Option<ZedDotDevSettingsContent>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, JsonSchema)]
-pub struct AnthropicSettingsContent {
-    pub api_url: Option<String>,
-    pub available_models: Option<Vec<provider::anthropic::AvailableModel>>,
 }
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize, PartialEq, JsonSchema)]
@@ -162,17 +153,6 @@ impl settings::Settings for AllLanguageModelSettings {
         let mut settings = AllLanguageModelSettings::default();
 
         for value in sources.defaults_and_customizations() {
-            // Anthropic
-            let anthropic = value.anthropic.clone();
-            merge(
-                &mut settings.anthropic.api_url,
-                anthropic.as_ref().and_then(|s| s.api_url.clone()),
-            );
-            merge(
-                &mut settings.anthropic.available_models,
-                anthropic.as_ref().and_then(|s| s.available_models.clone()),
-            );
-
             // Bedrock
             let bedrock = value.bedrock.clone();
             merge(
