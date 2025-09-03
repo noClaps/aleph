@@ -3,7 +3,6 @@ resolver = "2"
 members = [
     "crates/action_log",
     "crates/activity_indicator",
-    "crates/ai_onboarding",
     "crates/askpass",
     "crates/assets",
     "crates/assistant_slash_command",
@@ -196,7 +195,6 @@ edition = "2024"
 
 action_log = { path = "crates/action_log" }
 activity_indicator = { path = "crates/activity_indicator" }
-ai_onboarding = { path = "crates/ai_onboarding" }
 askpass = { path = "crates/askpass" }
 assets = { path = "crates/assets" }
 assistant_slash_command = { path = "crates/assistant_slash_command" }

@@ -8,12 +8,12 @@ A minimal fork of the [Zed](https://zed.dev) code editor.
 This fork removes:
 
 - Support for all platforms other than macOS arm64
-- AI providers:
-  - Anthropic
-  - Zeta
+- AI features:
+  - Providers: Anthropic, Zeta
+  - ACP and other agent features
+  - Onboarding
 - Tests, benchmarks and examples (who needs them anyway)
 - Custom fonts (IBM Plex Sans and Lilex)
 - Themes (replace all with ZeroLimits theme)
 - Sentry reporting
 - Collab features
-- ACP and other agent features

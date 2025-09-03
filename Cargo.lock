@@ -91,23 +91,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ai_onboarding"
-version = "0.1.0"
-dependencies = [
- "client",
- "cloud_llm_client",
- "component",
- "gpui",
- "language_model",
- "serde",
- "smallvec",
- "telemetry",
- "ui",
- "workspace-hack",
- "zed_actions",
-]
-
-[[package]]
 name = "alacritty_terminal"
 version = "0.25.1-dev"
 source = "git+https://github.com/zed-industries/alacritty.git?branch=add-hush-login-flag#828457c9ff1f7ea0a0469337cc8a37ee3a1b0590"
@@ -6946,7 +6929,6 @@ dependencies = [
 name = "language_models"
 version = "0.1.0"
 dependencies = [
- "ai_onboarding",
  "anyhow",
  "aws-config",
  "aws-credential-types",
@@ -8585,7 +8567,6 @@ dependencies = [
 name = "onboarding"
 version = "0.1.0"
 dependencies = [
- "ai_onboarding",
  "anyhow",
  "client",
  "component",
@@ -8596,9 +8577,7 @@ dependencies = [
  "fuzzy",
  "git",
  "gpui",
- "itertools 0.14.0",
  "language",
- "language_model",
  "menu",
  "notifications",
  "picker",

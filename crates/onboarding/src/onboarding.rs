@@ -25,7 +25,6 @@ use workspace::{
     open_new, register_serializable_item, with_active_or_new_workspace,
 };
 
-mod ai_setup_page;
 mod base_keymap_picker;
 mod basics_page;
 mod editing_page;
@@ -219,7 +218,6 @@ pub fn show_onboarding_view(app_state: Arc<AppState>, cx: &mut App) -> Task<anyh
 enum SelectedPage {
     Basics,
     Editing,
-    AiSetup,
 }
 
 impl SelectedPage {
@@ -227,7 +225,6 @@ impl SelectedPage {
         match self {
             SelectedPage::Basics => "Basics",
             SelectedPage::Editing => "Editing",
-            SelectedPage::AiSetup => "AI Setup",
         }
     }
 }
@@ -275,14 +272,10 @@ impl Onboarding {
         &mut self,
         window: &mut Window,
         cx: &mut Context<Self>,
-    ) -> [impl IntoElement; 3] {
-        let pages = [
-            SelectedPage::Basics,
-            SelectedPage::Editing,
-            SelectedPage::AiSetup,
-        ];
+    ) -> [impl IntoElement; 2] {
+        let pages = [SelectedPage::Basics, SelectedPage::Editing];
 
-        let text = ["Basics", "Editing", "AI Setup"];
+        let text = ["Basics", "Editing"];
 
         let actions: [&dyn Action; 3] = [
             &ActivateBasicsPage,
@@ -341,8 +334,6 @@ impl Onboarding {
     }
 
     fn render_nav(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let ai_setup_page = matches!(self.selected_page, SelectedPage::AiSetup);
-
         v_flex()
             .h_full()
             .w(rems_from_px(220.))
@@ -390,42 +381,21 @@ impl Onboarding {
                                 )
                                 .map(|kb| kb.size(rems_from_px(12.)));
 
-                                if ai_setup_page {
-                                    this.child(
-                                        ButtonLike::new("start_building")
-                                            .style(ButtonStyle::Outlined)
-                                            .size(ButtonSize::Medium)
-                                            .child(
-                                                h_flex()
-                                                    .ml_1()
-                                                    .w_full()
-                                                    .justify_between()
-                                                    .child(Label::new("Start Building"))
-                                                    .children(keybinding),
-                                            )
-                                            .on_click(|_, window, cx| {
-                                                window.dispatch_action(Finish.boxed_clone(), cx);
-                                            }),
-                                    )
-                                } else {
-                                    this.child(
-                                        ButtonLike::new("skip_all")
-                                            .size(ButtonSize::Medium)
-                                            .child(
-                                                h_flex()
-                                                    .ml_1()
-                                                    .w_full()
-                                                    .justify_between()
-                                                    .child(
-                                                        Label::new("Skip All").color(Color::Muted),
-                                                    )
-                                                    .children(keybinding),
-                                            )
-                                            .on_click(|_, window, cx| {
-                                                window.dispatch_action(Finish.boxed_clone(), cx);
-                                            }),
-                                    )
-                                }
+                                this.child(
+                                    ButtonLike::new("skip_all")
+                                        .size(ButtonSize::Medium)
+                                        .child(
+                                            h_flex()
+                                                .ml_1()
+                                                .w_full()
+                                                .justify_between()
+                                                .child(Label::new("Skip All").color(Color::Muted))
+                                                .children(keybinding),
+                                        )
+                                        .on_click(|_, window, cx| {
+                                            window.dispatch_action(Finish.boxed_clone(), cx);
+                                        }),
+                                )
                             }),
                     ),
             )
@@ -507,21 +477,11 @@ impl Onboarding {
     }
 
     fn render_page(&mut self, window: &mut Window, cx: &mut Context<Self>) -> AnyElement {
-        let client = Client::global(cx);
-
         match self.selected_page {
             SelectedPage::Basics => crate::basics_page::render_basics_page(cx).into_any_element(),
             SelectedPage::Editing => {
                 crate::editing_page::render_editing_page(window, cx).into_any_element()
             }
-            SelectedPage::AiSetup => crate::ai_setup_page::render_ai_setup_page(
-                self.workspace.clone(),
-                self.user_store.clone(),
-                client,
-                window,
-                cx,
-            )
-            .into_any_element(),
         }
     }
 }
@@ -547,9 +507,6 @@ impl Render for Onboarding {
             }))
             .on_action(cx.listener(|this, _: &ActivateEditingPage, _, cx| {
                 this.set_page(SelectedPage::Editing, Some("action"), cx);
-            }))
-            .on_action(cx.listener(|this, _: &ActivateAISetupPage, _, cx| {
-                this.set_page(SelectedPage::AiSetup, Some("action"), cx);
             }))
             .on_action(cx.listener(|_, _: &menu::SelectNext, window, cx| {
                 window.focus_next();
@@ -809,7 +766,6 @@ impl workspace::SerializableItem for Onboarding {
                 let page = match page_number {
                     0 => Some(SelectedPage::Basics),
                     1 => Some(SelectedPage::Editing),
-                    2 => Some(SelectedPage::AiSetup),
                     _ => None,
                 };
                 workspace.update(cx, |workspace, cx| {

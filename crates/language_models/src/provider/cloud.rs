@@ -1,4 +1,3 @@
-use ai_onboarding::YoungAccountBanner;
 use anyhow::{Context as _, Result, anyhow};
 use chrono::{DateTime, Utc};
 use client::{Client, ModelRequestUsage, UserStore, zed_urls};
@@ -902,8 +901,6 @@ struct ZedAiConfiguration {
 
 impl RenderOnce for ZedAiConfiguration {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        let young_account_banner = YoungAccountBanner;
-
         let is_pro = self.plan == Some(Plan::ZedPro);
         let subscription_text = match (self.plan, self.subscription_period) {
             (Some(Plan::ZedPro), Some(_)) => {
@@ -964,7 +961,7 @@ impl RenderOnce for ZedAiConfiguration {
 
         v_flex().gap_2().w_full().map(|this| {
             if self.account_too_young {
-                this.child(young_account_banner).child(
+                this.child(
                     Button::new("upgrade", "Upgrade to Pro")
                         .style(ui::ButtonStyle::Tinted(ui::TintColor::Accent))
                         .full_width()
