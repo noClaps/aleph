@@ -263,7 +263,7 @@ impl KeybindingKeystroke {
     /// Returns the modifiers.
     ///
     /// Platform-specific behavior:
-    /// - On macOS and Linux, this modifiers is the same as `inner.modifiers`, which is the GPUI representation of the keystroke.
+    /// - On macOS, this modifiers is the same as `inner.modifiers`, which is the GPUI representation of the keystroke.
     pub fn modifiers(&self) -> &Modifiers {
         &self.inner.modifiers
     }
@@ -271,7 +271,7 @@ impl KeybindingKeystroke {
     /// Returns the key.
     ///
     /// Platform-specific behavior:
-    /// - On macOS and Linux, this key is the same as `inner.key`, which is the GPUI representation of the keystroke.
+    /// - On macOS, this key is the same as `inner.key`, which is the GPUI representation of the keystroke.
     pub fn key(&self) -> &str {
         &self.inner.key
     }

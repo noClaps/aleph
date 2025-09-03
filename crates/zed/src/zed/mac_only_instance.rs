@@ -22,12 +22,11 @@ fn address() -> SocketAddr {
     // users running different release channels on the same machine. This ends up
     // interleaving the ports between different users and different release channels.
     //
-    // On macOS user IDs start at 501 and on Linux they start at 1000. The first user
-    // on a Mac with ID 501 running a dev channel build will use port 44238, and the
-    // second user with ID 502 will use port 44239, and so on. User 501 will use ports
-    // 44338, 44438, and 44538 for the preview, stable, and nightly channels,
-    // respectively. User 502 will use ports 44339, 44439, and 44539 for the preview,
-    // stable, and nightly channels, respectively.
+    // On macOS user IDs start at 501. The first user on a Mac with ID 501 running a dev
+    // channel build will use port 44238, and the second user with ID 502 will use port
+    // 44239, and so on. User 501 will use ports 44338, 44438, and 44538 for the preview,
+    // stable, and nightly channels, respectively. User 502 will use ports 44339, 44439,
+    // and 44539 for the preview, stable, and nightly channels, respectively.
     let port = match *release_channel::RELEASE_CHANNEL {
         ReleaseChannel::Dev => 43737,
         ReleaseChannel::Preview => 43737 + USER_BLOCK,

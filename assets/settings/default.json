@@ -102,9 +102,9 @@
   },
   // Determines the modifier to be used to add multiple cursors with the mouse. The open hover link mouse gestures will adapt such that it do not conflict with the multicursor modifier.
   //
-  // 1. Maps to `Alt` on Linux and Windows and to `Option` on MacOS:
+  // 1. Maps to `Option` on MacOS:
   //    "alt"
-  // 2. Maps `Control` on Linux and Windows and to `Command` on MacOS:
+  // 2. Maps to `Command` on MacOS:
   //    "cmd_or_ctrl" (alias: "cmd", "ctrl")
   "multi_cursor_modifier": "alt",
   // Whether to enable vim modes and key bindings.
@@ -169,8 +169,6 @@
   "use_system_path_prompts": true,
   // Whether to use the system provided dialogs for prompts, such as confirmation
   // prompts.
-  // When set to false, Zed will use its built-in prompts. Note that on Linux,
-  // this option is ignored and Zed will always use the built-in prompts.
   "use_system_prompts": true,
   // Whether the cursor blinks in the editor.
   "cursor_blink": true,
@@ -484,8 +482,6 @@
     // Maximum number of columns to display in the minimap.
     "max_width_columns": 80
   },
-  // Enable middle-click paste on Linux.
-  "middle_click_paste": true,
   // What to do when multibuffer is double clicked in some of its excerpts
   // (parts of singleton buffers).
   // May take 2 values:
@@ -964,8 +960,7 @@
   //
   // Default: false
   "disable_ai": false,
-  // Automatically update Zed. This setting may be ignored on Linux if
-  // installed through a package manager.
+  // Automatically update Zed.
   "auto_update": true,
   // How to render LSP `textDocument/documentColor` colors in the editor.
   //

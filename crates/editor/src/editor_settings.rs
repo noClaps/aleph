@@ -39,7 +39,6 @@ pub struct EditorSettings {
     pub redact_private_values: bool,
     pub expand_excerpt_lines: u32,
     pub excerpt_context_lines: u32,
-    pub middle_click_paste: bool,
     #[serde(default)]
     pub double_click_in_multibuffer: DoubleClickInMultibuffer,
     pub search_wrap: bool,
@@ -71,7 +70,7 @@ pub enum DocumentColorsRenderMode {
     /// Render document colors as inlay hints near the color text.
     #[default]
     Inlay,
-    /// Draw a border around the color text.
+    /// Draw a border around the color stext.
     Border,
     /// Draw a background behind the color text.
     Background,
@@ -544,11 +543,6 @@ pub struct EditorSettingsContent {
     ///
     /// Default: 2
     pub excerpt_context_lines: Option<u32>,
-
-    /// Whether to enable middle-click paste on Linux
-    ///
-    /// Default: true
-    pub middle_click_paste: Option<bool>,
 
     /// What to do when multibuffer is double clicked in some of its excerpts
     /// (parts of singleton buffers).

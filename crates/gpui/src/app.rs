@@ -1055,9 +1055,7 @@ impl App {
         self.platform.app_path()
     }
 
-    /// On Linux, returns the name of the compositor in use.
-    ///
-    /// Returns an empty string on other platforms.
+    /// Returns an empty string.
     pub fn compositor_name(&self) -> &'static str {
         self.platform.compositor_name()
     }
@@ -1071,7 +1069,6 @@ impl App {
     ///
     /// When one or more paths are selected, they'll be relayed asynchronously via the returned oneshot channel.
     /// If cancelled, a `None` will be relayed instead.
-    /// May return an error on Linux if the file picker couldn't be opened.
     pub fn prompt_for_paths(
         &self,
         options: PathPromptOptions,
@@ -1084,7 +1081,6 @@ impl App {
     /// The provided directory will be used to set the initial location.
     /// When a path is selected, it is relayed asynchronously via the returned oneshot channel.
     /// If cancelled, a `None` will be relayed instead.
-    /// May return an error on Linux if the file picker couldn't be opened.
     pub fn prompt_for_new_path(
         &self,
         directory: &Path,

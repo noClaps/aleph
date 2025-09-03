@@ -713,7 +713,6 @@ impl SshSocket {
             .arg(format!("ControlPath={}", self.socket_path.display()))
     }
 
-    // On Linux, we use the `ControlPath` option to create a socket file that ssh can use to
     fn ssh_args(&self) -> Vec<String> {
         let mut arguments = self.connection_options.additional_args();
         arguments.extend(vec![

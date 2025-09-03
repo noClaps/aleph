@@ -4246,7 +4246,7 @@ impl Window {
     }
 
     /// Read information about the GPU backing this window.
-    /// Currently returns None on Mac and Windows.
+    /// Currently returns None on Mac.
     pub fn gpu_specs(&self) -> Option<GpuSpecs> {
         self.platform_window.gpu_specs()
     }
