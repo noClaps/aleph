@@ -131,10 +131,7 @@ fn register_language_model_providers(
         MistralLanguageModelProvider::new(client.http_client(), cx),
         cx,
     );
-    registry.register_provider(
-        BedrockLanguageModelProvider::new(client.http_client(), cx),
-        cx,
-    );
+    registry.register_provider(BedrockLanguageModelProvider::new(cx), cx);
     registry.register_provider(
         OpenRouterLanguageModelProvider::new(client.http_client(), cx),
         cx,

@@ -7,7 +7,6 @@ use anyhow::{Context as _, Result, anyhow};
 use aws_config::stalled_stream_protection::StalledStreamProtectionConfig;
 use aws_config::{BehaviorVersion, Region};
 use aws_credential_types::Credentials;
-use aws_http_client::AwsHttpClient;
 use bedrock::bedrock_client::Client as BedrockClient;
 use bedrock::bedrock_client::config::timeout::TimeoutConfig;
 use bedrock::bedrock_client::types::{
@@ -30,7 +29,6 @@ use gpui::{
     WhiteSpace,
 };
 use gpui_tokio::Tokio;
-use http_client::HttpClient;
 use language_model::{
     AuthenticateError, LanguageModel, LanguageModelCacheConfiguration,
     LanguageModelCompletionError, LanguageModelCompletionEvent, LanguageModelId, LanguageModelName,
@@ -242,13 +240,12 @@ impl State {
 }
 
 pub struct BedrockLanguageModelProvider {
-    http_client: AwsHttpClient,
     handle: tokio::runtime::Handle,
     state: gpui::Entity<State>,
 }
 
 impl BedrockLanguageModelProvider {
-    pub fn new(http_client: Arc<dyn HttpClient>, cx: &mut App) -> Self {
+    pub fn new(cx: &mut App) -> Self {
         let state = cx.new(|cx| State {
             credentials: None,
             settings: Some(AllLanguageModelSettings::get_global(cx).bedrock.clone()),
@@ -259,7 +256,6 @@ impl BedrockLanguageModelProvider {
         });
 
         Self {
-            http_client: AwsHttpClient::new(http_client.clone()),
             handle: Tokio::handle(cx),
             state,
         }
@@ -269,7 +265,6 @@ impl BedrockLanguageModelProvider {
         Arc::new(BedrockModel {
             id: LanguageModelId::from(model.id().to_string()),
             model,
-            http_client: self.http_client.clone(),
             handle: self.handle.clone(),
             state: self.state.clone(),
             client: OnceCell::new(),
@@ -374,7 +369,6 @@ impl LanguageModelProviderState for BedrockLanguageModelProvider {
 struct BedrockModel {
     id: LanguageModelId,
     model: Model,
-    http_client: AwsHttpClient,
     handle: tokio::runtime::Handle,
     client: OnceCell<BedrockClient>,
     state: gpui::Entity<State>,
@@ -407,7 +401,6 @@ impl BedrockModel {
 
                 let mut config_builder = aws_config::defaults(BehaviorVersion::latest())
                     .stalled_stream_protection(StalledStreamProtectionConfig::disabled())
-                    .http_client(self.http_client.clone())
                     .region(Region::new(region))
                     .timeout_config(TimeoutConfig::disabled());
 

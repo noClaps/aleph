@@ -1061,16 +1061,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "aws_http_client"
-version = "0.1.0"
-dependencies = [
- "aws-smithy-runtime-api",
- "aws-smithy-types",
- "http_client",
- "workspace-hack",
-]
-
-[[package]]
 name = "backtrace"
 version = "0.3.74"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6459,7 +6449,6 @@ dependencies = [
  "anyhow",
  "aws-config",
  "aws-credential-types",
- "aws_http_client",
  "bedrock",
  "chrono",
  "client",
