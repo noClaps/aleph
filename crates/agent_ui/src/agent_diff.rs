@@ -1,5 +1,4 @@
 use crate::{Keep, KeepAll, OpenAgentDiff, Reject, RejectAll};
-use acp_thread::{AcpThread, AcpThreadEvent};
 use action_log::ActionLog;
 use agent::{Thread, ThreadEvent, ThreadSummary};
 use agent_settings::AgentSettings;
@@ -52,52 +51,41 @@ pub struct AgentDiffPane {
 #[derive(PartialEq, Eq, Clone)]
 pub enum AgentDiffThread {
     Native(Entity<Thread>),
-    AcpThread(Entity<AcpThread>),
 }
 
 impl AgentDiffThread {
     fn project(&self, cx: &App) -> Entity<Project> {
         match self {
             AgentDiffThread::Native(thread) => thread.read(cx).project().clone(),
-            AgentDiffThread::AcpThread(thread) => thread.read(cx).project().clone(),
         }
     }
     fn action_log(&self, cx: &App) -> Entity<ActionLog> {
         match self {
             AgentDiffThread::Native(thread) => thread.read(cx).action_log().clone(),
-            AgentDiffThread::AcpThread(thread) => thread.read(cx).action_log().clone(),
         }
     }
 
     fn summary(&self, cx: &App) -> ThreadSummary {
         match self {
             AgentDiffThread::Native(thread) => thread.read(cx).summary().clone(),
-            AgentDiffThread::AcpThread(thread) => ThreadSummary::Ready(thread.read(cx).title()),
         }
     }
 
     fn is_generating(&self, cx: &App) -> bool {
         match self {
             AgentDiffThread::Native(thread) => thread.read(cx).is_generating(),
-            AgentDiffThread::AcpThread(thread) => {
-                thread.read(cx).status() == acp_thread::ThreadStatus::Generating
-            }
         }
     }
 
     fn has_pending_edit_tool_uses(&self, cx: &App) -> bool {
         match self {
             AgentDiffThread::Native(thread) => thread.read(cx).has_pending_edit_tool_uses(),
-            AgentDiffThread::AcpThread(thread) => thread.read(cx).has_pending_edit_tool_calls(),
         }
     }
 
     fn downgrade(&self) -> WeakAgentDiffThread {
         match self {
             AgentDiffThread::Native(thread) => WeakAgentDiffThread::Native(thread.downgrade()),
-            AgentDiffThread::AcpThread(thread) => {
-                WeakAgentDiffThread::AcpThread(thread.downgrade())
-            }
         }
     }
 }
@@ -108,23 +96,15 @@ impl From<Entity<Thread>> for AgentDiffThread {
     }
 }
 
-impl From<Entity<AcpThread>> for AgentDiffThread {
-    fn from(entity: Entity<AcpThread>) -> Self {
-        AgentDiffThread::AcpThread(entity)
-    }
-}
-
 #[derive(PartialEq, Eq, Clone)]
 pub enum WeakAgentDiffThread {
     Native(WeakEntity<Thread>),
-    AcpThread(WeakEntity<AcpThread>),
 }
 
 impl WeakAgentDiffThread {
     pub fn upgrade(&self) -> Option<AgentDiffThread> {
         match self {
             WeakAgentDiffThread::Native(weak) => weak.upgrade().map(AgentDiffThread::Native),
-            WeakAgentDiffThread::AcpThread(weak) => weak.upgrade().map(AgentDiffThread::AcpThread),
         }
     }
 }
@@ -132,12 +112,6 @@ impl WeakAgentDiffThread {
 impl From<WeakEntity<Thread>> for WeakAgentDiffThread {
     fn from(entity: WeakEntity<Thread>) -> Self {
         WeakAgentDiffThread::Native(entity)
-    }
-}
-
-impl From<WeakEntity<AcpThread>> for WeakAgentDiffThread {
-    fn from(entity: WeakEntity<AcpThread>) -> Self {
-        WeakAgentDiffThread::AcpThread(entity)
     }
 }
 
@@ -206,10 +180,6 @@ impl AgentDiffPane {
                     AgentDiffThread::Native(thread) => cx
                         .subscribe(thread, |this, _thread, event, cx| {
                             this.handle_native_thread_event(event, cx)
-                        }),
-                    AgentDiffThread::AcpThread(thread) => cx
-                        .subscribe(thread, |this, _thread, event, cx| {
-                            this.handle_acp_thread_event(event, cx)
                         }),
                 },
             ],
@@ -322,12 +292,6 @@ impl AgentDiffPane {
 
     fn handle_native_thread_event(&mut self, event: &ThreadEvent, cx: &mut Context<Self>) {
         if let ThreadEvent::SummaryGenerated = event {
-            self.update_title(cx)
-        }
-    }
-
-    fn handle_acp_thread_event(&mut self, event: &AcpThreadEvent, cx: &mut Context<Self>) {
-        if let AcpThreadEvent::TitleUpdated = event {
             self.update_title(cx)
         }
     }
@@ -1345,12 +1309,6 @@ impl AgentDiff {
                     this.handle_native_thread_event(&workspace, event, window, cx)
                 }
             }),
-            AgentDiffThread::AcpThread(thread) => cx.subscribe_in(thread, window, {
-                let workspace = workspace.clone();
-                move |this, thread, event, window, cx| {
-                    this.handle_acp_thread_event(&workspace, thread, event, window, cx)
-                }
-            }),
         };
 
         if let Some(workspace_thread) = self.workspace_threads.get_mut(workspace) {
@@ -1485,51 +1443,6 @@ impl AgentDiff {
             | ThreadEvent::ToolUseLimitReached
             | ThreadEvent::CancelEditing
             | ThreadEvent::ProfileChanged => {}
-        }
-    }
-
-    fn handle_acp_thread_event(
-        &mut self,
-        workspace: &WeakEntity<Workspace>,
-        thread: &Entity<AcpThread>,
-        event: &AcpThreadEvent,
-        window: &mut Window,
-        cx: &mut Context<Self>,
-    ) {
-        match event {
-            AcpThreadEvent::NewEntry => {
-                if thread
-                    .read(cx)
-                    .entries()
-                    .last()
-                    .is_some_and(|entry| entry.diffs().next().is_some())
-                {
-                    self.update_reviewing_editors(workspace, window, cx);
-                }
-            }
-            AcpThreadEvent::EntryUpdated(ix) => {
-                if thread
-                    .read(cx)
-                    .entries()
-                    .get(*ix)
-                    .is_some_and(|entry| entry.diffs().next().is_some())
-                {
-                    self.update_reviewing_editors(workspace, window, cx);
-                }
-            }
-            AcpThreadEvent::Stopped
-            | AcpThreadEvent::Error
-            | AcpThreadEvent::LoadError(_)
-            | AcpThreadEvent::Refusal => {
-                self.update_reviewing_editors(workspace, window, cx);
-            }
-            AcpThreadEvent::TitleUpdated
-            | AcpThreadEvent::TokenUsageUpdated
-            | AcpThreadEvent::EntriesRemoved(_)
-            | AcpThreadEvent::ToolAuthorizationRequired
-            | AcpThreadEvent::PromptCapabilitiesUpdated
-            | AcpThreadEvent::AvailableCommandsUpdated(_)
-            | AcpThreadEvent::Retry(_) => {}
         }
     }
 

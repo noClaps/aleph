@@ -1,4 +1,3 @@
-mod acp;
 mod claude;
 mod custom;
 mod gemini;
@@ -16,8 +15,6 @@ use gpui::AppContext;
 use node_runtime::NodeRuntime;
 pub use settings::*;
 
-use acp_thread::AgentConnection;
-use acp_thread::LoadError;
 use anyhow::Result;
 use anyhow::anyhow;
 use collections::HashMap;
@@ -208,7 +205,6 @@ impl AgentServerDelegate {
                 })
             })
             .await
-            .map_err(|e| LoadError::FailedToInstall(e.to_string().into()).into())
         })
     }
 
@@ -249,13 +245,6 @@ pub trait AgentServer: Send {
     fn logo(&self) -> ui::IconName;
     fn name(&self) -> SharedString;
     fn telemetry_id(&self) -> &'static str;
-
-    fn connect(
-        &self,
-        root_dir: &Path,
-        delegate: AgentServerDelegate,
-        cx: &mut App,
-    ) -> Task<Result<Rc<dyn AgentConnection>>>;
 
     fn into_any(self: Rc<Self>) -> Rc<dyn Any>;
 }

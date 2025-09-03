@@ -1,4 +1,3 @@
-mod acp;
 mod active_thread;
 mod agent_configuration;
 mod agent_diff;
@@ -24,7 +23,6 @@ mod thread_history;
 mod tool_compatibility;
 mod ui;
 
-use std::rc::Rc;
 use std::sync::Arc;
 
 use agent::{Thread, ThreadId};
@@ -181,22 +179,6 @@ impl ExternalAgent {
             Self::Gemini => "gemini-cli",
             Self::ClaudeCode => "claude-code",
             Self::Custom { .. } => "custom",
-        }
-    }
-
-    pub fn server(
-        &self,
-        fs: Arc<dyn fs::Fs>,
-        history: Entity<agent2::HistoryStore>,
-    ) -> Rc<dyn agent_servers::AgentServer> {
-        match self {
-            Self::Gemini => Rc::new(agent_servers::Gemini),
-            Self::ClaudeCode => Rc::new(agent_servers::ClaudeCode),
-            Self::NativeAgent => Rc::new(agent2::NativeAgentServer::new(fs, history)),
-            Self::Custom { name, command } => Rc::new(agent_servers::CustomAgentServer::new(
-                name.clone(),
-                command.clone(),
-            )),
         }
     }
 }
