@@ -3,7 +3,6 @@ use crate::{
     ui::{COLLAPSED_LINES, ToolOutputPreview},
 };
 use action_log::ActionLog;
-use agent_settings;
 use anyhow::{Context as _, Result, anyhow};
 use assistant_tool::{Tool, ToolCard, ToolResult, ToolUseStatus};
 use futures::{FutureExt as _, future::Shared};
@@ -236,7 +235,6 @@ impl Tool for TerminalTool {
                 command_markdown.clone(),
                 working_dir.clone(),
                 cx.entity_id(),
-                cx,
             )
         });
 
@@ -429,10 +427,7 @@ impl TerminalToolCard {
         input_command: Entity<Markdown>,
         working_dir: Option<PathBuf>,
         entity_id: EntityId,
-        cx: &mut Context<Self>,
     ) -> Self {
-        let expand_terminal_card =
-            agent_settings::AgentSettings::get_global(cx).expand_terminal_card;
         Self {
             input_command,
             working_dir,
@@ -444,7 +439,7 @@ impl TerminalToolCard {
             finished_with_empty_output: false,
             original_content_len: 0,
             content_line_count: 0,
-            preview_expanded: expand_terminal_card,
+            preview_expanded: false,
             start_instant: Instant::now(),
             elapsed_time: None,
         }

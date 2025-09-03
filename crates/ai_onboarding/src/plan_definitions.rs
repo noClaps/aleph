@@ -16,9 +16,6 @@ impl PlanDefinitions {
     pub fn pro_trial(&self, period: bool) -> impl IntoElement {
         List::new()
             .child(ListBulletItem::new("150 prompts with Claude models"))
-            .child(ListBulletItem::new(
-                "Unlimited edit predictions with Zeta, our open-source model",
-            ))
             .when(period, |this| {
                 this.child(ListBulletItem::new(
                     "Try it out for 14 days for free, no credit card required",
@@ -29,9 +26,6 @@ impl PlanDefinitions {
     pub fn pro_plan(&self, price: bool) -> impl IntoElement {
         List::new()
             .child(ListBulletItem::new("500 prompts with Claude models"))
-            .child(ListBulletItem::new(
-                "Unlimited edit predictions with Zeta, our open-source model",
-            ))
             .when(price, |this| {
                 this.child(ListBulletItem::new("$20 USD per month"))
             })

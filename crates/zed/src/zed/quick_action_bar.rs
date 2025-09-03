@@ -1,7 +1,6 @@
 mod preview;
 mod repl_menu;
 
-use agent_settings::AgentSettings;
 use editor::actions::{
     AddSelectionAbove, AddSelectionBelow, CodeActionSource, DuplicateLineDown, GoToDiagnostic,
     GoToHunk, GoToPreviousDiagnostic, GoToPreviousHunk, MoveLineDown, MoveLineUp, SelectAll,
@@ -27,7 +26,7 @@ use vim_mode_setting::VimModeSetting;
 use workspace::{
     ToolbarItemEvent, ToolbarItemLocation, ToolbarItemView, Workspace, item::ItemHandle,
 };
-use zed_actions::{assistant::InlineAssist, outline::ToggleOutline};
+use zed_actions::outline::ToggleOutline;
 
 const MAX_CODE_ACTION_MENU_LINES: u32 = 16;
 
@@ -49,20 +48,12 @@ impl QuickActionBar {
         cx: &mut Context<Self>,
     ) -> Self {
         let mut was_ai_disabled = DisableAiSettings::get_global(cx).disable_ai;
-        let mut was_agent_enabled = AgentSettings::get_global(cx).enabled;
-        let mut was_agent_button = AgentSettings::get_global(cx).button;
 
         let ai_settings_subscription = cx.observe_global::<SettingsStore>(move |_, cx| {
             let is_ai_disabled = DisableAiSettings::get_global(cx).disable_ai;
-            let agent_settings = AgentSettings::get_global(cx);
 
-            if was_ai_disabled != is_ai_disabled
-                || was_agent_enabled != agent_settings.enabled
-                || was_agent_button != agent_settings.button
-            {
+            if was_ai_disabled != is_ai_disabled {
                 was_ai_disabled = is_ai_disabled;
-                was_agent_enabled = agent_settings.enabled;
-                was_agent_button = agent_settings.button;
                 cx.notify();
             }
         });
@@ -155,18 +146,6 @@ impl Render for QuickActionBar {
                 },
             )
         });
-
-        let assistant_button = QuickActionBarButton::new(
-            "toggle inline assistant",
-            IconName::ZedAssistant,
-            false,
-            Box::new(InlineAssist::default()),
-            focus_handle,
-            "Inline Assist",
-            move |_, window, cx| {
-                window.dispatch_action(Box::new(InlineAssist::default()), cx);
-            },
-        );
 
         let code_actions_dropdown = code_action_enabled.then(|| {
             let focus = editor.focus_handle(cx);
@@ -596,12 +575,6 @@ impl Render for QuickActionBar {
             .children(self.render_repl_menu(cx))
             .children(self.render_preview_button(self.workspace.clone(), cx))
             .children(search_button)
-            .when(
-                AgentSettings::get_global(cx).enabled
-                    && AgentSettings::get_global(cx).button
-                    && !DisableAiSettings::get_global(cx).disable_ai,
-                |bar| bar.child(assistant_button),
-            )
             .children(code_actions_dropdown)
             .children(editor_selections_dropdown)
             .child(editor_settings_dropdown)

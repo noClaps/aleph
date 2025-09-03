@@ -15,7 +15,6 @@ publish.workspace = true
 
 ### BEGIN HAKARI SECTION
 [dependencies]
-ahash = { version = "0.8", features = ["serde"] }
 aho-corasick = { version = "1" }
 arrayvec = { version = "0.7", features = ["serde"] }
 async-compression = { version = "0.4", default-features = false, features = ["deflate", "deflate64", "futures-io", "gzip"] }
@@ -45,8 +44,6 @@ deranged = { version = "0.4", default-features = false, features = ["powerfmt", 
 digest = { version = "0.10", features = ["mac", "oid", "std"] }
 either = { version = "1", features = ["use_std"] }
 euclid = { version = "0.22" }
-event-listener = { version = "5" }
-event-listener-strategy = { version = "0.5" }
 flate2 = { version = "1", features = ["zlib-rs"] }
 form_urlencoded = { version = "1" }
 futures-channel = { version = "0.3", features = ["sink"] }
@@ -56,11 +53,9 @@ futures-sink = { version = "0.3" }
 futures-util = { version = "0.3", features = ["channel", "io", "sink"] }
 getrandom = { version = "0.2", default-features = false, features = ["std"] }
 half = { version = "2" }
-handlebars = { version = "4", features = ["rust-embed"] }
 hashbrown-3575ec1268b04181 = { package = "hashbrown", version = "0.15", default-features = false, features = ["default-hasher", "inline-more", "serde"] }
 hashbrown-582f2526e08bb6a0 = { package = "hashbrown", version = "0.14", features = ["raw"] }
 hyper = { version = "0.14", features = ["client", "http1", "http2", "runtime", "server", "stream"] }
-idna = { version = "1" }
 indexmap = { version = "2", features = ["serde"] }
 itertools-5ef9efb8ec2df382 = { package = "itertools", version = "0.12" }
 jiff = { version = "0.2" }
@@ -74,8 +69,6 @@ mime_guess = { version = "2" }
 miniz_oxide = { version = "0.8", features = ["simd"] }
 nom = { version = "7" }
 num-integer = { version = "0.1", features = ["i128"] }
-num-iter = { version = "0.1", default-features = false, features = ["i128", "std"] }
-num-rational = { version = "0.4", features = ["num-bigint-std"] }
 num-traits = { version = "0.2", features = ["i128", "libm"] }
 once_cell = { version = "1" }
 percent-encoding = { version = "2" }
@@ -115,7 +108,6 @@ wasmtime-environ = { version = "29", default-features = false, features = ["comp
 winnow = { version = "0.7", features = ["simd"] }
 
 [build-dependencies]
-ahash = { version = "0.8", features = ["serde"] }
 aho-corasick = { version = "1" }
 arrayvec = { version = "0.7", features = ["serde"] }
 async-compression = { version = "0.4", default-features = false, features = ["deflate", "deflate64", "futures-io", "gzip"] }
@@ -146,8 +138,6 @@ deranged = { version = "0.4", default-features = false, features = ["powerfmt", 
 digest = { version = "0.10", features = ["mac", "oid", "std"] }
 either = { version = "1", features = ["use_std"] }
 euclid = { version = "0.22" }
-event-listener = { version = "5" }
-event-listener-strategy = { version = "0.5" }
 flate2 = { version = "1", features = ["zlib-rs"] }
 form_urlencoded = { version = "1" }
 futures-channel = { version = "0.3", features = ["sink"] }
@@ -157,11 +147,9 @@ futures-sink = { version = "0.3" }
 futures-util = { version = "0.3", features = ["channel", "io", "sink"] }
 getrandom = { version = "0.2", default-features = false, features = ["std"] }
 half = { version = "2" }
-handlebars = { version = "4", features = ["rust-embed"] }
 hashbrown-3575ec1268b04181 = { package = "hashbrown", version = "0.15", default-features = false, features = ["default-hasher", "inline-more", "serde"] }
 hashbrown-582f2526e08bb6a0 = { package = "hashbrown", version = "0.14", features = ["raw"] }
 hyper = { version = "0.14", features = ["client", "http1", "http2", "runtime", "server", "stream"] }
-idna = { version = "1" }
 indexmap = { version = "2", features = ["serde"] }
 itertools-594e8ee84c453af0 = { package = "itertools", version = "0.13" }
 itertools-5ef9efb8ec2df382 = { package = "itertools", version = "0.12" }
@@ -176,8 +164,6 @@ mime_guess = { version = "2" }
 miniz_oxide = { version = "0.8", features = ["simd"] }
 nom = { version = "7" }
 num-integer = { version = "0.1", features = ["i128"] }
-num-iter = { version = "0.1", default-features = false, features = ["i128", "std"] }
-num-rational = { version = "0.4", features = ["num-bigint-std"] }
 num-traits = { version = "0.2", features = ["i128", "libm"] }
 once_cell = { version = "1" }
 percent-encoding = { version = "2" }

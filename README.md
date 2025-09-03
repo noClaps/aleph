@@ -15,4 +15,4 @@ This fork removes:
 - Themes (replace all with ZeroLimits theme)
 - Sentry reporting
 - Collab features
-- ACP features
+- ACP and other agent features

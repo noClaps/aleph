@@ -5,7 +5,6 @@ use crate::{
     ui::{COLLAPSED_LINES, ToolOutputPreview},
 };
 use action_log::ActionLog;
-use agent_settings;
 use anyhow::{Context as _, Result, anyhow};
 use assistant_tool::{
     AnyToolCard, Tool, ToolCard, ToolResult, ToolResultContent, ToolResultOutput, ToolUseStatus,
@@ -135,10 +134,6 @@ impl Tool for EditFileTool {
         project: &Entity<Project>,
         cx: &App,
     ) -> bool {
-        if agent_settings::AgentSettings::get_global(cx).always_allow_tool_actions {
-            return false;
-        }
-
         let Ok(input) = serde_json::from_value::<EditFileToolInput>(input.clone()) else {
             // If it's not valid JSON, it's going to error and confirming won't do anything.
             return false;
@@ -579,7 +574,6 @@ pub struct EditFileToolCard {
 
 impl EditFileToolCard {
     pub fn new(path: PathBuf, project: Entity<Project>, window: &mut Window, cx: &mut App) -> Self {
-        let expand_edit_card = agent_settings::AgentSettings::get_global(cx).expand_edit_card;
         let multibuffer = cx.new(|_| MultiBuffer::without_headers(Capability::ReadOnly));
 
         let editor = cx.new(|cx| {
@@ -622,7 +616,7 @@ impl EditFileToolCard {
             diff_task: None,
             preview_expanded: true,
             error_expanded: None,
-            full_height_expanded: expand_edit_card,
+            full_height_expanded: false,
             total_lines: None,
         }
     }
