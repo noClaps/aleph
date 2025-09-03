@@ -35,7 +35,6 @@ members = [
     "crates/editor",
     "crates/extension",
     "crates/extension_api",
-    "crates/extension_cli",
     "crates/extension_host",
     "crates/extensions_ui",
     "crates/feature_flags",
@@ -374,7 +373,6 @@ documented = "0.9.1"
 dotenvy = "0.15.0"
 ec4rs = "1.1"
 emojis = "0.6.1"
-env_logger = "0.11"
 fancy-regex = "0.14.0"
 futures = "0.3"
 futures-batch = "0.6.1"
@@ -588,7 +586,6 @@ breadcrumbs = { codegen-units = 1 }
 collections = { codegen-units = 1 }
 command_palette = { codegen-units = 1 }
 command_palette_hooks = { codegen-units = 1 }
-extension_cli = { codegen-units = 1 }
 feature_flags = { codegen-units = 1 }
 file_icons = { codegen-units = 1 }
 fsevent = { codegen-units = 1 }

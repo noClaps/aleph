@@ -2590,16 +2590,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "env_filter"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "186e05a59d4c50738528153b83b0b0194d3a29507dfec16eccd4b342903397d0"
-dependencies = [
- "log",
- "regex",
-]
-
-[[package]]
 name = "env_logger"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2610,19 +2600,6 @@ dependencies = [
  "log",
  "regex",
  "termcolor",
-]
-
-[[package]]
-name = "env_logger"
-version = "0.11.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "13c863f0904021b108aa8b2f55046443e6b1ebde8fd4a15c399893aae4fa069f"
-dependencies = [
- "anstream",
- "anstyle",
- "env_filter",
- "jiff",
- "log",
 ]
 
 [[package]]
@@ -2740,30 +2717,6 @@ dependencies = [
  "util",
  "wasm-encoder 0.221.3",
  "wasmparser 0.221.3",
- "workspace-hack",
-]
-
-[[package]]
-name = "extension_cli"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "env_logger 0.11.8",
- "extension",
- "fs",
- "gpui",
- "language",
- "log",
- "reqwest_client",
- "rpc",
- "serde",
- "serde_json",
- "theme",
- "tokio",
- "toml",
- "tree-sitter",
- "wasmtime",
  "workspace-hack",
 ]
 
@@ -7305,7 +7258,7 @@ version = "0.1.0"
 source = "git+https://github.com/microsoft/python-environment-tools.git?rev=845945b830297a50de0e24020b980a65e4820559#845945b830297a50de0e24020b980a65e4820559"
 dependencies = [
  "clap",
- "env_logger 0.10.2",
+ "env_logger",
  "lazy_static",
  "log",
  "msvc_spectre_libs",
@@ -7341,7 +7294,7 @@ name = "pet-conda"
 version = "0.1.0"
 source = "git+https://github.com/microsoft/python-environment-tools.git?rev=845945b830297a50de0e24020b980a65e4820559#845945b830297a50de0e24020b980a65e4820559"
 dependencies = [
- "env_logger 0.10.2",
+ "env_logger",
  "lazy_static",
  "log",
  "msvc_spectre_libs",
@@ -7431,7 +7384,7 @@ name = "pet-jsonrpc"
 version = "0.1.0"
 source = "git+https://github.com/microsoft/python-environment-tools.git?rev=845945b830297a50de0e24020b980a65e4820559#845945b830297a50de0e24020b980a65e4820559"
 dependencies = [
- "env_logger 0.10.2",
+ "env_logger",
  "log",
  "msvc_spectre_libs",
  "pet-core",
@@ -7560,7 +7513,7 @@ name = "pet-python-utils"
 version = "0.1.0"
 source = "git+https://github.com/microsoft/python-environment-tools.git?rev=845945b830297a50de0e24020b980a65e4820559#845945b830297a50de0e24020b980a65e4820559"
 dependencies = [
- "env_logger 0.10.2",
+ "env_logger",
  "lazy_static",
  "log",
  "msvc_spectre_libs",
@@ -7577,7 +7530,7 @@ name = "pet-reporter"
 version = "0.1.0"
 source = "git+https://github.com/microsoft/python-environment-tools.git?rev=845945b830297a50de0e24020b980a65e4820559#845945b830297a50de0e24020b980a65e4820559"
 dependencies = [
- "env_logger 0.10.2",
+ "env_logger",
  "log",
  "msvc_spectre_libs",
  "pet-core",
@@ -7591,7 +7544,7 @@ name = "pet-telemetry"
 version = "0.1.0"
 source = "git+https://github.com/microsoft/python-environment-tools.git?rev=845945b830297a50de0e24020b980a65e4820559#845945b830297a50de0e24020b980a65e4820559"
 dependencies = [
- "env_logger 0.10.2",
+ "env_logger",
  "lazy_static",
  "log",
  "msvc_spectre_libs",
@@ -10859,9 +10812,7 @@ dependencies = [
  "bytes",
  "libc",
  "mio",
- "parking_lot",
  "pin-project-lite",
- "signal-hook-registry",
  "socket2",
  "tokio-macros",
  "windows-sys 0.52.0",
@@ -13213,7 +13164,6 @@ dependencies = [
  "hashbrown 0.15.3",
  "indexmap",
  "itertools 0.13.0",
- "jiff",
  "lazy_static",
  "libc",
  "log",
