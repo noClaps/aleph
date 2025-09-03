@@ -1,5 +1,4 @@
 mod application_menu;
-mod collab;
 mod onboarding_banner;
 pub mod platform_title_bar;
 mod platforms;
@@ -13,7 +12,6 @@ use crate::{
 };
 
 use auto_update::AutoUpdateStatus;
-use call::ActiveCall;
 use client::{Client, UserStore, zed_urls};
 use cloud_llm_client::Plan;
 use gpui::{
@@ -31,7 +29,7 @@ use theme::ActiveTheme;
 use title_bar_settings::TitleBarSettings;
 use ui::{
     Avatar, Button, ButtonLike, ButtonStyle, Chip, ContextMenu, Icon, IconName, IconSize,
-    IconWithIndicator, Indicator, PopoverMenu, PopoverMenuHandle, Tooltip, h_flex, prelude::*,
+    IconWithIndicator, Indicator, PopoverMenu, Tooltip, h_flex, prelude::*,
 };
 use util::ResultExt;
 use workspace::{Workspace, notifications::NotifyResultExt};
@@ -78,7 +76,6 @@ pub struct TitleBar {
     application_menu: Option<Entity<ApplicationMenu>>,
     _subscriptions: Vec<Subscription>,
     banner: Entity<OnboardingBanner>,
-    screen_share_popover_handle: PopoverMenuHandle<ContextMenu>,
 }
 
 impl Render for TitleBar {
@@ -120,8 +117,6 @@ impl Render for TitleBar {
                 .into_any_element(),
         );
 
-        children.push(self.render_collaborator_list(window, cx).into_any_element());
-
         if title_bar_settings.show_onboarding_banner {
             children.push(self.banner.clone().into_any_element())
         }
@@ -135,7 +130,6 @@ impl Render for TitleBar {
                 .gap_1()
                 .pr_1()
                 .on_mouse_down(MouseButton::Left, |_, _, cx| cx.stop_propagation())
-                .children(self.render_call_controls(window, cx))
                 .children(self.render_connection_status(status, cx))
                 .when(
                     user.is_none() && TitleBarSettings::get_global(cx).show_sign_in,
@@ -193,7 +187,6 @@ impl TitleBar {
         let project = workspace.project().clone();
         let user_store = workspace.app_state().user_store.clone();
         let client = workspace.app_state().client.clone();
-        let active_call = ActiveCall::global(cx);
 
         let application_menu = if option_env!("ZED_USE_CROSS_PLATFORM_MENU").is_some() {
             Some(cx.new(|cx| ApplicationMenu::new(window, cx)))
@@ -208,7 +201,6 @@ impl TitleBar {
             }),
         );
         subscriptions.push(cx.subscribe(&project, |_, _, _: &project::Event, cx| cx.notify()));
-        subscriptions.push(cx.observe(&active_call, |this, _, cx| this.active_call_changed(cx)));
         subscriptions.push(cx.observe_window_activation(window, Self::window_activation_changed));
         subscriptions.push(cx.observe(&user_store, |_, _, cx| cx.notify()));
 
@@ -236,7 +228,6 @@ impl TitleBar {
             client,
             _subscriptions: subscriptions,
             banner,
-            screen_share_popover_handle: Default::default(),
         }
     }
 
@@ -461,40 +452,11 @@ impl TitleBar {
     }
 
     fn window_activation_changed(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        if window.is_window_active() {
-            ActiveCall::global(cx)
-                .update(cx, |call, cx| call.set_location(Some(&self.project), cx))
-                .detach_and_log_err(cx);
-        } else if cx.active_window().is_none() {
-            ActiveCall::global(cx)
-                .update(cx, |call, cx| call.set_location(None, cx))
-                .detach_and_log_err(cx);
-        }
         self.workspace
             .update(cx, |workspace, cx| {
                 workspace.update_active_view_for_followers(window, cx);
             })
             .ok();
-    }
-
-    fn active_call_changed(&mut self, cx: &mut Context<Self>) {
-        cx.notify();
-    }
-
-    fn share_project(&mut self, cx: &mut Context<Self>) {
-        let active_call = ActiveCall::global(cx);
-        let project = self.project.clone();
-        active_call
-            .update(cx, |call, cx| call.share_project(project, cx))
-            .detach_and_log_err(cx);
-    }
-
-    fn unshare_project(&mut self, _: &mut Window, cx: &mut Context<Self>) {
-        let active_call = ActiveCall::global(cx);
-        let project = self.project.clone();
-        active_call
-            .update(cx, |call, cx| call.unshare_project(project, cx))
-            .log_err();
     }
 
     fn render_connection_status(

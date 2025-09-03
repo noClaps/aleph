@@ -19,3 +19,4 @@ This fork removes:
 - Sentry reporting
 - Collab features:
   - Audio
+  - Call

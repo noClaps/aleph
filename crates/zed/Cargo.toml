@@ -28,7 +28,6 @@ auto_update_ui.workspace = true
 backtrace = "0.3"
 bincode.workspace = true
 breadcrumbs.workspace = true
-call.workspace = true
 channel.workspace = true
 chrono.workspace = true
 clap.workspace = true
@@ -147,7 +146,6 @@ zlog_settings.workspace = true
 
 
 [dev-dependencies]
-call.workspace = true
 editor.workspace = true
 gpui.workspace = true
 image_viewer.workspace = true
