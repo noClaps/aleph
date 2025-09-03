@@ -25,8 +25,8 @@ bstr = { version = "1" }
 byteorder = { version = "1" }
 bytes = { version = "1" }
 chrono = { version = "0.4", features = ["serde"] }
-clap = { version = "4", features = ["cargo", "derive", "wrap_help"] }
-clap_builder = { version = "4", default-features = false, features = ["cargo", "color", "std", "suggestions", "usage", "wrap_help"] }
+clap = { version = "4", features = ["cargo", "derive"] }
+clap_builder = { version = "4", default-features = false, features = ["cargo", "color", "help", "std", "suggestions", "usage"] }
 core-foundation = { version = "0.9" }
 core-foundation-sys = { version = "0.8" }
 cranelift-codegen = { version = "0.116", default-features = false, features = ["host-arch", "incremental-cache", "std", "timing", "unwind"] }
@@ -39,7 +39,7 @@ either = { version = "1", features = ["use_std"] }
 euclid = { version = "0.22" }
 flate2 = { version = "1", features = ["zlib-rs"] }
 form_urlencoded = { version = "1" }
-futures-channel = { version = "0.3", features = ["sink"] }
+futures-channel = { version = "0.3", default-features = false, features = ["sink", "std"] }
 futures-core = { version = "0.3" }
 futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }
@@ -55,7 +55,6 @@ log = { version = "0.4", default-features = false, features = ["kv_unstable_serd
 lyon = { version = "1", default-features = false, features = ["extra"] }
 lyon_path = { version = "1" }
 memchr = { version = "2" }
-mime_guess = { version = "2" }
 miniz_oxide = { version = "0.8", features = ["simd"] }
 nom = { version = "7" }
 num-integer = { version = "0.1", default-features = false, features = ["i128", "std"] }
@@ -106,8 +105,8 @@ byteorder = { version = "1" }
 bytes = { version = "1" }
 cc = { version = "1", default-features = false, features = ["parallel"] }
 chrono = { version = "0.4", features = ["serde"] }
-clap = { version = "4", features = ["cargo", "derive", "wrap_help"] }
-clap_builder = { version = "4", default-features = false, features = ["cargo", "color", "std", "suggestions", "usage", "wrap_help"] }
+clap = { version = "4", features = ["cargo", "derive"] }
+clap_builder = { version = "4", default-features = false, features = ["cargo", "color", "help", "std", "suggestions", "usage"] }
 core-foundation = { version = "0.9" }
 core-foundation-sys = { version = "0.8" }
 cranelift-codegen = { version = "0.116", default-features = false, features = ["host-arch", "incremental-cache", "std", "timing", "unwind"] }
@@ -120,7 +119,7 @@ either = { version = "1", features = ["use_std"] }
 euclid = { version = "0.22" }
 flate2 = { version = "1", features = ["zlib-rs"] }
 form_urlencoded = { version = "1" }
-futures-channel = { version = "0.3", features = ["sink"] }
+futures-channel = { version = "0.3", default-features = false, features = ["sink", "std"] }
 futures-core = { version = "0.3" }
 futures-io = { version = "0.3" }
 futures-sink = { version = "0.3" }
@@ -137,7 +136,6 @@ log = { version = "0.4", default-features = false, features = ["kv_unstable_serd
 lyon = { version = "1", default-features = false, features = ["extra"] }
 lyon_path = { version = "1" }
 memchr = { version = "2" }
-mime_guess = { version = "2" }
 miniz_oxide = { version = "0.8", features = ["simd"] }
 nom = { version = "7" }
 num-integer = { version = "0.1", default-features = false, features = ["i128", "std"] }

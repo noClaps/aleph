@@ -30,7 +30,6 @@ members = [
     "crates/debugger_ui",
     "crates/deepseek",
     "crates/diagnostics",
-    "crates/docs_preprocessor",
     "crates/edit_prediction",
     "crates/edit_prediction_button",
     "crates/editor",
@@ -680,6 +679,7 @@ large_enum_variant = "allow"
 
 [workspace.metadata.cargo-shear]
 ignored = [
+    "zed",
     "bindgen",
     "cbindgen",
     "prost_build",

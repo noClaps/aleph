@@ -21,3 +21,5 @@ This fork removes:
   - Audio
   - Call
   - Channel
+- CLIs:
+  - Docs preprocessor
