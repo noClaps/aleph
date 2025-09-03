@@ -8,10 +8,9 @@ use serde::{Deserialize, Serialize};
 use settings::{Settings, SettingsKey, SettingsSources, SettingsUi};
 
 use crate::provider::{
-    self, deepseek::DeepSeekSettings, google::GoogleSettings, lmstudio::LmStudioSettings,
-    mistral::MistralSettings, ollama::OllamaSettings, open_ai::OpenAiSettings,
-    open_ai_compatible::OpenAiCompatibleSettings, open_router::OpenRouterSettings,
-    vercel::VercelSettings, x_ai::XAiSettings,
+    self, google::GoogleSettings, lmstudio::LmStudioSettings, mistral::MistralSettings,
+    ollama::OllamaSettings, open_ai::OpenAiSettings, open_ai_compatible::OpenAiCompatibleSettings,
+    open_router::OpenRouterSettings, vercel::VercelSettings, x_ai::XAiSettings,
 };
 
 /// Initializes the language model settings.
@@ -21,7 +20,6 @@ pub fn init_settings(cx: &mut App) {
 
 #[derive(Default)]
 pub struct AllLanguageModelSettings {
-    pub deepseek: DeepSeekSettings,
     pub google: GoogleSettings,
     pub lmstudio: LmStudioSettings,
     pub mistral: MistralSettings,
@@ -38,7 +36,6 @@ pub struct AllLanguageModelSettings {
 )]
 #[settings_key(key = "language_models")]
 pub struct AllLanguageModelSettingsContent {
-    pub deepseek: Option<DeepseekSettingsContent>,
     pub google: Option<GoogleSettingsContent>,
     pub lmstudio: Option<LmStudioSettingsContent>,
     pub mistral: Option<MistralSettingsContent>,
@@ -60,12 +57,6 @@ pub struct OllamaSettingsContent {
 pub struct LmStudioSettingsContent {
     pub api_url: Option<String>,
     pub available_models: Option<Vec<provider::lmstudio::AvailableModel>>,
-}
-
-#[derive(Default, Clone, Debug, Serialize, Deserialize, PartialEq, JsonSchema)]
-pub struct DeepseekSettingsContent {
-    pub api_url: Option<String>,
-    pub available_models: Option<Vec<provider::deepseek::AvailableModel>>,
 }
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize, PartialEq, JsonSchema)]
@@ -147,18 +138,6 @@ impl settings::Settings for AllLanguageModelSettings {
             merge(
                 &mut settings.lmstudio.available_models,
                 lmstudio.as_ref().and_then(|s| s.available_models.clone()),
-            );
-
-            // DeepSeek
-            let deepseek = value.deepseek.clone();
-
-            merge(
-                &mut settings.deepseek.api_url,
-                value.deepseek.as_ref().and_then(|s| s.api_url.clone()),
-            );
-            merge(
-                &mut settings.deepseek.available_models,
-                deepseek.as_ref().and_then(|s| s.available_models.clone()),
             );
 
             // OpenAI

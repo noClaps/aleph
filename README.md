@@ -9,7 +9,7 @@ This fork removes:
 
 - Support for all platforms other than macOS arm64
 - AI features:
-  - Providers: Anthropic, Bedrock, Cloud (whatever this means), Copilot, Zeta
+  - Providers: Anthropic, Bedrock, Cloud (whatever this means), Copilot, Deepseek, Zeta
   - ACP and other agent features
   - Onboarding
   - Assistant tools and slash commands

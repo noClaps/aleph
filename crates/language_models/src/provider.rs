@@ -1,4 +1,3 @@
-pub mod deepseek;
 pub mod google;
 pub mod lmstudio;
 pub mod mistral;

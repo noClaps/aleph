@@ -18,7 +18,6 @@ collections.workspace = true
 component.workspace = true
 convert_case.workspace = true
 credentials_provider.workspace = true
-deepseek = { workspace = true, features = ["schemars"] }
 editor.workspace = true
 futures.workspace = true
 google_ai = { workspace = true, features = ["schemars"] }

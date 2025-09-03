@@ -2082,19 +2082,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "deepseek"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "futures",
- "http_client",
- "schemars",
- "serde",
- "serde_json",
- "workspace-hack",
-]
-
-[[package]]
 name = "deflate64"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5530,7 +5517,6 @@ dependencies = [
  "component",
  "convert_case 0.8.0",
  "credentials_provider",
- "deepseek",
  "editor",
  "futures",
  "google_ai",
