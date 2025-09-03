@@ -11,8 +11,8 @@ use gpui::{App, Task, Window, actions};
 use rpc::proto::{self};
 use theme::ActiveTheme;
 use ui::{
-    Avatar, AvatarAudioStatusIndicator, ContextMenu, ContextMenuItem, Divider, DividerColor,
-    Facepile, PopoverMenu, SplitButton, SplitButtonStyle, TintColor, Tooltip, prelude::*,
+    Avatar, ContextMenu, ContextMenuItem, Divider, DividerColor, Facepile, PopoverMenu,
+    SplitButton, SplitButtonStyle, TintColor, Tooltip, prelude::*,
 };
 use workspace::notifications::DetachAndPromptErr;
 
@@ -51,15 +51,8 @@ fn toggle_screen_sharing(
                                 .and_then(|s| s.metadata().ok().map(|meta| meta.id))
                     });
                 let should_unshare_current_screen = room.is_sharing_screen();
-                let unshared_current_screen = should_unshare_current_screen.then(|| {
-                    telemetry::event!(
-                        "Screen Share Disabled",
-                        room_id = room.id(),
-                        channel_id = room.channel_id(),
-                    );
-                    room.unshare_screen(clicked_on_currently_shared_screen || screen.is_none(), cx)
-                });
-                if let Some(screen) = screen {
+
+                if screen.is_some() {
                     if !should_unshare_current_screen {
                         telemetry::event!(
                             "Screen Share Enabled",
@@ -68,10 +61,8 @@ fn toggle_screen_sharing(
                         );
                     }
                     cx.spawn(async move |room, cx| {
-                        unshared_current_screen.transpose()?;
                         if !clicked_on_currently_shared_screen {
-                            room.update(cx, |room, cx| room.share_screen(screen, cx))?
-                                .await
+                            room.update(cx, |room, _cx| room.share_screen())?.await
                         } else {
                             Ok(())
                         }
@@ -89,7 +80,7 @@ fn toggle_screen_sharing(
 fn toggle_mute(_: &ToggleMute, cx: &mut App) {
     let call = ActiveCall::global(cx).read(cx);
     if let Some(room) = call.room().cloned() {
-        room.update(cx, |room, cx| {
+        room.update(cx, |room, _cx| {
             let operation = if room.is_muted() {
                 "Microphone Enabled"
             } else {
@@ -101,14 +92,8 @@ fn toggle_mute(_: &ToggleMute, cx: &mut App) {
                 channel_id = room.channel_id(),
             );
 
-            room.toggle_mute(cx)
+            room.toggle_mute()
         });
-    }
-}
-
-fn toggle_deafen(_: &ToggleDeafen, cx: &mut App) {
-    if let Some(room) = ActiveCall::global(cx).read(cx).room().cloned() {
-        room.update(cx, |room, cx| room.toggle_deafen(cx));
     }
 }
 
@@ -168,7 +153,6 @@ impl TitleBar {
                         peer_id,
                         true,
                         room.is_speaking(),
-                        room.is_muted(),
                         None,
                         room,
                         project_id,
@@ -199,7 +183,6 @@ impl TitleBar {
                             collaborator.peer_id,
                             is_present,
                             collaborator.speaking,
-                            collaborator.muted,
                             is_following.then_some(player_color.selection),
                             room,
                             project_id,
@@ -243,7 +226,6 @@ impl TitleBar {
         peer_id: PeerId,
         is_present: bool,
         is_speaking: bool,
-        is_muted: bool,
         leader_selection_color: Option<Hsla>,
         room: &Room,
         project_id: Option<u64>,
@@ -278,15 +260,6 @@ impl TitleBar {
                                     // We draw the border in a transparent color rather to avoid
                                     // the layout shift that would come with adding/removing the border.
                                     gpui::transparent_black()
-                                })
-                                .when(is_muted, |avatar| {
-                                    avatar.indicator(
-                                        AvatarAudioStatusIndicator::new(ui::AudioStatus::Muted)
-                                            .tooltip({
-                                                let github_login = user.github_login.clone();
-                                                Tooltip::text(format!("{} is muted", github_login))
-                                            }),
-                                    )
                                 }),
                         )
                         .children(followers.iter().take(FACEPILE_LIMIT).filter_map(
@@ -340,8 +313,6 @@ impl TitleBar {
         let is_local = project.is_local() || project.is_via_remote_server();
         let is_shared = is_local && project.is_shared();
         let is_muted = room.is_muted();
-        let muted_by_user = room.muted_by_user();
-        let is_deafened = room.is_deafened().unwrap_or(false);
         let is_screen_sharing = room.is_sharing_screen();
         let can_use_microphone = room.can_use_microphone();
         let can_share_projects = room.can_share_projects();
@@ -403,19 +374,9 @@ impl TitleBar {
                         IconName::Mic
                     },
                 )
-                .tooltip(move |window, cx| {
+                .tooltip(move |_window, cx| {
                     if is_muted {
-                        if is_deafened {
-                            Tooltip::with_meta(
-                                "Unmute Microphone",
-                                None,
-                                "Audio will be unmuted",
-                                window,
-                                cx,
-                            )
-                        } else {
-                            Tooltip::simple("Unmute Microphone", cx)
-                        }
+                        Tooltip::simple("Unmute Microphone", cx)
                     } else {
                         Tooltip::simple("Mute Microphone", cx)
                     }
@@ -430,42 +391,6 @@ impl TitleBar {
                 .into_any_element(),
             );
         }
-
-        children.push(
-            IconButton::new(
-                "mute-sound",
-                if is_deafened {
-                    IconName::AudioOff
-                } else {
-                    IconName::AudioOn
-                },
-            )
-            .style(ButtonStyle::Subtle)
-            .selected_style(ButtonStyle::Tinted(TintColor::Error))
-            .icon_size(IconSize::Small)
-            .toggle_state(is_deafened)
-            .tooltip(move |window, cx| {
-                if is_deafened {
-                    let label = "Unmute Audio";
-
-                    if !muted_by_user {
-                        Tooltip::with_meta(label, None, "Microphone will be unmuted", window, cx)
-                    } else {
-                        Tooltip::simple(label, cx)
-                    }
-                } else {
-                    let label = "Mute Audio";
-
-                    if !muted_by_user {
-                        Tooltip::with_meta(label, None, "Microphone will be muted", window, cx)
-                    } else {
-                        Tooltip::simple(label, cx)
-                    }
-                }
-            })
-            .on_click(move |_, _, cx| toggle_deafen(&Default::default(), cx))
-            .into_any_element(),
-        );
 
         if can_use_microphone && screen_sharing_supported {
             let trigger = IconButton::new("screen-share", IconName::Screen)

@@ -28,7 +28,6 @@ aws-smithy-runtime-api = { version = "1", features = ["client", "http-02x", "htt
 aws-smithy-types = { version = "1", default-features = false, features = ["byte-stream-poll-next", "http-body-0-4-x", "http-body-1-x", "rt-tokio", "test-util"] }
 bitflags = { version = "2", default-features = false, features = ["serde", "std"] }
 bstr = { version = "1" }
-bytemuck = { version = "1", default-features = false, features = ["aarch64_simd", "extern_crate_alloc"] }
 byteorder = { version = "1" }
 bytes = { version = "1" }
 chrono = { version = "0.4", features = ["serde"] }
@@ -57,7 +56,6 @@ hashbrown-3575ec1268b04181 = { package = "hashbrown", version = "0.15", default-
 hashbrown-582f2526e08bb6a0 = { package = "hashbrown", version = "0.14", features = ["raw"] }
 hyper = { version = "0.14", features = ["client", "http1", "http2", "runtime", "server", "stream"] }
 indexmap = { version = "2", features = ["serde"] }
-itertools-5ef9efb8ec2df382 = { package = "itertools", version = "0.12" }
 jiff = { version = "0.2" }
 lazy_static = { version = "1", default-features = false, features = ["spin_no_std"] }
 libc = { version = "0.2", features = ["extra_traits"] }
@@ -82,10 +80,8 @@ regalloc2 = { version = "0.11", features = ["checker", "enable-serde"] }
 regex = { version = "1" }
 regex-automata = { version = "0.4" }
 regex-syntax = { version = "0.8" }
-rodio = { version = "0.21", default-features = false, features = ["playback", "tracing", "wav", "wav_output"] }
 rustix = { version = "0.38", default-features = false, features = ["fs", "net", "std"] }
 rustls = { version = "0.23" }
-scopeguard = { version = "1" }
 semver = { version = "1", features = ["serde"] }
 serde = { version = "1", features = ["alloc", "derive", "rc"] }
 serde_json = { version = "1", features = ["alloc", "preserve_order", "raw_value"] }
@@ -121,7 +117,6 @@ aws-smithy-runtime-api = { version = "1", features = ["client", "http-02x", "htt
 aws-smithy-types = { version = "1", default-features = false, features = ["byte-stream-poll-next", "http-body-0-4-x", "http-body-1-x", "rt-tokio", "test-util"] }
 bitflags = { version = "2", default-features = false, features = ["serde", "std"] }
 bstr = { version = "1" }
-bytemuck = { version = "1", default-features = false, features = ["aarch64_simd", "extern_crate_alloc"] }
 byteorder = { version = "1" }
 bytes = { version = "1" }
 cc = { version = "1", default-features = false, features = ["parallel"] }
@@ -151,8 +146,7 @@ hashbrown-3575ec1268b04181 = { package = "hashbrown", version = "0.15", default-
 hashbrown-582f2526e08bb6a0 = { package = "hashbrown", version = "0.14", features = ["raw"] }
 hyper = { version = "0.14", features = ["client", "http1", "http2", "runtime", "server", "stream"] }
 indexmap = { version = "2", features = ["serde"] }
-itertools-594e8ee84c453af0 = { package = "itertools", version = "0.13" }
-itertools-5ef9efb8ec2df382 = { package = "itertools", version = "0.12" }
+itertools = { version = "0.13" }
 jiff = { version = "0.2" }
 lazy_static = { version = "1", default-features = false, features = ["spin_no_std"] }
 libc = { version = "0.2", features = ["extra_traits"] }
@@ -180,10 +174,8 @@ regalloc2 = { version = "0.11", features = ["checker", "enable-serde"] }
 regex = { version = "1" }
 regex-automata = { version = "0.4" }
 regex-syntax = { version = "0.8" }
-rodio = { version = "0.21", default-features = false, features = ["playback", "tracing", "wav", "wav_output"] }
 rustix = { version = "0.38", default-features = false, features = ["fs", "net", "std"] }
 rustls = { version = "0.23" }
-scopeguard = { version = "1" }
 semver = { version = "1", features = ["serde"] }
 serde = { version = "1", features = ["alloc", "derive", "rc"] }
 serde_derive = { version = "1", features = ["deserialize_in_place"] }

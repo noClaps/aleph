@@ -3,7 +3,6 @@ pub mod room;
 
 use crate::call_settings::CallSettings;
 use anyhow::{Context as _, Result, anyhow};
-use audio::Audio;
 use client::{ChannelId, Client, TypedEnvelope, User, UserStore, ZED_ALWAYS_ACTIVE, proto};
 use collections::HashSet;
 use futures::{Future, FutureExt, channel::oneshot, future::Shared};
@@ -17,7 +16,6 @@ use room::Event;
 use settings::Settings;
 use std::sync::Arc;
 
-pub use livekit_client::{RemoteVideoTrack, RemoteVideoTrackView, RemoteVideoTrackViewEvent};
 pub use participant::ParticipantLocation;
 pub use room::Room;
 
@@ -369,8 +367,6 @@ impl ActiveCall {
     pub fn hang_up(&mut self, cx: &mut Context<Self>) -> Task<Result<()>> {
         cx.notify();
         self.report_call_event("Call Ended", cx);
-
-        Audio::end_call(cx);
 
         let channel_id = self.channel_id(cx);
         if let Some((room, _)) = self.room.take() {

@@ -17,4 +17,5 @@ This fork removes:
 - Custom fonts (IBM Plex Sans and Lilex)
 - Themes (replace all with ZeroLimits theme)
 - Sentry reporting
-- Collab features
+- Collab features:
+  - Audio
