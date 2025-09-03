@@ -21,7 +21,6 @@ use std::{
     str::FromStr as _,
     sync::{Arc, Weak},
 };
-use text::ReplicaId;
 use util::{ResultExt, TryFutureExt as _};
 
 pub type UserId = u64;
@@ -55,16 +54,6 @@ pub struct User {
     pub github_login: SharedString,
     pub avatar_uri: SharedUri,
     pub name: Option<String>,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Collaborator {
-    pub peer_id: proto::PeerId,
-    pub replica_id: ReplicaId,
-    pub user_id: UserId,
-    pub is_host: bool,
-    pub committer_name: Option<String>,
-    pub committer_email: Option<String>,
 }
 
 impl PartialOrd for User {
@@ -910,19 +899,6 @@ impl Contact {
             user,
             online: contact.online,
             busy: contact.busy,
-        })
-    }
-}
-
-impl Collaborator {
-    pub fn from_proto(message: proto::Collaborator) -> Result<Self> {
-        Ok(Self {
-            peer_id: message.peer_id.context("invalid peer id")?,
-            replica_id: message.replica_id as ReplicaId,
-            user_id: message.user_id as UserId,
-            is_host: message.is_host,
-            committer_name: message.committer_name,
-            committer_email: message.committer_email,
         })
     }
 }

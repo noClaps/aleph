@@ -20,3 +20,4 @@ This fork removes:
 - Collab features:
   - Audio
   - Call
+  - Channel

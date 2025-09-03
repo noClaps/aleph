@@ -98,56 +98,6 @@ impl RenderOnce for Avatar {
     }
 }
 
-/// Represents the availability status of a collaborator.
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-pub enum CollaboratorAvailability {
-    Free,
-    Busy,
-}
-
-/// Represents the availability and presence status of a collaborator.
-#[derive(IntoElement)]
-pub struct AvatarAvailabilityIndicator {
-    availability: CollaboratorAvailability,
-    avatar_size: Option<Pixels>,
-}
-
-impl AvatarAvailabilityIndicator {
-    /// Creates a new indicator
-    pub fn new(availability: CollaboratorAvailability) -> Self {
-        Self {
-            availability,
-            avatar_size: None,
-        }
-    }
-
-    /// Sets the size of the [`Avatar`](crate::Avatar) this indicator appears on.
-    pub fn avatar_size(mut self, size: impl Into<Option<Pixels>>) -> Self {
-        self.avatar_size = size.into();
-        self
-    }
-}
-
-impl RenderOnce for AvatarAvailabilityIndicator {
-    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let avatar_size = self.avatar_size.unwrap_or_else(|| window.rem_size());
-
-        // HACK: non-integer sizes result in oval indicators.
-        let indicator_size = (avatar_size * 0.4).round();
-
-        div()
-            .absolute()
-            .bottom_0()
-            .right_0()
-            .size(indicator_size)
-            .rounded(indicator_size)
-            .bg(match self.availability {
-                CollaboratorAvailability::Free => cx.theme().status().created,
-                CollaboratorAvailability::Busy => cx.theme().status().deleted,
-            })
-    }
-}
-
 // View this component preview using `workspace: open component-preview`
 impl Component for Avatar {
     fn scope() -> ComponentScope {
@@ -180,27 +130,6 @@ impl Component for Avatar {
                                 .into_any_element(),
                         ).description("Can be used to create visual space by setting the border color to match the background, which creates the appearance of a gap around the avatar."),
                     ]),
-                    example_group_with_title(
-                        "Indicator Styles",
-                        vec![
-                            single_example(
-                                "Availability: Free",
-                                Avatar::new(example_avatar)
-                                    .indicator(AvatarAvailabilityIndicator::new(
-                                        CollaboratorAvailability::Free,
-                                    ))
-                                    .into_any_element(),
-                            ).description("Indicates that the person is free, usually meaning they are not in a call."),
-                            single_example(
-                                "Availability: Busy",
-                                Avatar::new(example_avatar)
-                                    .indicator(AvatarAvailabilityIndicator::new(
-                                        CollaboratorAvailability::Busy,
-                                    ))
-                                    .into_any_element(),
-                            ).description("Indicates that the person is busy, usually meaning they are in a channel or direct call."),
-                        ],
-                    ),
                 ])
                 .into_any_element(),
         )

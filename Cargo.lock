@@ -1129,30 +1129,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "channel"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "client",
- "clock",
- "collections",
- "futures",
- "gpui",
- "language",
- "log",
- "postage",
- "rand 0.9.1",
- "release_channel",
- "rpc",
- "settings",
- "sum_tree",
- "text",
- "time",
- "util",
- "workspace-hack",
-]
-
-[[package]]
 name = "chrono"
 version = "0.4.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1327,7 +1303,6 @@ dependencies = [
  "smol",
  "telemetry",
  "telemetry_events",
- "text",
  "thiserror 2.0.12",
  "time",
  "tiny_http",
@@ -2623,7 +2598,6 @@ dependencies = [
  "aho-corasick",
  "anyhow",
  "buffer_diff",
- "client",
  "clock",
  "collections",
  "convert_case 0.8.0",
@@ -7145,9 +7119,7 @@ name = "notifications"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "channel",
  "client",
- "collections",
  "component",
  "db",
  "gpui",
@@ -14031,7 +14003,6 @@ dependencies = [
  "backtrace",
  "bincode",
  "breadcrumbs",
- "channel",
  "chrono",
  "clap",
  "cli",

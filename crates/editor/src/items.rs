@@ -41,7 +41,7 @@ use theme::{Theme, ThemeSettings};
 use ui::{IconDecorationKind, prelude::*};
 use util::{ResultExt, TryFutureExt, paths::PathExt};
 use workspace::{
-    CollaboratorId, ItemId, ItemNavHistory, ToolbarItemLocation, ViewId, Workspace, WorkspaceId,
+    ItemId, ItemNavHistory, ToolbarItemLocation, ViewId, Workspace, WorkspaceId,
     invalid_buffer_view::InvalidBufferView,
     item::{FollowableItem, Item, ItemEvent, ProjectItem, SaveOptions},
     searchable::{Direction, SearchEvent, SearchableItem, SearchableItemHandle},
@@ -171,30 +171,6 @@ impl FollowableItem for Editor {
 
             Ok(editor)
         }))
-    }
-
-    fn set_leader_id(
-        &mut self,
-        leader_id: Option<CollaboratorId>,
-        window: &mut Window,
-        cx: &mut Context<Self>,
-    ) {
-        self.leader_id = leader_id;
-        if self.leader_id.is_some() {
-            self.buffer.update(cx, |buffer, cx| {
-                buffer.remove_active_selections(cx);
-            });
-        } else if self.focus_handle.is_focused(window) {
-            self.buffer.update(cx, |buffer, cx| {
-                buffer.set_active_selections(
-                    &self.selections.disjoint_anchors(),
-                    self.selections.line_mode,
-                    self.cursor_shape,
-                    cx,
-                );
-            });
-        }
-        cx.notify();
     }
 
     fn to_state_proto(&self, _: &Window, cx: &App) -> Option<proto::view::Variant> {

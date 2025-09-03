@@ -14,9 +14,7 @@ doctest = false
 
 [dependencies]
 anyhow.workspace = true
-channel.workspace = true
 client.workspace = true
-collections.workspace = true
 component.workspace = true
 db.workspace = true
 gpui.workspace = true
@@ -31,7 +29,6 @@ zed_actions.workspace = true
 
 [dev-dependencies]
 client.workspace = true
-collections.workspace = true
 gpui.workspace = true
 rpc.workspace = true
 util.workspace = true

@@ -31,7 +31,6 @@ use ui::{
     Avatar, Button, ButtonLike, ButtonStyle, Chip, ContextMenu, Icon, IconName, IconSize,
     IconWithIndicator, Indicator, PopoverMenu, Tooltip, h_flex, prelude::*,
 };
-use util::ResultExt;
 use workspace::{Workspace, notifications::NotifyResultExt};
 use zed_actions::{OpenRecent, OpenRemote};
 
@@ -201,7 +200,6 @@ impl TitleBar {
             }),
         );
         subscriptions.push(cx.subscribe(&project, |_, _, _: &project::Event, cx| cx.notify()));
-        subscriptions.push(cx.observe_window_activation(window, Self::window_activation_changed));
         subscriptions.push(cx.observe(&user_store, |_, _, cx| cx.notify()));
 
         let banner = cx.new(|cx| {
@@ -327,34 +325,7 @@ impl TitleBar {
             );
         }
 
-        let host = self.project.read(cx).host()?;
-        let host_user = self.user_store.read(cx).get_cached_user(host.user_id)?;
-        let participant_index = self
-            .user_store
-            .read(cx)
-            .participant_indices()
-            .get(&host_user.id)?;
-        Some(
-            Button::new("project_owner_trigger", host_user.github_login.clone())
-                .color(Color::Player(participant_index.0))
-                .style(ButtonStyle::Subtle)
-                .label_size(LabelSize::Small)
-                .tooltip(Tooltip::text(format!(
-                    "{} is sharing this project. Click to follow.",
-                    host_user.github_login
-                )))
-                .on_click({
-                    let host_peer_id = host.peer_id;
-                    cx.listener(move |this, _, window, cx| {
-                        this.workspace
-                            .update(cx, |workspace, cx| {
-                                workspace.follow(host_peer_id, window, cx);
-                            })
-                            .log_err();
-                    })
-                })
-                .into_any_element(),
-        )
+        None
     }
 
     pub fn render_project_name(&self, cx: &mut Context<Self>) -> impl IntoElement {
@@ -449,14 +420,6 @@ impl TitleBar {
                     },
                 ),
         )
-    }
-
-    fn window_activation_changed(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        self.workspace
-            .update(cx, |workspace, cx| {
-                workspace.update_active_view_for_followers(window, cx);
-            })
-            .ok();
     }
 
     fn render_connection_status(

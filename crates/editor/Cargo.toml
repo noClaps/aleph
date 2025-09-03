@@ -15,7 +15,6 @@ doctest = false
 [dependencies]
 aho-corasick.workspace = true
 anyhow.workspace = true
-client.workspace = true
 clock.workspace = true
 collections.workspace = true
 convert_case.workspace = true

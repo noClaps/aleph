@@ -1,10 +1,9 @@
 use crate::{
-    AppState, CollaboratorId, FollowerState, Pane, Workspace, WorkspaceSettings,
+    AppState, Pane, Workspace, WorkspaceSettings,
     pane_group::element::pane_axis,
     workspace_settings::{PaneSplitDirectionHorizontal, PaneSplitDirectionVertical},
 };
 use anyhow::Result;
-use collections::HashMap;
 use gpui::{
     Along, AnyView, AnyWeakView, Axis, Bounds, Entity, Hsla, IntoElement, Pixels, Point,
     StyleRefinement, WeakEntity, Window, point, size,
@@ -195,7 +194,6 @@ pub enum Member {
 #[derive(Clone, Copy)]
 pub struct PaneRenderContext<'a> {
     pub project: &'a Entity<Project>,
-    pub follower_states: &'a HashMap<CollaboratorId, FollowerState>,
     pub active_pane: &'a Entity<Pane>,
     pub app_state: &'a Arc<AppState>,
     pub workspace: &'a WeakEntity<Workspace>,
@@ -241,41 +239,8 @@ impl PaneLeaderDecorator for ActivePaneDecorator<'_> {
 }
 
 impl PaneLeaderDecorator for PaneRenderContext<'_> {
-    fn decorate(&self, pane: &Entity<Pane>, cx: &App) -> LeaderDecoration {
-        let follower_state = self.follower_states.iter().find_map(|(leader_id, state)| {
-            if state.center_pane == *pane {
-                Some((*leader_id, state))
-            } else {
-                None
-            }
-        });
-        let Some((leader_id, follower_state)) = follower_state else {
-            return LeaderDecoration::default();
-        };
-
-        let mut leader_color;
-        let status_box;
-        match leader_id {
-            CollaboratorId::PeerId(_) => {
-                return LeaderDecoration::default();
-            }
-            CollaboratorId::Agent => {
-                status_box = None;
-                leader_color = cx.theme().players().agent().cursor;
-            }
-        }
-
-        let is_in_panel = follower_state.dock_pane.is_some();
-        if is_in_panel {
-            leader_color.fade_out(0.75);
-        } else {
-            leader_color.fade_out(0.3);
-        }
-
-        LeaderDecoration {
-            status_box,
-            border: Some(leader_color),
-        }
+    fn decorate(&self, _pane: &Entity<Pane>, _cx: &App) -> LeaderDecoration {
+        return LeaderDecoration::default();
     }
 
     fn active_pane(&self) -> &Entity<Pane> {
