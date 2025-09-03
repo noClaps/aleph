@@ -12,7 +12,7 @@ license = "Apache-2.0"
 workspace = true
 
 [features]
-default = ["http_client", "font-kit"]
+default = ["font-kit"]
 leak-detection = []
 runtime_shaders = []
 

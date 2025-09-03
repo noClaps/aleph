@@ -76,18 +76,6 @@ struct Args {
     /// Run zed in dev-server mode
     #[arg(long)]
     dev_server_token: Option<String>,
-    /// The username and WSL distribution to use when opening paths. If not specified,
-    /// Zed will attempt to open the paths directly.
-    ///
-    /// The username is optional, and if not specified, the default user for the distribution
-    /// will be used.
-    ///
-    /// Example: `me@Ubuntu` or `Ubuntu`.
-    ///
-    /// WARN: You should not fill in this field by hand.
-    #[cfg(target_os = "windows")]
-    #[arg(long, value_name = "USER@DISTRO")]
-    wsl: Option<String>,
     /// Not supported in Zed CLI, only supported on Zed binary
     /// Will attempt to give the correct command to run
     #[arg(long)]
@@ -252,9 +240,6 @@ fn main() -> Result<()> {
         ]);
     }
 
-    #[cfg(target_os = "windows")]
-    let wsl = args.wsl.as_ref();
-    #[cfg(not(target_os = "windows"))]
     let wsl = None;
 
     for path in args.paths_with_position.iter() {
@@ -293,11 +278,6 @@ fn main() -> Result<()> {
         move || {
             let (_, handshake) = server.accept().context("Handshake after Zed spawn")?;
             let (tx, rx) = (handshake.requests, handshake.responses);
-
-            #[cfg(target_os = "windows")]
-            let wsl = args.wsl;
-            #[cfg(not(target_os = "windows"))]
-            let wsl = None;
 
             tx.send(CliRequest::Open {
                 paths,

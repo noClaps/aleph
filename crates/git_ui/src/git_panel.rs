@@ -56,8 +56,8 @@ use std::{collections::HashSet, sync::Arc, time::Duration, usize};
 use strum::{IntoEnumIterator, VariantNames};
 use time::OffsetDateTime;
 use ui::{
-    Checkbox, CommonAnimationExt, ContextMenu, ElevationIndex, IconPosition, Label, LabelSize,
-    PopoverMenu, Scrollbar, ScrollbarState, SplitButton, Tooltip, prelude::*,
+    Checkbox, ContextMenu, ElevationIndex, IconPosition, Label, LabelSize, PopoverMenu, Scrollbar,
+    ScrollbarState, SplitButton, Tooltip, prelude::*,
 };
 use util::{ResultExt, TryFutureExt, maybe};
 use workspace::SERIALIZATION_THROTTLE_TIME;

@@ -6929,6 +6929,7 @@ dependencies = [
  "http_client",
  "icons",
  "image",
+ "open_router",
  "parking_lot",
  "proto",
  "schemars",
