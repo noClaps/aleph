@@ -11,7 +11,6 @@ pub mod provider;
 mod settings;
 pub mod ui;
 
-use crate::provider::bedrock::BedrockLanguageModelProvider;
 use crate::provider::cloud::CloudLanguageModelProvider;
 use crate::provider::copilot_chat::CopilotChatLanguageModelProvider;
 use crate::provider::google::GoogleLanguageModelProvider;
@@ -131,7 +130,6 @@ fn register_language_model_providers(
         MistralLanguageModelProvider::new(client.http_client(), cx),
         cx,
     );
-    registry.register_provider(BedrockLanguageModelProvider::new(cx), cx);
     registry.register_provider(
         OpenRouterLanguageModelProvider::new(client.http_client(), cx),
         cx,

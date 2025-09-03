@@ -9,7 +9,6 @@ use settings::{Settings, SettingsKey, SettingsSources, SettingsUi};
 
 use crate::provider::{
     self,
-    bedrock::AmazonBedrockSettings,
     cloud::{self, ZedDotDevSettings},
     deepseek::DeepSeekSettings,
     google::GoogleSettings,
@@ -30,7 +29,6 @@ pub fn init_settings(cx: &mut App) {
 
 #[derive(Default)]
 pub struct AllLanguageModelSettings {
-    pub bedrock: AmazonBedrockSettings,
     pub deepseek: DeepSeekSettings,
     pub google: GoogleSettings,
     pub lmstudio: LmStudioSettings,
@@ -49,7 +47,6 @@ pub struct AllLanguageModelSettings {
 )]
 #[settings_key(key = "language_models")]
 pub struct AllLanguageModelSettingsContent {
-    pub bedrock: Option<AmazonBedrockSettingsContent>,
     pub deepseek: Option<DeepseekSettingsContent>,
     pub google: Option<GoogleSettingsContent>,
     pub lmstudio: Option<LmStudioSettingsContent>,
@@ -62,15 +59,6 @@ pub struct AllLanguageModelSettingsContent {
     pub x_ai: Option<XAiSettingsContent>,
     #[serde(rename = "zed.dev")]
     pub zed_dot_dev: Option<ZedDotDevSettingsContent>,
-}
-
-#[derive(Default, Clone, Debug, Serialize, Deserialize, PartialEq, JsonSchema)]
-pub struct AmazonBedrockSettingsContent {
-    available_models: Option<Vec<provider::bedrock::AvailableModel>>,
-    endpoint_url: Option<String>,
-    region: Option<String>,
-    profile: Option<String>,
-    authentication_method: Option<provider::bedrock::BedrockAuthMethod>,
 }
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize, PartialEq, JsonSchema)]
@@ -153,25 +141,6 @@ impl settings::Settings for AllLanguageModelSettings {
         let mut settings = AllLanguageModelSettings::default();
 
         for value in sources.defaults_and_customizations() {
-            // Bedrock
-            let bedrock = value.bedrock.clone();
-            merge(
-                &mut settings.bedrock.profile_name,
-                bedrock.as_ref().map(|s| s.profile.clone()),
-            );
-            merge(
-                &mut settings.bedrock.authentication_method,
-                bedrock.as_ref().map(|s| s.authentication_method.clone()),
-            );
-            merge(
-                &mut settings.bedrock.region,
-                bedrock.as_ref().map(|s| s.region.clone()),
-            );
-            merge(
-                &mut settings.bedrock.endpoint,
-                bedrock.as_ref().map(|s| s.endpoint_url.clone()),
-            );
-
             // Ollama
             let ollama = value.ollama.clone();
 
