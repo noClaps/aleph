@@ -13,7 +13,6 @@ use crate::{
 
 use auto_update::AutoUpdateStatus;
 use client::{Client, UserStore, zed_urls};
-use cloud_llm_client::Plan;
 use gpui::{
     Action, AnyElement, App, Context, Corner, Element, Entity, Focusable, InteractiveElement,
     IntoElement, MouseButton, ParentElement, Render, StatefulInteractiveElement, Styled,
@@ -28,7 +27,7 @@ use std::sync::Arc;
 use theme::ActiveTheme;
 use title_bar_settings::TitleBarSettings;
 use ui::{
-    Avatar, Button, ButtonLike, ButtonStyle, Chip, ContextMenu, Icon, IconName, IconSize,
+    Avatar, Button, ButtonLike, ButtonStyle, ContextMenu, Icon, IconName, IconSize,
     IconWithIndicator, Indicator, PopoverMenu, Tooltip, h_flex, prelude::*,
 };
 use workspace::{Workspace, notifications::NotifyResultExt};
@@ -479,7 +478,7 @@ impl TitleBar {
                 window
                     .spawn(cx, async move |cx| {
                         client
-                            .sign_in_with_optional_connect(true, cx)
+                            .sign_in_with_optional_connect(cx)
                             .await
                             .notify_async_err(cx);
                     })
@@ -490,38 +489,13 @@ impl TitleBar {
     pub fn render_user_menu_button(&mut self, cx: &mut Context<Self>) -> impl Element {
         let user_store = self.user_store.read(cx);
         if let Some(user) = user_store.current_user() {
-            let has_subscription_period = user_store.subscription_period().is_some();
-            let plan = user_store.plan().filter(|_| {
-                // Since the user might be on the legacy free plan we filter based on whether we have a subscription period.
-                has_subscription_period
-            });
-
             let user_avatar = user.avatar_uri.clone();
-            let free_chip_bg = cx
-                .theme()
-                .colors()
-                .editor_background
-                .opacity(0.5)
-                .blend(cx.theme().colors().text_accent.opacity(0.05));
-
-            let pro_chip_bg = cx
-                .theme()
-                .colors()
-                .editor_background
-                .opacity(0.5)
-                .blend(cx.theme().colors().text_accent.opacity(0.2));
 
             PopoverMenu::new("user-menu")
                 .anchor(Corner::TopRight)
                 .menu(move |window, cx| {
                     ContextMenu::build(window, cx, |menu, _, _cx| {
                         let user_login = user.github_login.clone();
-
-                        let (plan_name, label_color, bg_color) = match plan {
-                            None | Some(Plan::ZedFree) => ("Free", Color::Default, free_chip_bg),
-                            Some(Plan::ZedProTrial) => ("Pro Trial", Color::Accent, pro_chip_bg),
-                            Some(Plan::ZedPro) => ("Pro", Color::Accent, pro_chip_bg),
-                        };
 
                         menu.custom_entry(
                             move |_window, _cx| {
@@ -531,11 +505,6 @@ impl TitleBar {
                                     .w_full()
                                     .justify_between()
                                     .child(Label::new(user_login))
-                                    .child(
-                                        Chip::new(plan_name.to_string())
-                                            .bg_color(bg_color)
-                                            .label_color(label_color),
-                                    )
                                     .into_any_element()
                             },
                             move |_, cx| {

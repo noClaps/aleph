@@ -8,18 +8,10 @@ use serde::{Deserialize, Serialize};
 use settings::{Settings, SettingsKey, SettingsSources, SettingsUi};
 
 use crate::provider::{
-    self,
-    cloud::{self, ZedDotDevSettings},
-    deepseek::DeepSeekSettings,
-    google::GoogleSettings,
-    lmstudio::LmStudioSettings,
-    mistral::MistralSettings,
-    ollama::OllamaSettings,
-    open_ai::OpenAiSettings,
-    open_ai_compatible::OpenAiCompatibleSettings,
-    open_router::OpenRouterSettings,
-    vercel::VercelSettings,
-    x_ai::XAiSettings,
+    self, deepseek::DeepSeekSettings, google::GoogleSettings, lmstudio::LmStudioSettings,
+    mistral::MistralSettings, ollama::OllamaSettings, open_ai::OpenAiSettings,
+    open_ai_compatible::OpenAiCompatibleSettings, open_router::OpenRouterSettings,
+    vercel::VercelSettings, x_ai::XAiSettings,
 };
 
 /// Initializes the language model settings.
@@ -39,7 +31,6 @@ pub struct AllLanguageModelSettings {
     pub openai_compatible: HashMap<Arc<str>, OpenAiCompatibleSettings>,
     pub vercel: VercelSettings,
     pub x_ai: XAiSettings,
-    pub zed_dot_dev: ZedDotDevSettings,
 }
 
 #[derive(
@@ -57,8 +48,6 @@ pub struct AllLanguageModelSettingsContent {
     pub openai_compatible: Option<HashMap<Arc<str>, OpenAiCompatibleSettingsContent>>,
     pub vercel: Option<VercelSettingsContent>,
     pub x_ai: Option<XAiSettingsContent>,
-    #[serde(rename = "zed.dev")]
-    pub zed_dot_dev: Option<ZedDotDevSettingsContent>,
 }
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize, PartialEq, JsonSchema)]
@@ -113,11 +102,6 @@ pub struct GoogleSettingsContent {
 pub struct XAiSettingsContent {
     pub api_url: Option<String>,
     pub available_models: Option<Vec<provider::x_ai::AvailableModel>>,
-}
-
-#[derive(Default, Clone, Debug, Serialize, Deserialize, PartialEq, JsonSchema)]
-pub struct ZedDotDevSettingsContent {
-    available_models: Option<Vec<cloud::AvailableModel>>,
 }
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize, PartialEq, JsonSchema)]
@@ -223,14 +207,6 @@ impl settings::Settings for AllLanguageModelSettings {
                 x_ai.as_ref().and_then(|s| s.available_models.clone()),
             );
 
-            // ZedDotDev
-            merge(
-                &mut settings.zed_dot_dev.available_models,
-                value
-                    .zed_dot_dev
-                    .as_ref()
-                    .and_then(|s| s.available_models.clone()),
-            );
             merge(
                 &mut settings.google.api_url,
                 value.google.as_ref().and_then(|s| s.api_url.clone()),

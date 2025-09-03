@@ -6,8 +6,6 @@ mod role;
 mod telemetry;
 
 use anyhow::{Result, anyhow};
-use client::Client;
-use cloud_llm_client::{CompletionMode, CompletionRequestStatus};
 use futures::FutureExt;
 use futures::{StreamExt, future::BoxFuture, stream::BoxStream};
 use gpui::{AnyView, App, AsyncApp, SharedString, Task, Window};
@@ -44,9 +42,9 @@ pub const ZED_CLOUD_PROVIDER_ID: LanguageModelProviderId = LanguageModelProvider
 pub const ZED_CLOUD_PROVIDER_NAME: LanguageModelProviderName =
     LanguageModelProviderName::new("Zed");
 
-pub fn init(client: Arc<Client>, cx: &mut App) {
+pub fn init(cx: &mut App) {
     init_settings(cx);
-    RefreshLlmTokenListener::register(client, cx);
+    RefreshLlmTokenListener::register(cx);
 }
 
 pub fn init_settings(cx: &mut App) {
@@ -64,7 +62,6 @@ pub struct LanguageModelCacheConfiguration {
 /// A completion event from a language model.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum LanguageModelCompletionEvent {
-    StatusUpdate(CompletionRequestStatus),
     Stop(StopReason),
     Text(String),
     Thinking {
@@ -531,7 +528,6 @@ pub trait LanguageModel: Send + Sync {
                         let last_token_usage = last_token_usage.clone();
                         async move {
                             match result {
-                                Ok(LanguageModelCompletionEvent::StatusUpdate { .. }) => None,
                                 Ok(LanguageModelCompletionEvent::StartMessage { .. }) => None,
                                 Ok(LanguageModelCompletionEvent::Text(text)) => Some(Ok(text)),
                                 Ok(LanguageModelCompletionEvent::Thinking { .. }) => None,
@@ -565,18 +561,6 @@ pub trait LanguageModel: Send + Sync {
         None
     }
 }
-
-pub trait LanguageModelExt: LanguageModel {
-    fn max_token_count_for_mode(&self, mode: CompletionMode) -> u64 {
-        match mode {
-            CompletionMode::Normal => self.max_token_count(),
-            CompletionMode::Max => self
-                .max_token_count_in_burn_mode()
-                .unwrap_or_else(|| self.max_token_count()),
-        }
-    }
-}
-impl LanguageModelExt for dyn LanguageModel {}
 
 pub trait LanguageModelTool: 'static + DeserializeOwned + JsonSchema {
     fn name() -> String;

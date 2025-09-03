@@ -475,10 +475,9 @@ pub fn main() {
         );
         command_palette::init(cx);
         supermaven::init(app_state.client.clone(), cx);
-        language_model::init(app_state.client.clone(), cx);
-        language_models::init(app_state.user_store.clone(), app_state.client.clone(), cx);
+        language_model::init(cx);
+        language_models::init(app_state.client.clone(), cx);
         web_search::init(cx);
-        web_search_providers::init(app_state.client.clone(), cx);
         snippet_provider::init(cx);
         edit_prediction_registry::init(app_state.user_store.clone(), cx);
         repl::init(app_state.fs.clone(), cx);
@@ -748,12 +747,12 @@ fn handle_open_request(request: OpenRequest, app_state: Arc<AppState>, cx: &mut 
 async fn authenticate(client: Arc<Client>, cx: &AsyncApp) -> Result<()> {
     if stdout_is_a_pty() {
         if client::IMPERSONATE_LOGIN.is_some() {
-            client.sign_in_with_optional_connect(false, cx).await?;
+            client.sign_in_with_optional_connect(cx).await?;
         } else if client.has_credentials(cx).await {
-            client.sign_in_with_optional_connect(true, cx).await?;
+            client.sign_in_with_optional_connect(cx).await?;
         }
     } else if client.has_credentials(cx).await {
-        client.sign_in_with_optional_connect(true, cx).await?;
+        client.sign_in_with_optional_connect(cx).await?;
     }
 
     Ok(())

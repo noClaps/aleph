@@ -1404,7 +1404,7 @@ impl Project {
         fs: Arc<dyn Fs>,
         cx: AsyncApp,
     ) -> Result<Entity<Self>> {
-        client.connect(true, &cx).await.into_response()?;
+        client.connect(&cx).await.into_response()?;
 
         let subscriptions = [
             EntitySubscription::Project(client.subscribe_to_entity::<Self>(remote_id)?),

@@ -10,8 +10,6 @@ use async_tungstenite::tungstenite::{
     http::{HeaderValue, Request, StatusCode},
 };
 use clock::SystemClock;
-use cloud_api_client::CloudApiClient;
-use cloud_api_client::websocket_protocol::MessageToClient;
 use credentials_provider::CredentialsProvider;
 use feature_flags::FeatureFlagAppExt as _;
 use futures::{
@@ -159,7 +157,7 @@ pub fn init(client: &Arc<Client>, cx: &mut App) {
         let client = client.clone();
         move |_: &SignIn, cx| {
             if let Some(client) = client.upgrade() {
-                cx.spawn(async move |cx| client.sign_in_with_optional_connect(true, cx).await)
+                cx.spawn(async move |cx| client.sign_in_with_optional_connect(cx).await)
                     .detach_and_log_err(cx);
             }
         }
@@ -190,8 +188,6 @@ pub fn init(client: &Arc<Client>, cx: &mut App) {
     });
 }
 
-pub type MessageToClientHandler = Box<dyn Fn(&MessageToClient, &mut App) + Send + Sync + 'static>;
-
 struct GlobalClient(Arc<Client>);
 
 impl Global for GlobalClient {}
@@ -200,12 +196,10 @@ pub struct Client {
     id: AtomicU64,
     peer: Arc<Peer>,
     http: Arc<HttpClientWithUrl>,
-    cloud_client: Arc<CloudApiClient>,
     telemetry: Arc<Telemetry>,
     credentials_provider: ClientCredentialsProvider,
     state: RwLock<ClientState>,
     handler_set: parking_lot::Mutex<ProtoMessageHandlerSet>,
-    message_to_client_handlers: parking_lot::Mutex<Vec<MessageToClientHandler>>,
 }
 
 #[derive(Error, Debug)]
@@ -541,12 +535,10 @@ impl Client {
             id: AtomicU64::new(0),
             peer: Peer::new(0),
             telemetry: Telemetry::new(clock, http.clone(), cx),
-            cloud_client: Arc::new(CloudApiClient::new(http.clone())),
             http,
             credentials_provider: ClientCredentialsProvider::new(cx),
             state: Default::default(),
             handler_set: Default::default(),
-            message_to_client_handlers: parking_lot::Mutex::new(Vec::new()),
         })
     }
 
@@ -566,10 +558,6 @@ impl Client {
 
     pub fn http_client(&self) -> Arc<HttpClientWithUrl> {
         self.http.clone()
-    }
-
-    pub fn cloud_client(&self) -> Arc<CloudApiClient> {
-        self.cloud_client.clone()
     }
 
     pub fn set_id(&self, id: u64) -> &Self {
@@ -623,7 +611,7 @@ impl Client {
 
                     let mut delay = INITIAL_RECONNECTION_DELAY;
                     loop {
-                        match client.connect(true, cx).await {
+                        match client.connect(cx).await {
                             ConnectionResult::Timeout => {
                                 log::error!("client connect attempt timed out")
                             }
@@ -797,11 +785,7 @@ impl Client {
             .is_some()
     }
 
-    pub async fn sign_in(
-        self: &Arc<Self>,
-        try_provider: bool,
-        cx: &AsyncApp,
-    ) -> Result<Credentials> {
+    pub async fn sign_in(self: &Arc<Self>, cx: &AsyncApp) -> Result<Credentials> {
         let is_reauthenticating = if self.status().borrow().is_signed_out() {
             self.set_status(Status::Authenticating, cx);
             false
@@ -811,27 +795,6 @@ impl Client {
         };
 
         let mut credentials = None;
-
-        let old_credentials = self.state.read().credentials.clone();
-        if let Some(old_credentials) = old_credentials
-            && self.validate_credentials(&old_credentials, cx).await?
-        {
-            credentials = Some(old_credentials);
-        }
-
-        if credentials.is_none()
-            && try_provider
-            && let Some(stored_credentials) = self.credentials_provider.read_credentials(cx).await
-        {
-            if self.validate_credentials(&stored_credentials, cx).await? {
-                credentials = Some(stored_credentials);
-            } else {
-                self.credentials_provider
-                    .delete_credentials(cx)
-                    .await
-                    .log_err();
-            }
-        }
 
         if credentials.is_none() {
             let mut status_rx = self.status();
@@ -863,8 +826,6 @@ impl Client {
 
         let credentials = credentials.unwrap();
         self.set_id(credentials.user_id);
-        self.cloud_client
-            .set_credentials(credentials.user_id as u32, credentials.access_token.clone());
         self.state.write().credentials = Some(credentials.clone());
         self.set_status(
             if is_reauthenticating {
@@ -878,58 +839,10 @@ impl Client {
         Ok(credentials)
     }
 
-    async fn validate_credentials(
-        self: &Arc<Self>,
-        credentials: &Credentials,
-        cx: &AsyncApp,
-    ) -> Result<bool> {
-        match self
-            .cloud_client
-            .validate_credentials(credentials.user_id as u32, &credentials.access_token)
-            .await
-        {
-            Ok(valid) => Ok(valid),
-            Err(err) => {
-                self.set_status(Status::AuthenticationError, cx);
-                Err(anyhow!("failed to validate credentials: {}", err))
-            }
-        }
-    }
-
-    /// Establishes a WebSocket connection with Cloud for receiving updates from the server.
-    async fn connect_to_cloud(self: &Arc<Self>, cx: &AsyncApp) -> Result<()> {
-        let connect_task = cx.update({
-            let cloud_client = self.cloud_client.clone();
-            move |cx| cloud_client.connect(cx)
-        })??;
-        let connection = connect_task.await?;
-
-        let (mut messages, task) = cx.update(|cx| connection.spawn(cx))?;
-        task.detach();
-
-        cx.spawn({
-            let this = self.clone();
-            async move |cx| {
-                while let Some(message) = messages.next().await {
-                    if let Some(message) = message.log_err() {
-                        this.handle_message_to_client(message, cx);
-                    }
-                }
-            }
-        })
-        .detach();
-
-        Ok(())
-    }
-
     /// Performs a sign-in and also (optionally) connects to Collab.
     ///
     /// Only Zed staff automatically connect to Collab.
-    pub async fn sign_in_with_optional_connect(
-        self: &Arc<Self>,
-        try_provider: bool,
-        cx: &AsyncApp,
-    ) -> Result<()> {
+    pub async fn sign_in_with_optional_connect(self: &Arc<Self>, cx: &AsyncApp) -> Result<()> {
         // Don't try to sign in again if we're already connected to Collab, as it will temporarily disconnect us.
         if self.status().borrow().is_connected() {
             return Ok(());
@@ -947,9 +860,7 @@ impl Client {
         })
         .log_err();
 
-        let credentials = self.sign_in(try_provider, cx).await?;
-
-        self.connect_to_cloud(cx).await.log_err();
+        let credentials = self.sign_in(cx).await?;
 
         cx.update(move |cx| {
             cx.spawn({
@@ -976,11 +887,7 @@ impl Client {
         Ok(())
     }
 
-    pub async fn connect(
-        self: &Arc<Self>,
-        try_provider: bool,
-        cx: &AsyncApp,
-    ) -> ConnectionResult<()> {
+    pub async fn connect(self: &Arc<Self>, cx: &AsyncApp) -> ConnectionResult<()> {
         let was_disconnected = match *self.status().borrow() {
             Status::SignedOut | Status::Authenticated => true,
             Status::ConnectionError
@@ -1000,7 +907,7 @@ impl Client {
                 );
             }
         };
-        let credentials = match self.sign_in(try_provider, cx).await {
+        let credentials = match self.sign_in(cx).await {
             Ok(credentials) => credentials,
             Err(err) => return ConnectionResult::Result(Err(err)),
         };
@@ -1471,7 +1378,6 @@ impl Client {
 
     pub async fn sign_out(self: &Arc<Self>, cx: &AsyncApp) {
         self.state.write().credentials = None;
-        self.cloud_client.clear_credentials();
         self.disconnect(cx);
 
         if self.has_credentials(cx).await {
@@ -1620,24 +1526,6 @@ impl Client {
                 .respond_with_unhandled_message(sender_id.into(), request_id, type_name)
                 .log_err();
         }
-    }
-
-    pub fn add_message_to_client_handler(
-        self: &Arc<Client>,
-        handler: impl Fn(&MessageToClient, &mut App) + Send + Sync + 'static,
-    ) {
-        self.message_to_client_handlers
-            .lock()
-            .push(Box::new(handler));
-    }
-
-    fn handle_message_to_client(self: &Arc<Client>, message: MessageToClient, cx: &AsyncApp) {
-        cx.update(|cx| {
-            for handler in self.message_to_client_handlers.lock().iter() {
-                handler(&message, cx);
-            }
-        })
-        .ok();
     }
 
     pub fn telemetry(&self) -> &Arc<Telemetry> {

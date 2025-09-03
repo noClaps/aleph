@@ -13,9 +13,7 @@ path = "src/language_models.rs"
 
 [dependencies]
 anyhow.workspace = true
-chrono.workspace = true
 client.workspace = true
-cloud_llm_client.workspace = true
 collections.workspace = true
 component.workspace = true
 convert_case.workspace = true
@@ -34,15 +32,12 @@ mistral = { workspace = true, features = ["schemars"] }
 ollama = { workspace = true, features = ["schemars"] }
 open_ai = { workspace = true, features = ["schemars"] }
 open_router = { workspace = true, features = ["schemars"] }
-release_channel.workspace = true
 schemars.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 settings.workspace = true
-smol.workspace = true
 strum.workspace = true
 theme.workspace = true
-thiserror.workspace = true
 tiktoken-rs.workspace = true
 ui.workspace = true
 ui_input.workspace = true

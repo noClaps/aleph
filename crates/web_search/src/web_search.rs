@@ -1,9 +1,7 @@
 use std::sync::Arc;
 
-use anyhow::Result;
-use cloud_llm_client::WebSearchResponse;
 use collections::HashMap;
-use gpui::{App, AppContext as _, Context, Entity, Global, SharedString, Task};
+use gpui::{App, AppContext as _, Context, Entity, Global, SharedString};
 
 pub fn init(cx: &mut App) {
     let registry = cx.new(|_cx| WebSearchRegistry::default());
@@ -15,7 +13,6 @@ pub struct WebSearchProviderId(pub SharedString);
 
 pub trait WebSearchProvider {
     fn id(&self) -> WebSearchProviderId;
-    fn search(&self, query: String, cx: &mut App) -> Task<Result<WebSearchResponse>>;
 }
 
 struct GlobalWebSearchRegistry(Entity<WebSearchRegistry>);

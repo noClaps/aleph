@@ -1,4 +1,3 @@
-pub mod cloud;
 pub mod deepseek;
 pub mod google;
 pub mod lmstudio;

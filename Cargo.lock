@@ -630,7 +630,7 @@ dependencies = [
  "anyhow",
  "arrayvec",
  "log",
- "nom 7.1.3",
+ "nom",
  "num-rational",
  "v_frame",
 ]
@@ -1069,7 +1069,7 @@ version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6fac387a98bb7c37292057cffc56d62ecb629900026402633ae9160df93a8766"
 dependencies = [
- "nom 7.1.3",
+ "nom",
 ]
 
 [[package]]
@@ -1129,33 +1129,6 @@ name = "chunked_transfer"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e4de3bc4ea267985becf712dc6d9eed8b04c953b3fcfb339ebc87acd9804901"
-
-[[package]]
-name = "ciborium"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "42e69ffd6f0917f5c029256a24d0161db17cea3997d185db0d35926308770f0e"
-dependencies = [
- "ciborium-io",
- "ciborium-ll",
- "serde",
-]
-
-[[package]]
-name = "ciborium-io"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05afea1e0a06c9be33d539b876f1ce3692f4afea2cb41f740e7743225ed1c757"
-
-[[package]]
-name = "ciborium-ll"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57663b653d948a338bfb3eeba9bb2fd5fcfaecb9e199e87e1eda4d9e8b240fd9"
-dependencies = [
- "ciborium-io",
- "half",
-]
 
 [[package]]
 name = "circular-buffer"
@@ -1241,10 +1214,7 @@ dependencies = [
  "anyhow",
  "async-tungstenite",
  "base64",
- "chrono",
  "clock",
- "cloud_api_client",
- "cloud_llm_client",
  "cocoa",
  "collections",
  "credentials_provider",
@@ -1292,46 +1262,6 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "smallvec",
- "workspace-hack",
-]
-
-[[package]]
-name = "cloud_api_client"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "cloud_api_types",
- "futures",
- "gpui",
- "gpui_tokio",
- "http_client",
- "parking_lot",
- "serde_json",
- "workspace-hack",
- "yawc",
-]
-
-[[package]]
-name = "cloud_api_types"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "ciborium",
- "cloud_llm_client",
- "serde",
- "workspace-hack",
-]
-
-[[package]]
-name = "cloud_llm_client"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "serde",
- "serde_json",
- "strum 0.27.1",
- "uuid",
  "workspace-hack",
 ]
 
@@ -5571,8 +5501,6 @@ dependencies = [
  "anyhow",
  "base64",
  "client",
- "cloud_api_types",
- "cloud_llm_client",
  "collections",
  "futures",
  "gpui",
@@ -5597,9 +5525,7 @@ name = "language_models"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "chrono",
  "client",
- "cloud_llm_client",
  "collections",
  "component",
  "convert_case 0.8.0",
@@ -5618,15 +5544,12 @@ dependencies = [
  "ollama",
  "open_ai",
  "open_router",
- "release_channel",
  "schemars",
  "serde",
  "serde_json",
  "settings",
- "smol",
  "strum 0.27.1",
  "theme",
- "thiserror 2.0.12",
  "tiktoken-rs",
  "ui",
  "ui_input",
@@ -6647,15 +6570,6 @@ checksum = "d273983c5a657a70a3e8f2a01329822f3b8c8172b73826411a55751e404a0a4a"
 dependencies = [
  "memchr",
  "minimal-lexical",
-]
-
-[[package]]
-name = "nom"
-version = "8.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df9761775871bdef83bee530e60050f7e54b1105350d6884eb0fb4f46c2f9405"
-dependencies = [
- "memchr",
 ]
 
 [[package]]
@@ -9826,7 +9740,7 @@ version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7bba3a93db0cc4f7bdece8bb09e77e2e785c20bfebf79eb8340ed80708048790"
 dependencies = [
- "nom 7.1.3",
+ "nom",
  "unicode_categories",
 ]
 
@@ -10747,7 +10661,6 @@ dependencies = [
  "auto_update",
  "chrono",
  "client",
- "cloud_llm_client",
  "db",
  "gpui",
  "keymap_editor",
@@ -10778,19 +10691,7 @@ dependencies = [
  "mio",
  "pin-project-lite",
  "socket2",
- "tokio-macros",
  "windows-sys 0.52.0",
-]
-
-[[package]]
-name = "tokio-macros"
-version = "2.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e06d43f1345a3bcd39f6a56dbb7dcab2ba47e68e8ac134855e7e2bdbaf8cab8"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.101",
 ]
 
 [[package]]
@@ -12175,28 +12076,9 @@ dependencies = [
 name = "web_search"
 version = "0.1.0"
 dependencies = [
- "anyhow",
- "cloud_llm_client",
  "collections",
  "gpui",
  "serde",
- "workspace-hack",
-]
-
-[[package]]
-name = "web_search_providers"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "client",
- "cloud_llm_client",
- "futures",
- "gpui",
- "http_client",
- "language_model",
- "serde",
- "serde_json",
- "web_search",
  "workspace-hack",
 ]
 
@@ -12205,15 +12087,6 @@ name = "webpki-root-certs"
 version = "0.26.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09aed61f5e8d2c18344b3faa33a4c837855fe56642757754775548fee21386c4"
-dependencies = [
- "rustls-pki-types",
-]
-
-[[package]]
-name = "webpki-roots"
-version = "0.26.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2210b291f7ea53617fbafcc4939f10914214ec15aace5ba62293a668f322c5c9"
 dependencies = [
  "rustls-pki-types",
 ]
@@ -13123,7 +12996,6 @@ dependencies = [
  "futures-io",
  "futures-sink",
  "futures-util",
- "half",
  "hashbrown 0.14.5",
  "hashbrown 0.15.3",
  "indexmap",
@@ -13135,7 +13007,7 @@ dependencies = [
  "lyon_path",
  "memchr",
  "miniz_oxide",
- "nom 7.1.3",
+ "nom",
  "num-integer",
  "num-traits",
  "once_cell",
@@ -13269,35 +13141,6 @@ dependencies = [
  "arraydeque",
  "encoding_rs",
  "hashlink",
-]
-
-[[package]]
-name = "yawc"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "19a5d82922135b4ae73a079a4ffb5501e9aadb4d785b8c660eaa0a8b899028c5"
-dependencies = [
- "base64",
- "bytes",
- "flate2",
- "futures",
- "http-body-util",
- "hyper",
- "hyper-util",
- "js-sys",
- "nom 8.0.0",
- "pin-project",
- "rand 0.8.5",
- "sha1",
- "thiserror 1.0.69",
- "tokio",
- "tokio-rustls",
- "tokio-util",
- "url",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
- "webpki-roots",
 ]
 
 [[package]]
@@ -13455,7 +13298,6 @@ dependencies = [
  "vim_mode_setting",
  "watch",
  "web_search",
- "web_search_providers",
  "workspace",
  "workspace-hack",
  "zed_actions",
