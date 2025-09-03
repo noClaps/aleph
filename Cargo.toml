@@ -25,8 +25,6 @@ members = [
     "crates/debugger_tools",
     "crates/debugger_ui",
     "crates/diagnostics",
-    "crates/edit_prediction",
-    "crates/edit_prediction_button",
     "crates/editor",
     "crates/extension",
     "crates/extension_api",
@@ -218,8 +216,6 @@ http_client = { path = "crates/http_client" }
 http_client_tls = { path = "crates/http_client_tls" }
 icons = { path = "crates/icons" }
 image_viewer = { path = "crates/image_viewer" }
-edit_prediction = { path = "crates/edit_prediction" }
-edit_prediction_button = { path = "crates/edit_prediction_button" }
 inspector_ui = { path = "crates/inspector_ui" }
 install_cli = { path = "crates/install_cli" }
 jj = { path = "crates/jj" }
@@ -576,7 +572,6 @@ feature_flags = { codegen-units = 1 }
 file_icons = { codegen-units = 1 }
 fsevent = { codegen-units = 1 }
 image_viewer = { codegen-units = 1 }
-edit_prediction_button = { codegen-units = 1 }
 install_cli = { codegen-units = 1 }
 journal = { codegen-units = 1 }
 lmstudio = { codegen-units = 1 }

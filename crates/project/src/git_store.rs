@@ -4851,7 +4851,6 @@ async fn compute_snapshot(
         None => None,
     };
 
-    // Used by edit prediction data collection
     let remote_origin_url = backend.remote_url("origin");
     let remote_upstream_url = backend.remote_url("upstream");
 

@@ -19,8 +19,6 @@ use std::{cmp::Reverse, ops::Range, sync::LazyLock};
 use streaming_iterator::StreamingIterator;
 use tree_sitter::{Query, QueryMatch};
 
-use patterns::SETTINGS_NESTED_KEY_VALUE_PATTERN;
-
 mod migrations;
 mod patterns;
 
@@ -113,10 +111,6 @@ pub fn migrate_settings(text: &str) -> Result<Option<String>> {
             &SETTINGS_QUERY_2025_01_02,
         ),
         (
-            migrations::m_2025_01_29::SETTINGS_PATTERNS,
-            &SETTINGS_QUERY_2025_01_29,
-        ),
-        (
             migrations::m_2025_01_30::SETTINGS_PATTERNS,
             &SETTINGS_QUERY_2025_01_30,
         ),
@@ -168,17 +162,6 @@ pub fn migrate_settings(text: &str) -> Result<Option<String>> {
     run_migrations(text, migrations)
 }
 
-pub fn migrate_edit_prediction_provider_settings(text: &str) -> Result<Option<String>> {
-    migrate(
-        text,
-        &[(
-            SETTINGS_NESTED_KEY_VALUE_PATTERN,
-            migrations::m_2025_01_29::replace_edit_prediction_provider_setting,
-        )],
-        &EDIT_PREDICTION_SETTINGS_MIGRATION_QUERY,
-    )
-}
-
 pub type MigrationPatterns = &'static [(
     &'static str,
     fn(&str, &QueryMatch, &Query) -> Option<(Range<usize>, String)>,
@@ -225,10 +208,6 @@ define_query!(
 define_query!(
     SETTINGS_QUERY_2025_01_02,
     migrations::m_2025_01_02::SETTINGS_PATTERNS
-);
-define_query!(
-    SETTINGS_QUERY_2025_01_29,
-    migrations::m_2025_01_29::SETTINGS_PATTERNS
 );
 define_query!(
     SETTINGS_QUERY_2025_01_30,
@@ -278,12 +257,3 @@ define_query!(
     SETTINGS_QUERY_2025_07_08,
     migrations::m_2025_07_08::SETTINGS_PATTERNS
 );
-
-// custom query
-static EDIT_PREDICTION_SETTINGS_MIGRATION_QUERY: LazyLock<Query> = LazyLock::new(|| {
-    Query::new(
-        &tree_sitter_json::LANGUAGE.into(),
-        SETTINGS_NESTED_KEY_VALUE_PATTERN,
-    )
-    .unwrap()
-});

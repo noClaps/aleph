@@ -2346,39 +2346,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3b31a881d38439026e3d5dd938ab20328d36e23caca8fd5981c42e4b677f5842"
 
 [[package]]
-name = "edit_prediction"
-version = "0.1.0"
-dependencies = [
- "client",
- "gpui",
- "language",
- "project",
- "workspace-hack",
-]
-
-[[package]]
-name = "edit_prediction_button"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "edit_prediction",
- "editor",
- "fs",
- "gpui",
- "indoc",
- "language",
- "paths",
- "project",
- "regex",
- "settings",
- "supermaven",
- "telemetry",
- "ui",
- "workspace",
- "workspace-hack",
-]
-
-[[package]]
 name = "editor"
 version = "0.1.0"
 dependencies = [
@@ -2390,7 +2357,6 @@ dependencies = [
  "convert_case 0.8.0",
  "dap",
  "db",
- "edit_prediction",
  "emojis",
  "file_icons",
  "fs",
@@ -5445,7 +5411,6 @@ dependencies = [
  "serde",
  "serde_json",
  "settings",
- "shellexpand 2.1.2",
  "smallvec",
  "smol",
  "streaming-iterator",
@@ -9891,21 +9856,17 @@ dependencies = [
  "anyhow",
  "client",
  "collections",
- "edit_prediction",
  "futures",
  "gpui",
  "language",
  "log",
  "postage",
- "project",
  "serde",
  "serde_json",
- "settings",
  "smol",
  "supermaven_api",
  "text",
  "ui",
- "unicode-segmentation",
  "util",
  "workspace-hack",
 ]
@@ -13191,7 +13152,6 @@ dependencies = [
  "debugger_tools",
  "debugger_ui",
  "diagnostics",
- "edit_prediction_button",
  "editor",
  "extension",
  "extension_host",

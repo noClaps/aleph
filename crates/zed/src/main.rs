@@ -50,9 +50,9 @@ use workspace::{
 };
 use zed::{
     OpenListener, OpenRequest, RawOpenRequest, app_menus, build_window_options,
-    derive_paths_with_position, edit_prediction_registry, handle_cli_connection,
-    handle_keymap_file_changes, handle_settings_changed, handle_settings_file_changes,
-    initialize_workspace, open_paths_with_positions,
+    derive_paths_with_position, handle_cli_connection, handle_keymap_file_changes,
+    handle_settings_changed, handle_settings_file_changes, initialize_workspace,
+    open_paths_with_positions,
 };
 
 use crate::zed::OpenRequestKind;
@@ -474,12 +474,11 @@ pub fn main() {
             cx.background_executor().clone(),
         );
         command_palette::init(cx);
-        supermaven::init(app_state.client.clone(), cx);
+        supermaven::init(cx);
         language_model::init(cx);
         language_models::init(app_state.client.clone(), cx);
         web_search::init(cx);
         snippet_provider::init(cx);
-        edit_prediction_registry::init(app_state.user_store.clone(), cx);
         repl::init(app_state.fs.clone(), cx);
         extension_host::init(
             extension_host_proxy,

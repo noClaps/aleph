@@ -19,7 +19,6 @@ mod task_context;
 mod text_diff;
 mod toolchain;
 
-pub use crate::language_settings::EditPredictionsMode;
 use crate::language_settings::SoftWrap;
 use anyhow::{Context as _, Result};
 use async_trait::async_trait;

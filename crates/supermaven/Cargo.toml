@@ -16,27 +16,21 @@ doctest = false
 anyhow.workspace = true
 client.workspace = true
 collections.workspace = true
-edit_prediction.workspace = true
 futures.workspace = true
 gpui.workspace = true
 language.workspace = true
 log.workspace = true
 postage.workspace = true
-project.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-settings.workspace = true
 smol.workspace = true
 supermaven_api.workspace = true
 text.workspace = true
 ui.workspace = true
-unicode-segmentation.workspace = true
 util.workspace = true
 workspace-hack.workspace = true
 
 [dev-dependencies]
 gpui.workspace = true
 language.workspace = true
-project.workspace = true
-settings.workspace = true
 util.workspace = true

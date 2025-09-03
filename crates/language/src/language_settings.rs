@@ -1,13 +1,13 @@
 //! Provides `language`-related settings.
 
-use crate::{File, Language, LanguageName, LanguageServerName};
+use crate::{File, LanguageName, LanguageServerName};
 use anyhow::Result;
 use collections::{FxHashMap, HashMap, HashSet};
 use ec4rs::{
     Properties as EditorconfigProperties,
     property::{FinalNewline, IndentSize, IndentStyle, MaxLineLen, TabWidth, TrimTrailingWs},
 };
-use globset::{Glob, GlobMatcher, GlobSet, GlobSetBuilder};
+use globset::{Glob, GlobSet, GlobSetBuilder};
 use gpui::{App, Modifiers};
 use itertools::{Either, Itertools};
 use schemars::{JsonSchema, json_schema};
@@ -20,8 +20,7 @@ use settings::{
     ParameterizedJsonSchema, Settings, SettingsKey, SettingsLocation, SettingsSources,
     SettingsStore, SettingsUi,
 };
-use shellexpand;
-use std::{borrow::Cow, num::NonZeroU32, path::Path, slice, sync::Arc};
+use std::{borrow::Cow, num::NonZeroU32, slice, sync::Arc};
 use util::schemars::replace_subschema;
 use util::serde::default_true;
 
@@ -58,8 +57,6 @@ pub fn all_language_settings<'a>(
 /// The settings for all languages.
 #[derive(Debug, Clone)]
 pub struct AllLanguageSettings {
-    /// The edit prediction settings.
-    pub edit_predictions: EditPredictionSettings,
     pub defaults: LanguageSettings,
     languages: HashMap<LanguageName, LanguageSettings>,
     pub(crate) file_types: FxHashMap<Arc<str>, GlobSet>,
@@ -115,12 +112,6 @@ pub struct LanguageSettings {
     /// Note: This setting has no effect in Vim mode, as rewrap is already
     /// allowed everywhere.
     pub allow_rewrap: RewrapBehavior,
-    /// Controls whether edit predictions are shown immediately (true)
-    /// or manually by triggering `editor::ShowEditPrediction` (false).
-    pub show_edit_predictions: bool,
-    /// Controls whether edit predictions are shown in the given language
-    /// scopes.
-    pub edit_predictions_disabled_in: Vec<String>,
     /// Whether to show tabs and spaces in the editor.
     pub show_whitespaces: ShowWhitespaceSetting,
     /// Whether to start a new line with a comment when a previous line is a comment as well.
@@ -207,76 +198,6 @@ impl LanguageSettings {
     }
 }
 
-/// The provider that supplies edit predictions.
-#[derive(
-    Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, JsonSchema, SettingsUi,
-)]
-#[serde(rename_all = "snake_case")]
-pub enum EditPredictionProvider {
-    #[default]
-    None,
-    Supermaven,
-}
-
-impl EditPredictionProvider {
-    pub fn is_zed(&self) -> bool {
-        false
-    }
-}
-
-/// The settings for edit predictions, such as [Supermaven](https://supermaven.com).
-#[derive(Clone, Debug, Default)]
-pub struct EditPredictionSettings {
-    /// The provider that supplies edit predictions.
-    pub provider: EditPredictionProvider,
-    /// A list of globs representing files that edit predictions should be disabled for.
-    /// This list adds to a pre-existing, sensible default set of globs.
-    /// Any additional ones you add are combined with them.
-    #[settings_ui(skip)]
-    pub disabled_globs: Vec<DisabledGlob>,
-    /// Configures how edit predictions are displayed in the buffer.
-    pub mode: EditPredictionsMode,
-    /// Whether edit predictions are enabled in the assistant panel.
-    /// This setting has no effect if globally disabled.
-    pub enabled_in_text_threads: bool,
-}
-
-impl EditPredictionSettings {
-    /// Returns whether edit predictions are enabled for the given path.
-    pub fn enabled_for_file(&self, file: &Arc<dyn File>, cx: &App) -> bool {
-        !self.disabled_globs.iter().any(|glob| {
-            if glob.is_absolute {
-                file.as_local()
-                    .is_some_and(|local| glob.matcher.is_match(local.abs_path(cx)))
-            } else {
-                glob.matcher.is_match(file.path())
-            }
-        })
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct DisabledGlob {
-    matcher: GlobMatcher,
-    is_absolute: bool,
-}
-
-/// The mode in which edit predictions should be displayed.
-#[derive(
-    Copy, Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, JsonSchema, SettingsUi,
-)]
-#[serde(rename_all = "snake_case")]
-pub enum EditPredictionsMode {
-    /// If provider supports it, display inline when holding modifier key (e.g., alt).
-    /// Otherwise, eager preview is used.
-    #[serde(alias = "auto")]
-    Subtle,
-    /// Display inline when there are no language server completions available.
-    #[default]
-    #[serde(alias = "eager_preview")]
-    Eager,
-}
-
 /// The settings for all languages.
 #[derive(
     Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, SettingsUi, SettingsKey,
@@ -284,12 +205,6 @@ pub enum EditPredictionsMode {
 #[settings_key(None)]
 #[settings_ui(group = "Default Language Settings")]
 pub struct AllLanguageSettingsContent {
-    /// The settings for enabling/disabling features.
-    #[serde(default)]
-    pub features: Option<FeaturesContent>,
-    /// The edit prediction settings.
-    #[serde(default)]
-    pub edit_predictions: Option<EditPredictionSettingsContent>,
     /// The default language settings.
     #[serde(flatten)]
     pub defaults: LanguageSettingsContent,
@@ -503,20 +418,6 @@ pub struct LanguageSettingsContent {
     /// Default: "in_comments"
     #[serde(default)]
     pub allow_rewrap: Option<RewrapBehavior>,
-    /// Controls whether edit predictions are shown immediately (true)
-    /// or manually by triggering `editor::ShowEditPrediction` (false).
-    ///
-    /// Default: true
-    #[serde(default)]
-    pub show_edit_predictions: Option<bool>,
-    /// Controls whether edit predictions are shown in the given language
-    /// scopes.
-    ///
-    /// Example: ["string", "comment"]
-    ///
-    /// Default: []
-    #[serde(default)]
-    pub edit_predictions_disabled_in: Option<Vec<String>>,
     /// Whether to show tabs and spaces in the editor.
     #[serde(default)]
     pub show_whitespaces: Option<ShowWhitespaceSetting>,
@@ -602,34 +503,6 @@ pub enum RewrapBehavior {
     InSelections,
     /// Allow rewrapping anywhere.
     Anywhere,
-}
-
-/// The contents of the edit prediction settings.
-#[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema, PartialEq, SettingsUi)]
-pub struct EditPredictionSettingsContent {
-    /// A list of globs representing files that edit predictions should be disabled for.
-    /// This list adds to a pre-existing, sensible default set of globs.
-    /// Any additional ones you add are combined with them.
-    #[serde(default)]
-    #[settings_ui(skip)]
-    pub disabled_globs: Option<Vec<String>>,
-    /// The mode used to display edit predictions in the buffer.
-    /// Provider support required.
-    #[serde(default)]
-    pub mode: EditPredictionsMode,
-    /// Whether edit predictions are enabled in the assistant prompt editor.
-    /// This has no effect if globally disabled.
-    #[serde(default = "default_true")]
-    pub enabled_in_text_threads: bool,
-}
-
-/// The settings for enabling/disabling features.
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, JsonSchema, SettingsUi)]
-#[serde(rename_all = "snake_case")]
-#[settings_ui(group = "Features")]
-pub struct FeaturesContent {
-    /// Determines which edit prediction provider to use.
-    pub edit_prediction_provider: Option<EditPredictionProvider>,
 }
 
 /// Controls the soft-wrapping behavior in the editor.
@@ -1092,22 +965,6 @@ impl AllLanguageSettings {
             Cow::Borrowed(settings)
         }
     }
-
-    /// Returns whether edit predictions are enabled for the given path.
-    pub fn edit_predictions_enabled_for_file(&self, file: &Arc<dyn File>, cx: &App) -> bool {
-        self.edit_predictions.enabled_for_file(file, cx)
-    }
-
-    /// Returns whether edit predictions are enabled for the given language and path.
-    pub fn show_edit_predictions(&self, language: Option<&Arc<Language>>, cx: &App) -> bool {
-        self.language(None, language.map(|l| l.name()).as_ref(), cx)
-            .show_edit_predictions
-    }
-
-    /// Returns the edit predictions preview mode for the given language and path.
-    pub fn edit_predictions_mode(&self) -> EditPredictionsMode {
-        self.edit_predictions.mode
-    }
 }
 
 fn merge_with_editorconfig(settings: &mut LanguageSettings, cfg: &EditorconfigProperties) {
@@ -1203,29 +1060,6 @@ impl settings::Settings for AllLanguageSettings {
             languages.insert(language_name.clone(), language_settings);
         }
 
-        let mut edit_prediction_provider = default_value
-            .features
-            .as_ref()
-            .and_then(|f| f.edit_prediction_provider);
-        let mut edit_predictions_mode = default_value
-            .edit_predictions
-            .as_ref()
-            .map(|edit_predictions| edit_predictions.mode)
-            .ok_or_else(Self::missing_default)?;
-
-        let mut completion_globs: HashSet<&String> = default_value
-            .edit_predictions
-            .as_ref()
-            .and_then(|c| c.disabled_globs.as_ref())
-            .map(|globs| globs.iter().collect())
-            .ok_or_else(Self::missing_default)?;
-
-        let mut enabled_in_text_threads = default_value
-            .edit_predictions
-            .as_ref()
-            .map(|settings| settings.enabled_in_text_threads)
-            .unwrap_or(true);
-
         let mut file_types: FxHashMap<Arc<str>, GlobSet> = FxHashMap::default();
 
         for (language, patterns) in &default_value.file_types {
@@ -1239,23 +1073,6 @@ impl settings::Settings for AllLanguageSettings {
         }
 
         for user_settings in sources.customizations() {
-            if let Some(provider) = user_settings
-                .features
-                .as_ref()
-                .and_then(|f| f.edit_prediction_provider)
-            {
-                edit_prediction_provider = Some(provider);
-            }
-
-            if let Some(edit_predictions) = user_settings.edit_predictions.as_ref() {
-                edit_predictions_mode = edit_predictions.mode;
-                enabled_in_text_threads = edit_predictions.enabled_in_text_threads;
-
-                if let Some(disabled_globs) = edit_predictions.disabled_globs.as_ref() {
-                    completion_globs.extend(disabled_globs.iter());
-                }
-            }
-
             // A user's global settings override the default global settings and
             // all default language-specific settings.
             merge_settings(&mut defaults, &user_settings.defaults);
@@ -1294,25 +1111,6 @@ impl settings::Settings for AllLanguageSettings {
         }
 
         Ok(Self {
-            edit_predictions: EditPredictionSettings {
-                provider: if let Some(provider) = edit_prediction_provider {
-                    provider
-                } else {
-                    EditPredictionProvider::None
-                },
-                disabled_globs: completion_globs
-                    .iter()
-                    .filter_map(|g| {
-                        let expanded_g = shellexpand::tilde(g).into_owned();
-                        Some(DisabledGlob {
-                            matcher: globset::Glob::new(&expanded_g).ok()?.compile_matcher(),
-                            is_absolute: Path::new(&expanded_g).is_absolute(),
-                        })
-                    })
-                    .collect(),
-                mode: edit_predictions_mode,
-                enabled_in_text_threads,
-            },
             defaults,
             languages,
             file_types,
@@ -1374,7 +1172,6 @@ impl settings::Settings for AllLanguageSettings {
             "files.insertFinalNewline",
             &mut d.ensure_final_newline_on_save,
         );
-        vscode.bool_setting("editor.inlineSuggest.enabled", &mut d.show_edit_predictions);
         vscode.enum_setting("editor.renderWhitespace", &mut d.show_whitespaces, |s| {
             Some(match s {
                 "boundary" => ShowWhitespaceSetting::Boundary,
@@ -1434,24 +1231,6 @@ impl settings::Settings for AllLanguageSettings {
 
         // TODO: do we want to merge imported globs per filetype? for now we'll just replace
         current.file_types.extend(associations);
-
-        // cursor global ignore list applies to cursor-tab, so transfer it to edit_predictions.disabled_globs
-        if let Some(disabled_globs) = vscode
-            .read_value("cursor.general.globalCursorIgnoreList")
-            .and_then(|v| v.as_array())
-        {
-            current
-                .edit_predictions
-                .get_or_insert_default()
-                .disabled_globs
-                .get_or_insert_default()
-                .extend(
-                    disabled_globs
-                        .iter()
-                        .filter_map(|glob| glob.as_str())
-                        .map(|s| s.to_string()),
-                );
-        }
     }
 }
 
@@ -1513,14 +1292,6 @@ fn merge_settings(settings: &mut LanguageSettings, src: &LanguageSettingsContent
     );
     merge(&mut settings.language_servers, src.language_servers.clone());
     merge(&mut settings.allow_rewrap, src.allow_rewrap);
-    merge(
-        &mut settings.show_edit_predictions,
-        src.show_edit_predictions,
-    );
-    merge(
-        &mut settings.edit_predictions_disabled_in,
-        src.edit_predictions_disabled_in.clone(),
-    );
     merge(&mut settings.show_whitespaces, src.show_whitespaces);
     merge(
         &mut settings.extend_comment_on_newline,

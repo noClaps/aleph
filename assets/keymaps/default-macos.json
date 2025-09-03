@@ -170,8 +170,7 @@
       "f9": "editor::ToggleBreakpoint",
       "shift-f9": "editor::EditLogBreakpoint",
       "ctrl-f12": "editor::GoToDeclaration",
-      "alt-ctrl-f12": "editor::GoToDeclarationSplit",
-      "ctrl-cmd-e": "editor::ToggleEditPrediction"
+      "alt-ctrl-f12": "editor::GoToDeclarationSplit"
     }
   },
   {
@@ -202,21 +201,6 @@
       "cmd-down": "editor::MoveToStartOfNextExcerpt",
       "cmd-shift-up": "editor::SelectToStartOfExcerpt",
       "cmd-shift-down": "editor::SelectToStartOfNextExcerpt"
-    }
-  },
-  {
-    "context": "Editor && mode == full && edit_prediction",
-    "use_key_equivalents": true,
-    "bindings": {
-      "alt-tab": "editor::NextEditPrediction",
-      "alt-shift-tab": "editor::PreviousEditPrediction"
-    }
-  },
-  {
-    "context": "Editor && !edit_prediction",
-    "use_key_equivalents": true,
-    "bindings": {
-      "alt-tab": "editor::ShowEditPrediction"
     }
   },
   {
@@ -669,22 +653,6 @@
       "enter": "editor::ConfirmCompletion",
       "shift-enter": "editor::ConfirmCompletionReplace",
       "tab": "editor::ComposeCompletion"
-    }
-  },
-  {
-    "context": "Editor && edit_prediction",
-    "bindings": {
-      "alt-tab": "editor::AcceptEditPrediction",
-      "tab": "editor::AcceptEditPrediction",
-      "ctrl-cmd-right": "editor::AcceptPartialEditPrediction"
-    }
-  },
-  {
-    "context": "Editor && edit_prediction_conflict",
-    "use_key_equivalents": true,
-    "bindings": {
-      "alt-tab": "editor::AcceptEditPrediction",
-      "ctrl-cmd-right": "editor::AcceptPartialEditPrediction"
     }
   },
   {

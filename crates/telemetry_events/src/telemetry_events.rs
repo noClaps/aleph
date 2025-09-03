@@ -102,12 +102,6 @@ pub struct FlexibleEvent {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub enum EditPredictionRating {
-    Positive,
-    Negative,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct AssistantEventData {
     /// Unique random identifier for each assistant tab (None for inline assist)
     pub conversation_id: Option<String>,

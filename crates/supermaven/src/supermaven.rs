@@ -1,7 +1,4 @@
 mod messages;
-mod supermaven_completion_provider;
-
-pub use supermaven_completion_provider::*;
 
 use anyhow::{Context as _, Result};
 #[allow(unused_imports)]
@@ -10,13 +7,10 @@ use collections::BTreeMap;
 
 use futures::{AsyncBufReadExt, StreamExt, channel::mpsc, io::BufReader};
 use gpui::{App, AsyncApp, Context, Entity, EntityId, Global, Task, WeakEntity, actions};
-use language::{
-    Anchor, Buffer, BufferSnapshot, ToOffset, language_settings::all_language_settings,
-};
+use language::{Anchor, Buffer, BufferSnapshot, ToOffset};
 use messages::*;
 use postage::watch;
 use serde::{Deserialize, Serialize};
-use settings::SettingsStore;
 use smol::{
     io::AsyncWriteExt,
     process::{Child, ChildStdin, ChildStdout},
@@ -33,27 +27,9 @@ actions!(
     ]
 );
 
-pub fn init(client: Arc<Client>, cx: &mut App) {
+pub fn init(cx: &mut App) {
     let supermaven = cx.new(|_| Supermaven::Starting);
     Supermaven::set_global(supermaven.clone(), cx);
-
-    let mut provider = all_language_settings(None, cx).edit_predictions.provider;
-    if provider == language::language_settings::EditPredictionProvider::Supermaven {
-        supermaven.update(cx, |supermaven, cx| supermaven.start(client.clone(), cx));
-    }
-
-    cx.observe_global::<SettingsStore>(move |cx| {
-        let new_provider = all_language_settings(None, cx).edit_predictions.provider;
-        if new_provider != provider {
-            provider = new_provider;
-            if provider == language::language_settings::EditPredictionProvider::Supermaven {
-                supermaven.update(cx, |supermaven, cx| supermaven.start(client.clone(), cx));
-            } else {
-                supermaven.update(cx, |supermaven, _cx| supermaven.stop());
-            }
-        }
-    })
-    .detach();
 
     cx.on_action(|_: &SignOut, cx| {
         if let Some(supermaven) = Supermaven::global(cx) {

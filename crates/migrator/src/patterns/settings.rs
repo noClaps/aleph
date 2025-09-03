@@ -21,25 +21,6 @@ pub const SETTINGS_NESTED_KEY_VALUE_PATTERN: &str = r#"(document
     )
 )"#;
 
-pub const SETTINGS_LANGUAGES_PATTERN: &str = r#"(document
-    (object
-        (pair
-            key: (string (string_content) @languages)
-            value: (object
-            (pair
-                key: (string)
-                value: (object
-                    (pair
-                        key: (string (string_content) @setting_name)
-                        value: (_) @value
-                    )
-                )
-            ))
-        )
-    )
-    (#eq? @languages "languages")
-)"#;
-
 pub const SETTINGS_ASSISTANT_TOOLS_PATTERN: &str = r#"(document
     (object
         (pair
@@ -79,19 +60,6 @@ pub const SETTINGS_ASSISTANT_PATTERN: &str = r#"(document
         )
     )
     (#eq? @key "assistant")
-)"#;
-
-pub const SETTINGS_EDIT_PREDICTIONS_ASSISTANT_PATTERN: &str = r#"(document
-    (object
-        (pair
-            key: (string (string_content) @edit_predictions)
-            value: (object
-                (pair key: (string (string_content) @enabled_in_assistant))
-            )
-        )
-    )
-    (#eq? @edit_predictions "edit_predictions")
-    (#eq? @enabled_in_assistant "enabled_in_assistant")
 )"#;
 
 pub const SETTINGS_DUPLICATED_AGENT_PATTERN: &str = r#"(document

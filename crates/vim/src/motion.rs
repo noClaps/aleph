@@ -705,7 +705,7 @@ impl Vim {
         | Some(Operator::SneakBackward { .. })
         | Some(Operator::FindBackward { .. }) = self.active_operator()
         {
-            self.pop_operator(window, cx);
+            self.pop_operator(cx);
         }
 
         let count = Vim::take_count(cx);
@@ -728,9 +728,9 @@ impl Vim {
 
             Mode::HelixNormal => self.helix_normal_motion(motion, count, window, cx),
         }
-        self.clear_operator(window, cx);
+        self.clear_operator(cx);
         if let Some(operator) = waiting_operator {
-            self.push_operator(operator, window, cx);
+            self.push_operator(operator, cx);
             Vim::globals(cx).pre_count = count
         }
     }

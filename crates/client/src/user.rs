@@ -85,7 +85,6 @@ pub struct UserStore {
     participant_indices: HashMap<u64, ParticipantIndex>,
     update_contacts_tx: mpsc::UnboundedSender<UpdateContacts>,
     model_request_usage: Option<ModelRequestUsage>,
-    edit_prediction_usage: Option<EditPredictionUsage>,
     current_user: watch::Receiver<Option<Arc<User>>>,
     contacts: Vec<Arc<Contact>>,
     incoming_contact_requests: Vec<Arc<User>>,
@@ -133,9 +132,6 @@ enum UpdateContacts {
 #[derive(Debug, Clone, Copy, Deref)]
 pub struct ModelRequestUsage(pub RequestUsage);
 
-#[derive(Debug, Clone, Copy, Deref)]
-pub struct EditPredictionUsage(pub RequestUsage);
-
 #[derive(Debug, Clone, Copy)]
 pub struct RequestUsage {
     pub amount: i32,
@@ -156,7 +152,6 @@ impl UserStore {
             by_github_login: Default::default(),
             current_user: current_user_rx,
             model_request_usage: None,
-            edit_prediction_usage: None,
             contacts: Default::default(),
             incoming_contact_requests: Default::default(),
             participant_indices: Default::default(),
@@ -609,19 +604,6 @@ impl UserStore {
 
     pub fn update_model_request_usage(&mut self, usage: ModelRequestUsage, cx: &mut Context<Self>) {
         self.model_request_usage = Some(usage);
-        cx.notify();
-    }
-
-    pub fn edit_prediction_usage(&self) -> Option<EditPredictionUsage> {
-        self.edit_prediction_usage
-    }
-
-    pub fn update_edit_prediction_usage(
-        &mut self,
-        usage: EditPredictionUsage,
-        cx: &mut Context<Self>,
-    ) {
-        self.edit_prediction_usage = Some(usage);
         cx.notify();
     }
 
