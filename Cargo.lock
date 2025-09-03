@@ -6890,15 +6890,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "num_threads"
-version = "0.1.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c7398b9c8b70908f6371f47ed36737907c87c52af34c268fed0bf0ceb92ead9"
-dependencies = [
- "libc",
-]
-
-[[package]]
 name = "objc"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9736,17 +9727,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "simplelog"
-version = "0.12.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "16257adbfaef1ee58b1363bdc0664c9b8e1e30aed86049635fb5f147d065a9c0"
-dependencies = [
- "log",
- "termcolor",
- "time",
-]
-
-[[package]]
 name = "siphasher"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -10643,26 +10623,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "theme_importer"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "gpui",
- "indexmap",
- "log",
- "palette",
- "serde",
- "serde_json",
- "serde_json_lenient",
- "simplelog",
- "strum 0.27.1",
- "theme",
- "vscode_theme",
- "workspace-hack",
-]
-
-[[package]]
 name = "theme_selector"
 version = "0.1.0"
 dependencies = [
@@ -10765,9 +10725,7 @@ checksum = "8a7619e19bc266e0f9c5e6686659d394bc57973859340060a69221e57dbc0c40"
 dependencies = [
  "deranged",
  "itoa",
- "libc",
  "num-conv",
- "num_threads",
  "powerfmt",
  "serde",
  "time-core",
@@ -11778,15 +11736,6 @@ dependencies = [
  "serde",
  "settings",
  "workspace-hack",
-]
-
-[[package]]
-name = "vscode_theme"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b3666211944f2e6ba2c359bc9efc1891157e910b1b11c3900892ea9f18179d2"
-dependencies = [
- "serde",
 ]
 
 [[package]]

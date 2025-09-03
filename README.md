@@ -24,3 +24,4 @@ This fork removes:
 - CLIs:
   - Docs preprocessor
   - Schema generator
+  - Theme importer
