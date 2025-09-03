@@ -23,3 +23,4 @@ This fork removes:
   - Channel
 - CLIs:
   - Docs preprocessor
+  - Schema generator
