@@ -19,7 +19,6 @@ cloud_llm_client.workspace = true
 collections.workspace = true
 component.workspace = true
 convert_case.workspace = true
-copilot.workspace = true
 credentials_provider.workspace = true
 deepseek = { workspace = true, features = ["schemars"] }
 editor.workspace = true
@@ -27,7 +26,6 @@ futures.workspace = true
 google_ai = { workspace = true, features = ["schemars"] }
 gpui.workspace = true
 http_client.workspace = true
-language.workspace = true
 language_model.workspace = true
 lmstudio = { workspace = true, features = ["schemars"] }
 log.workspace = true

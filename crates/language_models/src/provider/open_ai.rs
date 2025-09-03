@@ -845,7 +845,7 @@ impl Render for ConfigurationView {
                 )
                 .child(
                     Label::new(
-                        "Note that having a subscription for another service like GitHub Copilot won't work.",
+                        "Note that having a subscription for another service won't work.",
                     )
                     .size(LabelSize::Small).color(Color::Muted),
                 )

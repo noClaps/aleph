@@ -213,9 +213,8 @@ impl LanguageSettings {
 )]
 #[serde(rename_all = "snake_case")]
 pub enum EditPredictionProvider {
-    None,
     #[default]
-    Copilot,
+    None,
     Supermaven,
 }
 
@@ -225,9 +224,8 @@ impl EditPredictionProvider {
     }
 }
 
-/// The settings for edit predictions, such as [GitHub Copilot](https://github.com/features/copilot)
-/// or [Supermaven](https://supermaven.com).
-#[derive(Clone, Debug, Default, SettingsUi)]
+/// The settings for edit predictions, such as [Supermaven](https://supermaven.com).
+#[derive(Clone, Debug, Default)]
 pub struct EditPredictionSettings {
     /// The provider that supplies edit predictions.
     pub provider: EditPredictionProvider,
@@ -238,8 +236,6 @@ pub struct EditPredictionSettings {
     pub disabled_globs: Vec<DisabledGlob>,
     /// Configures how edit predictions are displayed in the buffer.
     pub mode: EditPredictionsMode,
-    /// Settings specific to GitHub Copilot.
-    pub copilot: CopilotSettings,
     /// Whether edit predictions are enabled in the assistant panel.
     /// This setting has no effect if globally disabled.
     pub enabled_in_text_threads: bool,
@@ -279,18 +275,6 @@ pub enum EditPredictionsMode {
     #[default]
     #[serde(alias = "eager_preview")]
     Eager,
-}
-
-#[derive(Clone, Debug, Default, SettingsUi)]
-pub struct CopilotSettings {
-    /// HTTP/HTTPS proxy to use for Copilot.
-    #[settings_ui(skip)]
-    pub proxy: Option<String>,
-    /// Disable certificate verification for proxy (not recommended).
-    pub proxy_no_verify: Option<bool>,
-    /// Enterprise URI for Copilot.
-    #[settings_ui(skip)]
-    pub enterprise_uri: Option<String>,
 }
 
 /// The settings for all languages.
@@ -633,34 +617,10 @@ pub struct EditPredictionSettingsContent {
     /// Provider support required.
     #[serde(default)]
     pub mode: EditPredictionsMode,
-    /// Settings specific to GitHub Copilot.
-    #[serde(default)]
-    pub copilot: CopilotSettingsContent,
     /// Whether edit predictions are enabled in the assistant prompt editor.
     /// This has no effect if globally disabled.
     #[serde(default = "default_true")]
     pub enabled_in_text_threads: bool,
-}
-
-#[derive(Clone, Debug, Default, Serialize, Deserialize, JsonSchema, PartialEq, SettingsUi)]
-pub struct CopilotSettingsContent {
-    /// HTTP/HTTPS proxy to use for Copilot.
-    ///
-    /// Default: none
-    #[serde(default)]
-    #[settings_ui(skip)]
-    pub proxy: Option<String>,
-    /// Disable certificate verification for the proxy (not recommended).
-    ///
-    /// Default: false
-    #[serde(default)]
-    pub proxy_no_verify: Option<bool>,
-    /// Enterprise URI for Copilot.
-    ///
-    /// Default: none
-    #[serde(default)]
-    #[settings_ui(skip)]
-    pub enterprise_uri: Option<String>,
 }
 
 /// The settings for enabling/disabling features.
@@ -1260,16 +1220,6 @@ impl settings::Settings for AllLanguageSettings {
             .map(|globs| globs.iter().collect())
             .ok_or_else(Self::missing_default)?;
 
-        let mut copilot_settings = default_value
-            .edit_predictions
-            .as_ref()
-            .map(|settings| CopilotSettings {
-                proxy: settings.copilot.proxy.clone(),
-                proxy_no_verify: settings.copilot.proxy_no_verify,
-                enterprise_uri: settings.copilot.enterprise_uri.clone(),
-            })
-            .unwrap_or_default();
-
         let mut enabled_in_text_threads = default_value
             .edit_predictions
             .as_ref()
@@ -1304,30 +1254,6 @@ impl settings::Settings for AllLanguageSettings {
                 if let Some(disabled_globs) = edit_predictions.disabled_globs.as_ref() {
                     completion_globs.extend(disabled_globs.iter());
                 }
-            }
-
-            if let Some(proxy) = user_settings
-                .edit_predictions
-                .as_ref()
-                .and_then(|settings| settings.copilot.proxy.clone())
-            {
-                copilot_settings.proxy = Some(proxy);
-            }
-
-            if let Some(proxy_no_verify) = user_settings
-                .edit_predictions
-                .as_ref()
-                .and_then(|settings| settings.copilot.proxy_no_verify)
-            {
-                copilot_settings.proxy_no_verify = Some(proxy_no_verify);
-            }
-
-            if let Some(enterprise_uri) = user_settings
-                .edit_predictions
-                .as_ref()
-                .and_then(|settings| settings.copilot.enterprise_uri.clone())
-            {
-                copilot_settings.enterprise_uri = Some(enterprise_uri);
             }
 
             // A user's global settings override the default global settings and
@@ -1385,7 +1311,6 @@ impl settings::Settings for AllLanguageSettings {
                     })
                     .collect(),
                 mode: edit_predictions_mode,
-                copilot: copilot_settings,
                 enabled_in_text_threads,
             },
             defaults,

@@ -1098,12 +1098,6 @@
     // 2. Display predictions inline only when holding a modifier key (alt by default).
     //     "mode": "subtle"
     "mode": "eager",
-    // Copilot-specific settings
-    // "copilot": {
-    //   "enterprise_uri": "",
-    //   "proxy": "",
-    //   "proxy_no_verify": false
-    // },
     // Whether edit predictions are enabled when editing text threads.
     // This setting has no effect if globally disabled.
     "enabled_in_text_threads": true
@@ -1338,7 +1332,7 @@
     "Shell Script": [".env.*"]
   },
   // Settings for which version of Node.js and NPM to use when installing
-  // language servers and Copilot.
+  // language servers.
   //
   // Note: changing this setting currently requires restarting Zed.
   "node": {

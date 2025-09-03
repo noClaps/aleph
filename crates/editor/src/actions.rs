@@ -1,6 +1,6 @@
 //! This module contains all actions supported by [`Editor`].
 use super::*;
-use gpui::{Action, actions};
+use gpui::{actions, Action};
 use project::project_settings::GoToDiagnosticSeverityFilter;
 use schemars::JsonSchema;
 use util::serde::default_true;
@@ -334,7 +334,6 @@ actions!(
         /// Accepts the full edit prediction.
         AcceptEditPrediction,
         /// Accepts a partial edit prediction.
-        #[action(deprecated_aliases = ["editor::AcceptPartialCopilotSuggestion"])]
         AcceptPartialEditPrediction,
         /// Adds a cursor above the current selection.
         AddSelectionAbove,

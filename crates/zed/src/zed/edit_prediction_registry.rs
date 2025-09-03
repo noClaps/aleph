@@ -1,6 +1,5 @@
 use client::UserStore;
 use collections::HashMap;
-use copilot::{Copilot, CopilotCompletionProvider};
 use editor::Editor;
 use gpui::{AnyWindowHandle, App, AppContext as _, Context, Entity, WeakEntity};
 use language::language_settings::{EditPredictionProvider, all_language_settings};
@@ -17,8 +16,6 @@ pub fn init(user_store: Entity<UserStore>, cx: &mut App) {
             if !editor.mode().is_full() {
                 return;
             }
-
-            register_backward_compatible_actions(editor, cx);
 
             let Some(window) = window else {
                 return;
@@ -88,59 +85,13 @@ fn assign_edit_prediction_providers(
     }
 }
 
-fn register_backward_compatible_actions(editor: &mut Editor, cx: &mut Context<Editor>) {
-    // We renamed some of these actions to not be copilot-specific, but that
-    // would have not been backwards-compatible. So here we are re-registering
-    // the actions with the old names to not break people's keymaps.
-    editor
-        .register_action(cx.listener(
-            |editor, _: &copilot::Suggest, window: &mut Window, cx: &mut Context<Editor>| {
-                editor.show_edit_prediction(&Default::default(), window, cx);
-            },
-        ))
-        .detach();
-    editor
-        .register_action(cx.listener(
-            |editor, _: &copilot::NextSuggestion, window: &mut Window, cx: &mut Context<Editor>| {
-                editor.next_edit_prediction(&Default::default(), window, cx);
-            },
-        ))
-        .detach();
-    editor
-        .register_action(cx.listener(
-            |editor,
-             _: &copilot::PreviousSuggestion,
-             window: &mut Window,
-             cx: &mut Context<Editor>| {
-                editor.previous_edit_prediction(&Default::default(), window, cx);
-            },
-        ))
-        .detach();
-}
-
 fn assign_edit_prediction_provider(
     editor: &mut Editor,
     provider: EditPredictionProvider,
     window: &mut Window,
     cx: &mut Context<Editor>,
 ) {
-    // TODO: Do we really want to collect data only for singleton buffers?
-    let singleton_buffer = editor.buffer().read(cx).as_singleton();
-
     match provider {
-        EditPredictionProvider::Copilot => {
-            if let Some(copilot) = Copilot::global(cx) {
-                if let Some(buffer) = singleton_buffer
-                    && buffer.read(cx).file().is_some()
-                {
-                    copilot.update(cx, |copilot, cx| {
-                        copilot.register_buffer(&buffer, cx);
-                    });
-                }
-                let provider = cx.new(|_| CopilotCompletionProvider::new(copilot));
-                editor.set_edit_prediction_provider(Some(provider), window, cx);
-            }
-        }
         EditPredictionProvider::Supermaven => {
             if let Some(supermaven) = Supermaven::global(cx) {
                 let provider = cx.new(|_| SupermavenCompletionProvider::new(supermaven));

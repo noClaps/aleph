@@ -294,12 +294,6 @@ pub fn agent_servers_dir() -> &'static PathBuf {
     AGENT_SERVERS_DIR.get_or_init(|| data_dir().join("agent_servers"))
 }
 
-/// Returns the path to the Copilot directory.
-pub fn copilot_dir() -> &'static PathBuf {
-    static COPILOT_DIR: OnceLock<PathBuf> = OnceLock::new();
-    COPILOT_DIR.get_or_init(|| data_dir().join("copilot"))
-}
-
 /// Returns the path to the Supermaven directory.
 pub fn supermaven_dir() -> &'static PathBuf {
     static SUPERMAVEN_DIR: OnceLock<PathBuf> = OnceLock::new();

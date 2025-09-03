@@ -2489,7 +2489,6 @@ impl Editor {
                 key_context.add(EDIT_PREDICTION_CONFLICT_KEY_CONTEXT);
             } else {
                 key_context.add(EDIT_PREDICTION_KEY_CONTEXT);
-                key_context.add("copilot_suggestion");
             }
         }
 
@@ -7227,10 +7226,10 @@ impl Editor {
         if self.has_active_edit_prediction() {
             self.cycle_edit_prediction(Direction::Next, window, cx);
         } else {
-            let is_copilot_disabled = self
+            let is_edit_prediction_disabled = self
                 .refresh_edit_prediction(false, true, window, cx)
                 .is_none();
-            if is_copilot_disabled {
+            if is_edit_prediction_disabled {
                 cx.propagate();
             }
         }
@@ -7245,10 +7244,10 @@ impl Editor {
         if self.has_active_edit_prediction() {
             self.cycle_edit_prediction(Direction::Prev, window, cx);
         } else {
-            let is_copilot_disabled = self
+            let is_edit_prediction_disabled = self
                 .refresh_edit_prediction(false, true, window, cx)
                 .is_none();
-            if is_copilot_disabled {
+            if is_edit_prediction_disabled {
                 cx.propagate();
             }
         }
@@ -9085,7 +9084,6 @@ impl Editor {
     ) -> IconName {
         match provider {
             Some(provider) => match provider.provider.name() {
-                "copilot" => IconName::Copilot,
                 "supermaven" => IconName::Supermaven,
                 _ => IconName::ZedPredict,
             },
@@ -20620,9 +20618,7 @@ impl Editor {
         let vim_mode = vim_enabled(cx);
 
         let edit_predictions_provider = all_language_settings(file, cx).edit_predictions.provider;
-        let copilot_enabled = edit_predictions_provider
-            == language::language_settings::EditPredictionProvider::Copilot;
-        let copilot_enabled_for_language = self
+        let edit_predictions_enabled_for_language = self
             .buffer
             .read(cx)
             .language_settings(cx)
@@ -20637,8 +20633,7 @@ impl Editor {
                 type = if auto_saved {"autosave"} else {"manual"},
                 file_extension,
                 vim_mode,
-                copilot_enabled,
-                copilot_enabled_for_language,
+                edit_predictions_enabled_for_language,
                 edit_predictions_provider,
                 is_via_ssh = project.is_via_remote_server(),
             );
@@ -20647,8 +20642,7 @@ impl Editor {
                 event_type,
                 file_extension,
                 vim_mode,
-                copilot_enabled,
-                copilot_enabled_for_language,
+                edit_predictions_enabled_for_language,
                 edit_predictions_provider,
                 is_via_ssh = project.is_via_remote_server(),
             );
@@ -23163,7 +23157,7 @@ fn edit_prediction_edit_text(
 }
 
 fn edit_prediction_fallback_text(edits: &[(Range<Anchor>, String)], cx: &App) -> HighlightedText {
-    // Fallback for providers that don't provide edit_preview (like Copilot/Supermaven)
+    // Fallback for providers that don't provide edit_preview (like Supermaven)
     // Just show the raw edit text with basic styling
     let mut text = String::new();
     let mut highlights = Vec::new();

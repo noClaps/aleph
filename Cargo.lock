@@ -1543,38 +1543,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "copilot"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "collections",
- "command_palette_hooks",
- "edit_prediction",
- "fs",
- "futures",
- "gpui",
- "http_client",
- "itertools 0.14.0",
- "language",
- "log",
- "lsp",
- "menu",
- "node_runtime",
- "parking_lot",
- "paths",
- "project",
- "serde",
- "serde_json",
- "settings",
- "sum_tree",
- "ui",
- "util",
- "workspace",
- "workspace-hack",
-]
-
-[[package]]
 name = "core-foundation"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2476,7 +2444,6 @@ name = "edit_prediction_button"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "copilot",
  "edit_prediction",
  "editor",
  "fs",
@@ -2492,7 +2459,6 @@ dependencies = [
  "ui",
  "workspace",
  "workspace-hack",
- "zed_actions",
 ]
 
 [[package]]
@@ -5637,7 +5603,6 @@ dependencies = [
  "collections",
  "component",
  "convert_case 0.8.0",
- "copilot",
  "credentials_provider",
  "deepseek",
  "editor",
@@ -5645,7 +5610,6 @@ dependencies = [
  "google_ai",
  "gpui",
  "http_client",
- "language",
  "language_model",
  "lmstudio",
  "log",
@@ -13391,7 +13355,6 @@ dependencies = [
  "collections",
  "command_palette",
  "component",
- "copilot",
  "crashes",
  "dap_adapters",
  "db",

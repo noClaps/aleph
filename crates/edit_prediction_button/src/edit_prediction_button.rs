@@ -1,5 +1,4 @@
 use anyhow::Result;
-use copilot::{Copilot, Status};
 use editor::{Editor, SelectionEffects, actions::ShowEditPrediction, scroll::Autoscroll};
 use fs::Fs;
 use gpui::{
@@ -17,14 +16,10 @@ use settings::{Settings, SettingsStore, update_settings_file};
 use std::sync::{Arc, LazyLock};
 use supermaven::{AccountStatus, Supermaven};
 use ui::{
-    Clickable, ContextMenu, ContextMenuEntry, DocumentationSide, IconButton, PopoverMenu,
-    PopoverMenuHandle, Tooltip, prelude::*,
+    ContextMenu, ContextMenuEntry, DocumentationSide, IconButton, PopoverMenu, PopoverMenuHandle,
+    Tooltip, prelude::*,
 };
-use workspace::{
-    StatusItemView, Toast, Workspace, create_and_open_local_file, item::ItemHandle,
-    notifications::NotificationId,
-};
-use zed_actions::OpenBrowser;
+use workspace::{StatusItemView, Workspace, create_and_open_local_file, item::ItemHandle};
 
 actions!(
     edit_prediction,
@@ -34,10 +29,7 @@ actions!(
     ]
 );
 
-const COPILOT_SETTINGS_URL: &str = "https://github.com/settings/copilot";
 const PRIVACY_DOCS: &str = "https://zed.dev/docs/ai/privacy-and-security";
-
-struct CopilotErrorToast;
 
 pub struct EditPredictionButton {
     editor_subscription: Option<(Subscription, usize)>,
@@ -68,79 +60,6 @@ impl Render for EditPredictionButton {
         let all_language_settings = all_language_settings(None, cx);
 
         match all_language_settings.edit_predictions.provider {
-            EditPredictionProvider::Copilot => {
-                let Some(copilot) = Copilot::global(cx) else {
-                    return div();
-                };
-                let status = copilot.read(cx).status();
-
-                let enabled = self.editor_enabled.unwrap_or(false);
-
-                let icon = match status {
-                    Status::Error(_) => IconName::CopilotError,
-                    Status::Authorized => {
-                        if enabled {
-                            IconName::Copilot
-                        } else {
-                            IconName::CopilotDisabled
-                        }
-                    }
-                    _ => IconName::CopilotInit,
-                };
-
-                if let Status::Error(e) = status {
-                    return div().child(
-                        IconButton::new("copilot-error", icon)
-                            .icon_size(IconSize::Small)
-                            .on_click(cx.listener(move |_, _, window, cx| {
-                                if let Some(workspace) = window.root::<Workspace>().flatten() {
-                                    workspace.update(cx, |workspace, cx| {
-                                        workspace.show_toast(
-                                            Toast::new(
-                                                NotificationId::unique::<CopilotErrorToast>(),
-                                                format!("Copilot can't be started: {}", e),
-                                            )
-                                            .on_click(
-                                                "Reinstall Copilot",
-                                                |window, cx| {
-                                                    copilot::reinstall_and_sign_in(window, cx)
-                                                },
-                                            ),
-                                            cx,
-                                        );
-                                    });
-                                }
-                            }))
-                            .tooltip(|window, cx| {
-                                Tooltip::for_action("GitHub Copilot", &ToggleMenu, window, cx)
-                            }),
-                    );
-                }
-                let this = cx.entity();
-
-                div().child(
-                    PopoverMenu::new("copilot")
-                        .menu(move |window, cx| {
-                            Some(match status {
-                                Status::Authorized => this.update(cx, |this, cx| {
-                                    this.build_copilot_context_menu(window, cx)
-                                }),
-                                _ => this.update(cx, |this, cx| {
-                                    this.build_copilot_start_menu(window, cx)
-                                }),
-                            })
-                        })
-                        .anchor(Corner::BottomRight)
-                        .trigger_with_tooltip(
-                            IconButton::new("copilot-icon", icon),
-                            |window, cx| {
-                                Tooltip::for_action("GitHub Copilot", &ToggleMenu, window, cx)
-                            },
-                        )
-                        .with_handle(self.popover_menu_handle.clone()),
-                )
-            }
-
             EditPredictionProvider::Supermaven => {
                 let Some(supermaven) = Supermaven::global(cx) else {
                     return div();
@@ -220,10 +139,6 @@ impl EditPredictionButton {
         popover_menu_handle: PopoverMenuHandle<ContextMenu>,
         cx: &mut Context<Self>,
     ) -> Self {
-        if let Some(copilot) = Copilot::global(cx) {
-            cx.observe(&copilot, |_, _, cx| cx.notify()).detach()
-        }
-
         cx.observe_global::<SettingsStore>(move |_, cx| cx.notify())
             .detach();
 
@@ -238,21 +153,6 @@ impl EditPredictionButton {
             popover_menu_handle,
             fs,
         }
-    }
-
-    pub fn build_copilot_start_menu(
-        &mut self,
-        window: &mut Window,
-        cx: &mut Context<Self>,
-    ) -> Entity<ContextMenu> {
-        let fs = self.fs.clone();
-        ContextMenu::build(window, cx, |menu, _, _| {
-            menu.entry("Sign In to Copilot", None, copilot::initiate_sign_in)
-                .entry("Disable Copilot", None, {
-                    let fs = fs.clone();
-                    move |_window, cx| hide_copilot(fs.clone(), cx)
-                })
-        })
     }
 
     pub fn build_language_settings_menu(
@@ -331,10 +231,7 @@ impl EditPredictionButton {
         let subtle_mode = matches!(current_mode, EditPredictionsMode::Subtle);
         let eager_mode = matches!(current_mode, EditPredictionsMode::Eager);
 
-        if matches!(
-            provider,
-            EditPredictionProvider::Copilot | EditPredictionProvider::Supermaven
-        ) {
+        if matches!(provider, EditPredictionProvider::Supermaven) {
             menu = menu
                 .separator()
                 .header("Display Modes")
@@ -522,25 +419,6 @@ impl EditPredictionButton {
         menu
     }
 
-    fn build_copilot_context_menu(
-        &self,
-        window: &mut Window,
-        cx: &mut Context<Self>,
-    ) -> Entity<ContextMenu> {
-        ContextMenu::build(window, cx, |menu, window, cx| {
-            self.build_language_settings_menu(menu, window, cx)
-                .separator()
-                .link(
-                    "Go to Copilot Settings",
-                    OpenBrowser {
-                        url: COPILOT_SETTINGS_URL.to_string(),
-                    }
-                    .boxed_clone(),
-                )
-                .action("Sign Out", copilot::SignOut.boxed_clone())
-        })
-    }
-
     fn build_supermaven_context_menu(
         &self,
         window: &mut Window,
@@ -700,14 +578,6 @@ fn toggle_show_edit_predictions_for_language(
             .entry(language.name())
             .or_default()
             .show_edit_predictions = Some(!show_edit_predictions);
-    });
-}
-
-fn hide_copilot(fs: Arc<dyn Fs>, cx: &mut App) {
-    update_settings_file::<AllLanguageSettings>(fs, cx, move |file, _| {
-        file.features
-            .get_or_insert(Default::default())
-            .edit_prediction_provider = Some(EditPredictionProvider::None);
     });
 }
 

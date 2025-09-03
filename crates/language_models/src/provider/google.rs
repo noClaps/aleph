@@ -713,7 +713,7 @@ pub fn count_google_tokens(
     request: LanguageModelRequest,
     cx: &App,
 ) -> BoxFuture<'static, Result<u64>> {
-    // We couldn't use the GoogleLanguageModelProvider to count tokens because the github copilot doesn't have the access to google_ai directly.
+    // We couldn't use the GoogleLanguageModelProvider to count tokens.
     // So we have to use tokenizer from tiktoken_rs to count tokens.
     cx.background_spawn(async move {
         let messages = request

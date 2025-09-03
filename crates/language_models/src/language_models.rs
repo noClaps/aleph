@@ -12,7 +12,6 @@ mod settings;
 pub mod ui;
 
 use crate::provider::cloud::CloudLanguageModelProvider;
-use crate::provider::copilot_chat::CopilotChatLanguageModelProvider;
 use crate::provider::google::GoogleLanguageModelProvider;
 use crate::provider::lmstudio::LmStudioLanguageModelProvider;
 use crate::provider::mistral::MistralLanguageModelProvider;
@@ -139,5 +138,4 @@ fn register_language_model_providers(
         cx,
     );
     registry.register_provider(XAiLanguageModelProvider::new(client.http_client(), cx), cx);
-    registry.register_provider(CopilotChatLanguageModelProvider::new(cx), cx);
 }
