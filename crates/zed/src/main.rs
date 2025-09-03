@@ -489,7 +489,6 @@ pub fn main() {
         web_search_providers::init(app_state.client.clone(), cx);
         snippet_provider::init(cx);
         edit_prediction_registry::init(app_state.user_store.clone(), cx);
-        assistant_tools::init(app_state.client.http_client(), cx);
         repl::init(app_state.fs.clone(), cx);
         extension_host::init(
             extension_host_proxy,

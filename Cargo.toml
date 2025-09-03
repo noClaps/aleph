@@ -1,13 +1,9 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/action_log",
     "crates/activity_indicator",
     "crates/askpass",
     "crates/assets",
-    "crates/assistant_slash_command",
-    "crates/assistant_tool",
-    "crates/assistant_tools",
     "crates/audio",
     "crates/auto_update",
     "crates/auto_update_ui",
@@ -63,7 +59,6 @@ members = [
     "crates/gpui",
     "crates/gpui_macros",
     "crates/gpui_tokio",
-    "crates/html_to_markdown",
     "crates/http_client",
     "crates/http_client_tls",
     "crates/icons",
@@ -132,7 +127,6 @@ members = [
     "crates/snippets_ui",
     "crates/sqlez",
     "crates/sqlez_macros",
-    "crates/streaming_diff",
     "crates/sum_tree",
     "crates/supermaven",
     "crates/supermaven_api",
@@ -193,13 +187,9 @@ edition = "2024"
 # Workspace member crates
 #
 
-action_log = { path = "crates/action_log" }
 activity_indicator = { path = "crates/activity_indicator" }
 askpass = { path = "crates/askpass" }
 assets = { path = "crates/assets" }
-assistant_slash_command = { path = "crates/assistant_slash_command" }
-assistant_tool = { path = "crates/assistant_tool" }
-assistant_tools = { path = "crates/assistant_tools" }
 audio = { path = "crates/audio" }
 auto_update = { path = "crates/auto_update" }
 auto_update_ui = { path = "crates/auto_update_ui" }
@@ -250,7 +240,6 @@ google_ai = { path = "crates/google_ai" }
 gpui = { path = "crates/gpui", default-features = false }
 gpui_macros = { path = "crates/gpui_macros" }
 gpui_tokio = { path = "crates/gpui_tokio" }
-html_to_markdown = { path = "crates/html_to_markdown" }
 http_client = { path = "crates/http_client" }
 http_client_tls = { path = "crates/http_client_tls" }
 icons = { path = "crates/icons" }
@@ -320,7 +309,6 @@ snippet_provider = { path = "crates/snippet_provider" }
 snippets_ui = { path = "crates/snippets_ui" }
 sqlez = { path = "crates/sqlez" }
 sqlez_macros = { path = "crates/sqlez_macros" }
-streaming_diff = { path = "crates/streaming_diff" }
 sum_tree = { path = "crates/sum_tree" }
 supermaven = { path = "crates/supermaven" }
 supermaven_api = { path = "crates/supermaven_api" }
@@ -419,7 +407,6 @@ futures-batch = "0.6.1"
 futures-lite = "1.13"
 git2 = { version = "0.20.1", default-features = false }
 globset = "0.4"
-handlebars = "4.3"
 heck = "0.5"
 heed = { version = "0.21.0", features = ["read-txn-no-tls"] }
 hex = "0.4.3"
@@ -490,7 +477,6 @@ pet-core = { git = "https://github.com/microsoft/python-environment-tools.git", 
 pet-fs = { git = "https://github.com/microsoft/python-environment-tools.git", rev = "845945b830297a50de0e24020b980a65e4820559" }
 pet-poetry = { git = "https://github.com/microsoft/python-environment-tools.git", rev = "845945b830297a50de0e24020b980a65e4820559" }
 pet-reporter = { git = "https://github.com/microsoft/python-environment-tools.git", rev = "845945b830297a50de0e24020b980a65e4820559" }
-portable-pty = "0.9.0"
 postage = { version = "0.5", features = ["futures-traits"] }
 proc-macro2 = "1.0.93"
 profiling = "1"

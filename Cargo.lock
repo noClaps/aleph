@@ -3,27 +3,6 @@
 version = 4
 
 [[package]]
-name = "action_log"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "buffer_diff",
- "clock",
- "collections",
- "futures",
- "gpui",
- "language",
- "project",
- "rand 0.9.1",
- "serde_json",
- "settings",
- "text",
- "util",
- "watch",
- "workspace-hack",
-]
-
-[[package]]
 name = "activity_indicator"
 version = "0.1.0"
 dependencies = [
@@ -323,105 +302,6 @@ dependencies = [
  "anyhow",
  "gpui",
  "rust-embed",
- "workspace-hack",
-]
-
-[[package]]
-name = "assistant_slash_command"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "collections",
- "derive_more",
- "extension",
- "futures",
- "gpui",
- "language",
- "language_model",
- "parking_lot",
- "serde",
- "serde_json",
- "ui",
- "workspace",
- "workspace-hack",
-]
-
-[[package]]
-name = "assistant_tool"
-version = "0.1.0"
-dependencies = [
- "action_log",
- "anyhow",
- "collections",
- "derive_more",
- "gpui",
- "icons",
- "language",
- "language_model",
- "log",
- "parking_lot",
- "project",
- "rand 0.9.1",
- "regex",
- "serde",
- "serde_json",
- "text",
- "util",
- "workspace",
- "workspace-hack",
-]
-
-[[package]]
-name = "assistant_tools"
-version = "0.1.0"
-dependencies = [
- "action_log",
- "anyhow",
- "assistant_tool",
- "buffer_diff",
- "chrono",
- "cloud_llm_client",
- "component",
- "derive_more",
- "diffy",
- "editor",
- "futures",
- "gpui",
- "handlebars 4.5.0",
- "html_to_markdown",
- "http_client",
- "indoc",
- "itertools 0.14.0",
- "language",
- "language_model",
- "log",
- "markdown",
- "open",
- "paths",
- "portable-pty",
- "project",
- "prompt_store",
- "rand 0.9.1",
- "regex",
- "rust-embed",
- "schemars",
- "serde",
- "serde_json",
- "settings",
- "smallvec",
- "streaming_diff",
- "strsim",
- "task",
- "terminal",
- "terminal_view",
- "theme",
- "ui",
- "util",
- "watch",
- "web_search",
- "which 6.0.3",
- "workspace",
  "workspace-hack",
 ]
 
@@ -3333,12 +3213,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1aaf95b3e5c8f23aa320147307562d361db0ae0d51242340f558153b4eb2439b"
 
 [[package]]
-name = "downcast-rs"
-version = "1.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
-
-[[package]]
 name = "doxygen-rs"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3961,17 +3835,6 @@ dependencies = [
  "theme",
  "util",
  "workspace-hack",
-]
-
-[[package]]
-name = "filedescriptor"
-version = "0.8.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e40758ed24c9b2eeb76c35fb0aebc66c626084edd827e07e1552279814c6682d"
-dependencies = [
- "libc",
- "thiserror 1.0.69",
- "winapi",
 ]
 
 [[package]]
@@ -5539,21 +5402,6 @@ dependencies = [
 
 [[package]]
 name = "handlebars"
-version = "4.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "faa67bab9ff362228eb3d00bd024a4965d8231bbb7921167f0cfa66c6626b225"
-dependencies = [
- "log",
- "pest",
- "pest_derive",
- "rust-embed",
- "serde",
- "serde_json",
- "thiserror 1.0.69",
-]
-
-[[package]]
-name = "handlebars"
 version = "5.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d08485b96a0e6393e9e4d1b8d48cf74ad6c063cd905eb33f42c1ce3f0377539b"
@@ -5769,17 +5617,6 @@ dependencies = [
  "mac",
  "markup5ever 0.16.1",
  "match_token",
-]
-
-[[package]]
-name = "html_to_markdown"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "html5ever 0.27.0",
- "markup5ever_rcdom",
- "regex",
- "workspace-hack",
 ]
 
 [[package]]
@@ -6424,15 +6261,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "469fb0b9cefa57e3ef31275ee7cacb78f2fdca44e4765491884a2b119d4eb130"
 
 [[package]]
-name = "is-docker"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "928bae27f42bc99b60d9ac7334e3a21d10ad8f1835a4e12ec3ec0464765ed1b3"
-dependencies = [
- "once_cell",
-]
-
-[[package]]
 name = "is-terminal"
 version = "0.4.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6441,16 +6269,6 @@ dependencies = [
  "hermit-abi 0.5.0",
  "libc",
  "windows-sys 0.59.0",
-]
-
-[[package]]
-name = "is-wsl"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "173609498df190136aa7dea1a91db051746d339e18476eed5ca40521f02d7aa5"
-dependencies = [
- "is-docker",
- "once_cell",
 ]
 
 [[package]]
@@ -7780,7 +7598,7 @@ dependencies = [
  "elasticlunr-rs",
  "env_logger 0.11.8",
  "futures-util",
- "handlebars 5.1.2",
+ "handlebars",
  "ignore",
  "log",
  "memchr",
@@ -8601,17 +8419,6 @@ name = "once_cell"
 version = "1.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
-
-[[package]]
-name = "open"
-version = "5.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2483562e62ea94312f3576a7aca397306df7990b8d89033e18766744377ef95"
-dependencies = [
- "is-wsl",
- "libc",
- "pathdiff",
-]
 
 [[package]]
 name = "open_ai"
@@ -9627,27 +9434,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d8a2f0d8d040d7848a709caf78912debcc3f33ee4b3cac47d73d1e1069e83507"
 dependencies = [
  "portable-atomic",
-]
-
-[[package]]
-name = "portable-pty"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4a596a2b3d2752d94f51fac2d4a96737b8705dddd311a32b9af47211f08671e"
-dependencies = [
- "anyhow",
- "bitflags 1.3.2",
- "downcast-rs",
- "filedescriptor",
- "lazy_static",
- "libc",
- "log",
- "nix 0.28.0",
- "serial2",
- "shared_library",
- "shell-words",
- "winapi",
- "winreg 0.10.1",
 ]
 
 [[package]]
@@ -11462,17 +11248,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serial2"
-version = "0.2.29"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c7d1d08630509d69f90eff4afcd02c3bd974d979225cbd815ff5942351b14375"
-dependencies = [
- "cfg-if",
- "libc",
- "winapi",
-]
-
-[[package]]
 name = "session"
 version = "0.1.0"
 dependencies = [
@@ -11602,16 +11377,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f40ca3c46823713e0d4209592e8d6e826aa57e928f09752619fc696c499637f6"
 dependencies = [
  "lazy_static",
-]
-
-[[package]]
-name = "shared_library"
-version = "0.1.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a9e7e0f2bfae24d8a5b5a66c5b257a83c7412304311512a0c054cd5e619da11"
-dependencies = [
- "lazy_static",
- "libc",
 ]
 
 [[package]]
@@ -11946,16 +11711,6 @@ name = "streaming-iterator"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b2231b7c3057d5e4ad0156fb3dc807d900806020c5ffa3ee6ff2c8c76fb8520"
-
-[[package]]
-name = "streaming_diff"
-version = "0.1.0"
-dependencies = [
- "ordered-float 2.10.1",
- "rand 0.9.1",
- "rope",
- "workspace-hack",
-]
 
 [[package]]
 name = "strict-num"
@@ -12621,7 +12376,6 @@ name = "terminal_view"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "assistant_slash_command",
  "async-recursion",
  "breadcrumbs",
  "collections",
@@ -15248,15 +15002,6 @@ dependencies = [
 
 [[package]]
 name = "winreg"
-version = "0.10.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80d0f4e272c85def139476380b12f9ac60926689dd2e01d4923222f40580869d"
-dependencies = [
- "winapi",
-]
-
-[[package]]
-name = "winreg"
 version = "0.50.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "524e57b2c537c0f9b1e69f1965311ec12182b4122e45035b1508cd24d2adadb1"
@@ -15766,7 +15511,6 @@ dependencies = [
  "anyhow",
  "askpass",
  "assets",
- "assistant_tools",
  "audio",
  "auto_update",
  "auto_update_ui",

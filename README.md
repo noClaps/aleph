@@ -12,6 +12,7 @@ This fork removes:
   - Providers: Anthropic, Zeta
   - ACP and other agent features
   - Onboarding
+  - Assistant tools and slash commands
 - Tests, benchmarks and examples (who needs them anyway)
 - Custom fonts (IBM Plex Sans and Lilex)
 - Themes (replace all with ZeroLimits theme)
