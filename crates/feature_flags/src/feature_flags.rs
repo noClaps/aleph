@@ -84,17 +84,6 @@ impl FeatureFlag for JjUiFeatureFlag {
     const NAME: &'static str = "jj-ui";
 }
 
-pub struct GeminiAndNativeFeatureFlag;
-
-impl FeatureFlag for GeminiAndNativeFeatureFlag {
-    // This was previously called "acp".
-    const NAME: &'static str = "gemini-and-native";
-
-    fn enabled_for_all() -> bool {
-        true
-    }
-}
-
 pub trait FeatureFlagViewExt<V: 'static> {
     fn observe_flag<T: FeatureFlag, F>(&mut self, window: &Window, callback: F) -> Subscription
     where

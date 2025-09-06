@@ -30,10 +30,6 @@ pub use crate::request::*;
 pub use crate::role::*;
 pub use crate::telemetry::*;
 
-pub const GOOGLE_PROVIDER_ID: LanguageModelProviderId = LanguageModelProviderId::new("google");
-pub const GOOGLE_PROVIDER_NAME: LanguageModelProviderName =
-    LanguageModelProviderName::new("Google AI");
-
 pub const OPEN_AI_PROVIDER_ID: LanguageModelProviderId = LanguageModelProviderId::new("openai");
 pub const OPEN_AI_PROVIDER_NAME: LanguageModelProviderName =
     LanguageModelProviderName::new("OpenAI");
@@ -326,7 +322,7 @@ impl LanguageModelCompletionError {
 pub enum LanguageModelToolSchemaFormat {
     /// A JSON schema, see https://json-schema.org
     JsonSchema,
-    /// A subset of an OpenAPI 3.0 schema object supported by Google AI, see https://ai.google.dev/api/caching#Schema
+    /// A subset of an OpenAPI 3.0 schema object
     JsonSchemaSubset,
 }
 

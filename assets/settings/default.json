@@ -1567,9 +1567,6 @@
   },
   // Different settings for specific language models.
   "language_models": {
-    "google": {
-      "api_url": "https://generativelanguage.googleapis.com"
-    },
     "ollama": {
       "api_url": "http://localhost:11434"
     },

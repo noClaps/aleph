@@ -10,7 +10,6 @@ pub mod provider;
 mod settings;
 pub mod ui;
 
-use crate::provider::google::GoogleLanguageModelProvider;
 use crate::provider::lmstudio::LmStudioLanguageModelProvider;
 use crate::provider::mistral::MistralLanguageModelProvider;
 use crate::provider::ollama::OllamaLanguageModelProvider;
@@ -107,10 +106,6 @@ fn register_language_model_providers(
     );
     registry.register_provider(
         LmStudioLanguageModelProvider::new(client.http_client(), cx),
-        cx,
-    );
-    registry.register_provider(
-        GoogleLanguageModelProvider::new(client.http_client(), cx),
         cx,
     );
     registry.register_provider(

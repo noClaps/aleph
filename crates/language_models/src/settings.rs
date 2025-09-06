@@ -8,8 +8,8 @@ use serde::{Deserialize, Serialize};
 use settings::{Settings, SettingsKey, SettingsSources, SettingsUi};
 
 use crate::provider::{
-    self, google::GoogleSettings, lmstudio::LmStudioSettings, mistral::MistralSettings,
-    ollama::OllamaSettings, open_ai::OpenAiSettings, open_ai_compatible::OpenAiCompatibleSettings,
+    self, lmstudio::LmStudioSettings, mistral::MistralSettings, ollama::OllamaSettings,
+    open_ai::OpenAiSettings, open_ai_compatible::OpenAiCompatibleSettings,
     open_router::OpenRouterSettings, vercel::VercelSettings, x_ai::XAiSettings,
 };
 
@@ -20,7 +20,6 @@ pub fn init_settings(cx: &mut App) {
 
 #[derive(Default)]
 pub struct AllLanguageModelSettings {
-    pub google: GoogleSettings,
     pub lmstudio: LmStudioSettings,
     pub mistral: MistralSettings,
     pub ollama: OllamaSettings,
@@ -36,7 +35,6 @@ pub struct AllLanguageModelSettings {
 )]
 #[settings_key(key = "language_models")]
 pub struct AllLanguageModelSettingsContent {
-    pub google: Option<GoogleSettingsContent>,
     pub lmstudio: Option<LmStudioSettingsContent>,
     pub mistral: Option<MistralSettingsContent>,
     pub ollama: Option<OllamaSettingsContent>,
@@ -81,12 +79,6 @@ pub struct OpenAiCompatibleSettingsContent {
 pub struct VercelSettingsContent {
     pub api_url: Option<String>,
     pub available_models: Option<Vec<provider::vercel::AvailableModel>>,
-}
-
-#[derive(Default, Clone, Debug, Serialize, Deserialize, PartialEq, JsonSchema)]
-pub struct GoogleSettingsContent {
-    pub api_url: Option<String>,
-    pub available_models: Option<Vec<provider::google::AvailableModel>>,
 }
 
 #[derive(Default, Clone, Debug, Serialize, Deserialize, PartialEq, JsonSchema)]
@@ -184,18 +176,6 @@ impl settings::Settings for AllLanguageModelSettings {
             merge(
                 &mut settings.x_ai.available_models,
                 x_ai.as_ref().and_then(|s| s.available_models.clone()),
-            );
-
-            merge(
-                &mut settings.google.api_url,
-                value.google.as_ref().and_then(|s| s.api_url.clone()),
-            );
-            merge(
-                &mut settings.google.available_models,
-                value
-                    .google
-                    .as_ref()
-                    .and_then(|s| s.available_models.clone()),
             );
 
             // Mistral
