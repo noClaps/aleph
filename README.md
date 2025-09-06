@@ -9,7 +9,7 @@ This fork removes:
 
 - Support for all platforms other than macOS arm64
 - AI features:
-  - Providers: Anthropic, Bedrock, Cloud (whatever this means), Copilot, Deepseek, Zeta
+  - Providers: Anthropic, Bedrock, Cloud (whatever this means), Copilot, Deepseek, Google, Zeta
   - ACP and other agent features
   - Onboarding
   - Assistant tools and slash commands
@@ -29,3 +29,4 @@ This fork removes:
   - Extension CLI
 - Debugger (imagine needing to debug code when you could just write it correctly the first time)
 - Journal
+- Jujutsu

@@ -518,7 +518,6 @@ pub fn main() {
         notifications::init(app_state.client.clone(), app_state.user_store.clone(), cx);
         title_bar::init(cx);
         git_ui::init(cx);
-        jj_ui::init(cx);
         feedback::init(cx);
         markdown_preview::init(cx);
         svg_preview::init(cx);

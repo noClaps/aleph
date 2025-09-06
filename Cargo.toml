@@ -45,8 +45,6 @@ members = [
   "crates/image_viewer",
   "crates/inspector_ui",
   "crates/install_cli",
-  "crates/jj",
-  "crates/jj_ui",
   "crates/keymap_editor",
   "crates/language",
   "crates/language_extension",
@@ -256,9 +254,6 @@ inspector_ui = { path = "crates/inspector_ui" }
 install_cli = { path = "crates/install_cli" }
 inventory = "0.3.19"
 itertools = "0.14.0"
-jj = { path = "crates/jj" }
-jj_ui = { path = "crates/jj_ui" }
-jj-lib = { git = "https://github.com/jj-vcs/jj", rev = "e18eb8e05efaa153fad5ef46576af145bba1807f" }
 jupyter-protocol = { git = "https://github.com/ConradIrwin/runtimed", rev = "7130c804216b6914355d15d0b91ea91f6babd734" }
 jupyter-websocket-client = { git = "https://github.com/ConradIrwin/runtimed", rev = "7130c804216b6914355d15d0b91ea91f6babd734" }
 keymap_editor = { path = "crates/keymap_editor" }

@@ -2,11 +2,8 @@
 name = "feature_flags"
 version = "0.1.0"
 edition.workspace = true
-publish.workspace = true
 license = "GPL-3.0-or-later"
-
-[lints]
-workspace = true
+publish.workspace = true
 
 [lib]
 path = "src/feature_flags.rs"
@@ -16,3 +13,6 @@ futures.workspace = true
 gpui.workspace = true
 smol.workspace = true
 workspace-hack.workspace = true
+
+[lints]
+workspace = true
