@@ -34,10 +34,6 @@ pub const OPEN_AI_PROVIDER_ID: LanguageModelProviderId = LanguageModelProviderId
 pub const OPEN_AI_PROVIDER_NAME: LanguageModelProviderName =
     LanguageModelProviderName::new("OpenAI");
 
-pub const ZED_CLOUD_PROVIDER_ID: LanguageModelProviderId = LanguageModelProviderId::new("zed.dev");
-pub const ZED_CLOUD_PROVIDER_NAME: LanguageModelProviderName =
-    LanguageModelProviderName::new("Zed");
-
 pub fn init(cx: &mut App) {
     init_settings(cx);
     RefreshLlmTokenListener::register(cx);
@@ -273,11 +269,6 @@ impl LanguageModelCompletionError {
             .and_then(|code| StatusCode::from_str(code).ok())
         {
             Self::from_http_status(upstream_provider, status_code, message, retry_after)
-        } else if let Some(status_code) = code
-            .strip_prefix("http_")
-            .and_then(|code| StatusCode::from_str(code).ok())
-        {
-            Self::from_http_status(ZED_CLOUD_PROVIDER_NAME, status_code, message, retry_after)
         } else {
             anyhow!("completion request failed, code: {code}, message: {message}").into()
         }

@@ -90,10 +90,6 @@ impl ConfiguredModel {
     pub fn is_same_as(&self, other: &ConfiguredModel) -> bool {
         self.model.id() == other.model.id() && self.provider.id() == other.provider.id()
     }
-
-    pub fn is_provided_by_zed(&self) -> bool {
-        self.provider.id() == crate::ZED_CLOUD_PROVIDER_ID
-    }
 }
 
 pub enum Event {
