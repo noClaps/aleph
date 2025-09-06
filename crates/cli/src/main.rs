@@ -27,21 +27,21 @@ trait InstalledApp {
 
 #[derive(Parser, Debug)]
 #[command(
-    name = "zed",
+    name = "aleph",
     disable_version_flag = true,
-    before_help = "The Zed CLI binary.
-This CLI is a separate binary that invokes Zed.
+    before_help = "The Aleph CLI binary.
+This CLI is a separate binary that invokes Aleph.
 
 Examples:
-    `zed`
-          Simply opens Zed
-    `zed --foreground`
+    `aleph`
+          Simply opens Aleph
+    `aleph --foreground`
           Runs in foreground (shows all logs)
-    `zed path-to-your-project`
-          Open your project in Zed
-    `zed -n path-to-file `
+    `aleph path-to-your-project`
+          Open your project in Aleph
+    `aleph -n path-to-file `
           Open file/folder in a new window",
-    after_help = "To read from stdin, append '-', e.g. 'ps axf | zed -'"
+    after_help = "To read from stdin, append '-', e.g. 'ps axf | aleph -'"
 )]
 struct Args {
     /// Wait for all of the given paths to be opened/closed before exiting.
@@ -55,33 +55,33 @@ struct Args {
     new: bool,
     /// Sets a custom directory for all user data (e.g., database, extensions, logs).
     /// This overrides the default platform-specific data directory location.
-    /// On macOS, the default is `~/Library/Application Support/Zed`.
+    /// On macOS, the default is `~/Library/Application Support/Aleph`.
     #[arg(long, value_name = "DIR")]
     user_data_dir: Option<String>,
-    /// The paths to open in Zed (space-separated).
+    /// The paths to open in Aleph (space-separated).
     ///
     /// Use `path:line:column` syntax to open a file at the given line and column.
     paths_with_position: Vec<String>,
-    /// Print Zed's version and the app path.
+    /// Print Aleph's version and the app path.
     #[arg(short, long)]
     version: bool,
-    /// Run zed in the foreground (useful for debugging)
+    /// Run aleph in the foreground (useful for debugging)
     #[arg(long)]
     foreground: bool,
-    /// Custom path to Zed.app or the zed binary
+    /// Custom path to Aleph.app or the aleph binary
     #[arg(long)]
-    zed: Option<PathBuf>,
-    /// Run zed in dev-server mode
+    aleph: Option<PathBuf>,
+    /// Run aleph in dev-server mode
     #[arg(long)]
     dev_server_token: Option<String>,
-    /// Not supported in Zed CLI, only supported on Zed binary
+    /// Not supported in Aleph CLI, only supported on Aleph binary
     /// Will attempt to give the correct command to run
     #[arg(long)]
     system_specs: bool,
     /// Pairs of file paths to diff. Can be specified multiple times.
     #[arg(long, action = clap::ArgAction::Append, num_args = 2, value_names = ["OLD_PATH", "NEW_PATH"])]
     diff: Vec<String>,
-    /// Uninstall Zed from user system
+    /// Uninstall Aleph from user system
     #[cfg(not(feature = "no-bundled-uninstall"))]
     #[arg(long)]
     uninstall: bool,
@@ -169,7 +169,7 @@ fn main() -> Result<()> {
         paths::set_custom_data_dir(dir);
     }
 
-    let app = Detect::detect(args.zed.as_deref()).context("Bundle detection")?;
+    let app = Detect::detect(args.aleph.as_deref()).context("Bundle detection")?;
 
     if args.version {
         println!("{}", app.zed_version_string());

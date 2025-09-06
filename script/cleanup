@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+rm -rf "$HOME/.config/aleph"
+rm -rf "$HOME/Library/Application Support/Aleph"
+rm -rf "$HOME/Library/Logs/Aleph"

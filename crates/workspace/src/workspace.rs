@@ -5526,7 +5526,7 @@ pub fn last_session_workspace_locations(
 }
 
 actions!(
-    zed,
+    aleph,
     [
         /// Opens the Zed log file.
         OpenLog

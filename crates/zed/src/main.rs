@@ -1001,7 +1001,7 @@ pub fn stdout_is_a_pty() -> bool {
 }
 
 #[derive(Parser, Debug)]
-#[command(name = "zed", disable_version_flag = true)]
+#[command(name = "aleph", disable_version_flag = true)]
 struct Args {
     /// A sequence of space-separated paths or urls that you want to open.
     ///

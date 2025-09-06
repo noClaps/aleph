@@ -297,7 +297,7 @@ web_search = { path = "crates/web_search" }
 workspace = { path = "crates/workspace" }
 worktree = { path = "crates/worktree" }
 x_ai = { path = "crates/x_ai" }
-zed = { path = "crates/zed" }
+aleph = { path = "crates/zed" }
 zed_actions = { path = "crates/zed_actions" }
 zed_env_vars = { path = "crates/zed_env_vars" }
 zeta = { path = "crates/zeta" }
@@ -585,7 +585,7 @@ lto = "thin"
 codegen-units = 1
 
 [profile.release.package]
-zed = { codegen-units = 16 }
+aleph = { codegen-units = 16 }
 
 [profile.release-fast]
 inherits = "release"
@@ -636,7 +636,7 @@ large_enum_variant = "allow"
 
 [workspace.metadata.cargo-shear]
 ignored = [
-    "zed",
+    "aleph",
     "bindgen",
     "cbindgen",
     "prost_build",

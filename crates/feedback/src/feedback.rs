@@ -7,7 +7,7 @@ use zed_actions::feedback::FileBugReport;
 pub mod feedback_modal;
 
 actions!(
-    zed,
+    aleph,
     [
         /// Opens email client to send feedback to Zed support.
         EmailZed,

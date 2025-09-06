@@ -29,7 +29,7 @@ impl FeatureFlag for SettingsUiFeatureFlag {
 }
 
 actions!(
-    zed,
+    aleph,
     [
         /// Opens the settings editor.
         OpenSettingsEditor

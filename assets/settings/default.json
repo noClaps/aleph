@@ -1,5 +1,5 @@
 {
-  // The name of the Zed theme to use for the UI.
+  // The name of the Aleph theme to use for the UI.
   //
   // `mode` is one of:
   // - "system": Use the theme that corresponds to the system's appearance
@@ -10,7 +10,7 @@
     "light": "ZeroLimits",
     "dark": "ZeroLimits"
   },
-  "icon_theme": "Zed (Default)",
+  "icon_theme": "Aleph (Default)",
   // The name of a base set of key bindings to use.
   // This setting can take six values, each named after another
   // text editor:
@@ -111,9 +111,9 @@
   "hover_popover_enabled": true,
   // Time to wait in milliseconds before showing the informational hover box.
   "hover_popover_delay": 300,
-  // Whether to confirm before quitting Zed.
+  // Whether to confirm before quitting Aleph.
   "confirm_quit": false,
-  // Whether to restore last closed project when fresh Zed instance is opened
+  // Whether to restore last closed project when fresh Aleph instance is opened
   // May take 3 values:
   //  1. All workspaces open during last session
   //         "restore_on_startup": "last_session"
@@ -160,7 +160,7 @@
   // Default: true
   "zoomed_padding": true,
   // Whether to use the system provided dialogs for Open and Save As.
-  // When set to false, Zed will use the built-in keyboard-first pickers.
+  // When set to false, Aleph will use the built-in keyboard-first pickers.
   "use_system_path_prompts": true,
   // Whether to use the system provided dialogs for prompts, such as confirmation
   // prompts.
@@ -300,11 +300,11 @@
   "use_on_type_format": true,
   // Whether to automatically add matching closing characters when typing
   // opening parenthesis, bracket, brace, single or double quote characters.
-  // For example, when you type (, Zed will add a closing ) at the correct position.
+  // For example, when you type (, Aleph will add a closing ) at the correct position.
   "use_autoclose": true,
   // Whether to automatically surround selected text when typing opening parenthesis,
   // bracket, brace, single or double quote characters.
-  // For example, when you select text and type (, Zed will surround the text with ().
+  // For example, when you select text and type (, Aleph will surround the text with ().
   "use_auto_surround": true,
   /// Whether indentation should be adjusted based on the context whilst typing.
   "auto_indent": true,
@@ -772,7 +772,7 @@
   //
   // 1. Never automatically save:
   //     "autosave": "off",
-  // 2. Save when changing focus away from the Zed window:
+  // 2. Save when changing focus away from the Aleph window:
   //     "autosave": "on_window_change",
   // 3. Save when changing focus away from a specific buffer:
   //     "autosave": "on_focus_change",
@@ -877,11 +877,11 @@
     // Whether to show the git status in the file finder.
     "git_status": true,
     // Whether to use gitignored files when searching.
-    // Only the file Zed had indexed will be used, not necessary all the gitignored files.
+    // Only the file Aleph had indexed will be used, not necessary all the gitignored files.
     //
     // Can accept 3 values:
     //   * `true`: Use all gitignored files
-    //   * `false`: Use only the files Zed had indexed
+    //   * `false`: Use only the files Aleph had indexed
     //   * `null`: Be smart and search for ignored when called from a gitignored worktree
     "include_ignored": null
   },
@@ -907,9 +907,9 @@
   //         "arguments": ["--stdin-filepath", "{buffer_path}"]
   //       }
   //     }
-  // 3. Format code using Zed's Prettier integration:
+  // 3. Format code using Aleph's Prettier integration:
   //     "formatter": "prettier"
-  // 4. Default. Format files using Zed's Prettier integration (if applicable),
+  // 4. Default. Format files using Aleph's Prettier integration (if applicable),
   //    or falling back to formatting via language server:
   //     "formatter": "auto"
   "formatter": "auto",
@@ -934,18 +934,18 @@
   "hard_tabs": false,
   // How many columns a tab should occupy.
   "tab_size": 4,
-  // Control what info is collected by Zed.
+  // Control what info is collected by Aleph.
   "telemetry": {
     // Send debug info like crash reports.
     "diagnostics": true,
-    // Send anonymized usage data like what languages you're using Zed with.
+    // Send anonymized usage data like what languages you're using Aleph with.
     "metrics": true
   },
-  // Whether to disable all AI features in Zed.
+  // Whether to disable all AI features in Aleph.
   //
   // Default: false
   "disable_ai": false,
-  // Automatically update Zed.
+  // Automatically update Aleph.
   "auto_update": true,
   // How to render LSP `textDocument/documentColor` colors in the editor.
   //
@@ -966,7 +966,7 @@
     "button": true,
     // Whether to show warnings or not by default.
     "include_warnings": true,
-    // Settings for using LSP pull diagnostics mechanism in Zed.
+    // Settings for using LSP pull diagnostics mechanism in Aleph.
     "lsp_pull_diagnostics": {
       // Whether to pull for diagnostics or not.
       "enabled": true,
@@ -993,7 +993,7 @@
       "max_severity": null
     }
   },
-  // Files or globs of files that will be excluded by Zed entirely. They will be skipped during file
+  // Files or globs of files that will be excluded by Aleph entirely. They will be skipped during file
   // scans, file searches, and not be displayed in the project file tree. Takes precedence over `file_scan_inclusions`.
   "file_scan_exclusions": [
     "**/.git",
@@ -1007,9 +1007,9 @@
     "**/.classpath",
     "**/.settings"
   ],
-  // Files or globs of files that will be included by Zed, even when ignored by git. This is useful
+  // Files or globs of files that will be included by Aleph, even when ignored by git. This is useful
   // for files that are not tracked by git, but are still important to your project. Note that globs
-  // that are overly broad can slow down Zed's file scanning. `file_scan_exclusions` takes
+  // that are overly broad can slow down Aleph's file scanning. `file_scan_exclusions` takes
   // precedence over these inclusions.
   "file_scan_inclusions": [".env*"],
   // Git gutter behavior configuration.
@@ -1112,7 +1112,7 @@
     //    this platform's home directory  (if we can find it)
     //      "working_directory": {
     //        "always": {
-    //          "directory": "~/zed/projects/"
+    //          "directory": "~/aleph/projects/"
     //        }
     //      }
     "working_directory": "current_project_directory",
@@ -1255,13 +1255,13 @@
   "tasks": {
     "variables": {},
     "enabled": true,
-    // Use LSP tasks over Zed language extension ones.
+    // Use LSP tasks over Aleph language extension ones.
     // If no LSP tasks are returned due to error/timeout or regular execution,
-    // Zed language extension tasks will be used instead.
+    // Aleph language extension tasks will be used instead.
     //
-    // Other Zed tasks will still be shown:
-    // * Zed task from either of the task config file
-    // * Zed task from history (e.g. one-off task was spawned before)
+    // Other Aleph tasks will still be shown:
+    // * Aleph task from either of the task config file
+    // * Aleph task from history (e.g. one-off task was spawned before)
     //
     // Default: true
     "prefer_lsp": true
@@ -1280,9 +1280,9 @@
   //
   "file_types": {
     "JSONC": [
-      "**/.zed/**/*.json",
-      "**/zed/**/*.json",
-      "**/Zed/**/*.json",
+      "**/.aleph/**/*.json",
+      "**/aleph/**/*.json",
+      "**/Aleph/**/*.json",
       "**/.vscode/**/*.json"
     ],
     "Shell Script": [".env.*"]
@@ -1290,20 +1290,20 @@
   // Settings for which version of Node.js and NPM to use when installing
   // language servers.
   //
-  // Note: changing this setting currently requires restarting Zed.
+  // Note: changing this setting currently requires restarting Aleph.
   "node": {
-    // By default, Zed will look for `node` and `npm` on your `$PATH`, and use the
+    // By default, Aleph will look for `node` and `npm` on your `$PATH`, and use the
     // existing executables if their version is recent enough. Set this to `true`
-    // to prevent this, and force Zed to always download and install its own
+    // to prevent this, and force Aleph to always download and install its own
     // version of Node.
     "ignore_system_version": false,
     // You can also specify alternative paths to Node and NPM. If you specify
-    // `path`, but not `npm_path`, Zed will assume that `npm` is located at
+    // `path`, but not `npm_path`, Aleph will assume that `npm` is located at
     // `${path}/../npm`.
     "path": null,
     "npm_path": null
   },
-  // The extensions that Zed should automatically install on startup.
+  // The extensions that Aleph should automatically install on startup.
   //
   // If you don't want any of these extensions, add this field to your settings
   // and change the value to `false`.
@@ -1345,7 +1345,7 @@
     // When LSP servers give an `InsertReplaceEdit` completion, they provides two ranges: `insert` and `replace`. Usually, `insert`
     // contains the word prefix before your cursor and `replace` contains the whole word.
     //
-    // Effectively, this setting just changes whether Zed will use the received range for `insert` or `replace`, so the results may
+    // Effectively, this setting just changes whether Aleph will use the received range for `insert` or `replace`, so the results may
     // differ depending on the underlying LSP server.
     //
     // Possible values:
@@ -1587,7 +1587,7 @@
       "api_url": "https://api.mistral.ai/v1"
     }
   },
-  // Zed's Prettier integration settings.
+  // Aleph's Prettier integration settings.
   // Allows to enable/disable formatting with Prettier
   // and configure default Prettier, used when no project-level Prettier installation is found.
   "prettier": {
@@ -1595,12 +1595,12 @@
     // "allowed": false,
     //
     // // Use regular Prettier json configuration.
-    // // If Prettier is allowed, Zed will use this for its Prettier instance for any applicable file, if
+    // // If Prettier is allowed, Aleph will use this for its Prettier instance for any applicable file, if
     // // the project has no other Prettier installed.
     // "plugins": [],
     //
     // // Use regular Prettier json configuration.
-    // // If Prettier is allowed, Zed will use this for its Prettier instance for any applicable file, if
+    // // If Prettier is allowed, Aleph will use this for its Prettier instance for any applicable file, if
     // // the project has no other Prettier installed.
     // "trailingComma": "es5",
     // "tabWidth": 4,
@@ -1617,7 +1617,7 @@
     // "rust-analyzer": {
     //     // A special flag for rust-analyzer integration, to use server-provided tasks
     //     enable_lsp_tasks": true,
-    //     // These initialization options are merged into Zed's defaults
+    //     // These initialization options are merged into Aleph's defaults
     //     "initialization_options": {
     //         "check": {
     //             "command": "clippy" // rust-analyzer.check.command (default: "check")
@@ -1654,25 +1654,25 @@
     "cursor_shape": {}
   },
   // The server to connect to. If the environment variable
-  // ZED_SERVER_URL is set, it will override this setting.
+  // ALEPH_SERVER_URL is set, it will override this setting.
   "server_url": "https://zed.dev",
-  // Settings overrides to use when using Zed Preview.
-  // Mostly useful for developers who are managing multiple instances of Zed.
+  // Settings overrides to use when using Aleph Preview.
+  // Mostly useful for developers who are managing multiple instances of Aleph.
   "preview": {
     // "theme": "Andromeda"
   },
-  // Settings overrides to use when using Zed Nightly.
-  // Mostly useful for developers who are managing multiple instances of Zed.
+  // Settings overrides to use when using Aleph Nightly.
+  // Mostly useful for developers who are managing multiple instances of Aleph.
   "nightly": {
     // "theme": "Andromeda"
   },
-  // Settings overrides to use when using Zed Stable.
-  // Mostly useful for developers who are managing multiple instances of Zed.
+  // Settings overrides to use when using Aleph Stable.
+  // Mostly useful for developers who are managing multiple instances of Aleph.
   "stable": {
     // "theme": "Andromeda"
   },
-  // Settings overrides to use when using Zed Dev.
-  // Mostly useful for developers who are managing multiple instances of Zed.
+  // Settings overrides to use when using Aleph Dev.
+  // Mostly useful for developers who are managing multiple instances of Aleph.
   "dev": {
     // "theme": "Andromeda"
   },
@@ -1688,7 +1688,7 @@
   // Supported URI scheme: `http`, `https`, `socks4`, `socks4a`, `socks5`,
   // `socks5h`. `http` will be used when no scheme is specified.
   //
-  // By default no proxy will be used, or Zed will try get proxy settings from
+  // By default no proxy will be used, or Aleph will try get proxy settings from
   // environment variables. If certain hosts should not be proxied,
   // set the `no_proxy` environment variable and provide a comma-separated list.
   //
@@ -1706,7 +1706,7 @@
   "command_aliases": {},
   // ssh_connections is an array of ssh connections.
   // You can configure these from `project: Open Remote` in the command palette.
-  // Zed's ssh support will pull configuration from your ~/.ssh too.
+  // Aleph's ssh support will pull configuration from your ~/.ssh too.
   // Examples:
   // [
   //   {
@@ -1714,7 +1714,7 @@
   //     // "port": 22, "username": "test", "args": ["-i", "/home/user/.ssh/id_rsa"]
   //     "projects": [
   //       {
-  //         "paths": ["/home/user/code/zed"]
+  //         "paths": ["/home/user/code/aleph"]
   //       }
   //     ]
   //   }

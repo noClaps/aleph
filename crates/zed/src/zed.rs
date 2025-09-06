@@ -73,7 +73,7 @@ use zed_actions::{
 };
 
 actions!(
-    zed,
+    aleph,
     [
         /// Opens the element inspector for debugging UI.
         DebugElements,

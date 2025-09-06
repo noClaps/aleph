@@ -1,9 +1,9 @@
-// Zed keymap
+// Aleph keymap
 //
-// For information on binding keys, see the Zed
+// For information on binding keys, see the Aleph
 // documentation: https://zed.dev/docs/key-bindings
 //
-// To see the default key bindings run `zed: open default keymap`
+// To see the default key bindings run `aleph: open default keymap`
 // from the command palette.
 [
   {

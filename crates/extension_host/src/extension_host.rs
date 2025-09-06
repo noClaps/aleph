@@ -176,7 +176,7 @@ pub struct ExtensionIndexLanguageEntry {
 }
 
 actions!(
-    zed,
+    aleph,
     [
         /// Reloads all installed extensions.
         ReloadExtensions

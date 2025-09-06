@@ -14,7 +14,7 @@ use zed_actions::{Extensions, OpenSettings, agent, command_palette};
 use crate::{Onboarding, OpenOnboarding};
 
 actions!(
-    zed,
+    aleph,
     [
         /// Show the Zed welcome screen
         ShowWelcome
