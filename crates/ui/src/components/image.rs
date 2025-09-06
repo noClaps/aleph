@@ -18,7 +18,6 @@ pub enum VectorName {
     AcpLogo,
     AcpLogoSerif,
     AiGrid,
-    DebuggerGrid,
     Grid,
     ProTrialStamp,
     ProUserStamp,

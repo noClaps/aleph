@@ -22,7 +22,7 @@ mod toolchain;
 use crate::language_settings::SoftWrap;
 use anyhow::{Context as _, Result};
 use async_trait::async_trait;
-use collections::{HashMap, HashSet, IndexSet};
+use collections::{HashMap, HashSet};
 use fs::Fs;
 use futures::Future;
 use gpui::{App, AsyncApp, Entity, SharedString, Task};
@@ -735,9 +735,6 @@ pub struct LanguageConfig {
     /// A list of characters that Zed should treat as word characters for completion queries.
     #[serde(default)]
     pub completion_query_characters: HashSet<char>,
-    /// A list of preferred debuggers for this language.
-    #[serde(default)]
-    pub debuggers: IndexSet<SharedString>,
 }
 
 #[derive(Clone, Debug, Deserialize, Default, JsonSchema)]
@@ -929,7 +926,6 @@ impl Default for LanguageConfig {
             hidden: false,
             jsx_tag_auto_close: None,
             completion_query_characters: Default::default(),
-            debuggers: Default::default(),
         }
     }
 }
@@ -1121,22 +1117,6 @@ pub struct OutlineConfig {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum DebuggerTextObject {
-    Variable,
-    Scope,
-}
-
-impl DebuggerTextObject {
-    pub fn from_capture_name(name: &str) -> Option<DebuggerTextObject> {
-        match name {
-            "debug-variable" => Some(DebuggerTextObject::Variable),
-            "debug-scope" => Some(DebuggerTextObject::Scope),
-            _ => None,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TextObject {
     InsideFunction,
     AroundFunction,
@@ -1241,7 +1221,6 @@ struct BracketsPatternConfig {
 
 pub struct DebugVariablesConfig {
     pub query: Query,
-    pub objects_by_capture_ix: Vec<(u32, DebuggerTextObject)>,
 }
 
 impl Language {
@@ -1350,11 +1329,6 @@ impl Language {
             self = self
                 .with_text_object_query(query.as_ref())
                 .context("Error loading textobject query")?;
-        }
-        if let Some(query) = queries.debugger {
-            self = self
-                .with_debug_variables_query(query.as_ref())
-                .context("Error loading debug variables query")?;
         }
         Ok(self)
     }
@@ -1476,17 +1450,7 @@ impl Language {
         let grammar = self.grammar_mut().context("cannot mutate grammar")?;
         let query = Query::new(&grammar.ts_language, source)?;
 
-        let mut objects_by_capture_ix = Vec::new();
-        for (ix, name) in query.capture_names().iter().enumerate() {
-            if let Some(text_object) = DebuggerTextObject::from_capture_name(name) {
-                objects_by_capture_ix.push((ix as u32, text_object));
-            }
-        }
-
-        grammar.debug_variables_config = Some(DebugVariablesConfig {
-            query,
-            objects_by_capture_ix,
-        });
+        grammar.debug_variables_config = Some(DebugVariablesConfig { query });
         Ok(self)
     }
 

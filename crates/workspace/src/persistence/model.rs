@@ -15,11 +15,7 @@ use gpui::{AsyncWindowContext, Entity, WeakEntity};
 use language::{Toolchain, ToolchainScope};
 use project::{Project, debugger::breakpoint_store::SourceBreakpoint};
 use remote::RemoteConnectionOptions;
-use std::{
-    collections::BTreeMap,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::{path::PathBuf, sync::Arc};
 use util::ResultExt;
 use uuid::Uuid;
 

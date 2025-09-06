@@ -87,10 +87,6 @@ pub struct ExtensionManifest {
     pub snippets: Option<PathBuf>,
     #[serde(default)]
     pub capabilities: Vec<ExtensionCapability>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    pub debug_adapters: BTreeMap<Arc<str>, DebugAdapterManifestEntry>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    pub debug_locators: BTreeMap<Arc<str>, DebugLocatorManifestEntry>,
 }
 
 impl ExtensionManifest {
@@ -117,19 +113,7 @@ impl ExtensionManifest {
 
     pub fn allow_remote_load(&self) -> bool {
         !self.language_servers.is_empty()
-            || !self.debug_adapters.is_empty()
-            || !self.debug_locators.is_empty()
     }
-}
-
-pub fn build_debug_adapter_schema_path(
-    adapter_name: &Arc<str>,
-    meta: &DebugAdapterManifestEntry,
-) -> PathBuf {
-    meta.schema_path.clone().unwrap_or_else(|| {
-        Path::new("debug_adapter_schemas")
-            .join(Path::new(adapter_name.as_ref()).with_extension("json"))
-    })
 }
 
 #[derive(Clone, Default, PartialEq, Eq, Debug, Deserialize, Serialize)]
@@ -192,14 +176,6 @@ pub struct SlashCommandManifestEntry {
     pub description: String,
     pub requires_argument: bool,
 }
-
-#[derive(Clone, PartialEq, Eq, Debug, Deserialize, Serialize)]
-pub struct DebugAdapterManifestEntry {
-    pub schema_path: Option<PathBuf>,
-}
-
-#[derive(Clone, PartialEq, Eq, Debug, Deserialize, Serialize)]
-pub struct DebugLocatorManifestEntry {}
 
 impl ExtensionManifest {
     pub async fn load(fs: Arc<dyn Fs>, extension_dir: &Path) -> Result<Self> {
@@ -268,7 +244,5 @@ fn manifest_from_old_manifest(
         slash_commands: BTreeMap::default(),
         snippets: None,
         capabilities: Vec::new(),
-        debug_adapters: Default::default(),
-        debug_locators: Default::default(),
     }
 }

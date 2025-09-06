@@ -27,3 +27,4 @@ This fork removes:
   - Schema generator
   - Theme importer
   - Extension CLI
+- Debugger (imagine needing to debug code when you could just write it correctly the first time)

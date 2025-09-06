@@ -18,12 +18,7 @@ members = [
     "crates/context_server",
     "crates/crashes",
     "crates/credentials_provider",
-    "crates/dap",
-    "crates/dap_adapters",
     "crates/db",
-    "crates/debug_adapter_extension",
-    "crates/debugger_tools",
-    "crates/debugger_ui",
     "crates/diagnostics",
     "crates/editor",
     "crates/extension",
@@ -186,12 +181,7 @@ component = { path = "crates/component" }
 context_server = { path = "crates/context_server" }
 crashes = { path = "crates/crashes" }
 credentials_provider = { path = "crates/credentials_provider" }
-dap = { path = "crates/dap" }
-dap_adapters = { path = "crates/dap_adapters" }
 db = { path = "crates/db" }
-debug_adapter_extension = { path = "crates/debug_adapter_extension" }
-debugger_tools = { path = "crates/debugger_tools" }
-debugger_ui = { path = "crates/debugger_ui" }
 diagnostics = { path = "crates/diagnostics" }
 editor = { path = "crates/editor" }
 extension = { path = "crates/extension" }
@@ -340,7 +330,6 @@ bitflags = "2.6.0"
 blake3 = "1.5.3"
 bytes = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
-circular-buffer = "1.0"
 clap = { version = "4.4", features = ["derive"] }
 cocoa = "0.26"
 convert_case = "0.8.0"
@@ -349,11 +338,9 @@ core-foundation-sys = "0.8.6"
 core-video = { version = "0.4.3", features = ["metal"] }
 crash-handler = "0.6"
 ctor = "0.4.0"
-dap-types = { git = "https://github.com/zed-industries/dap-types", rev = "1b461b310481d01e02b2603c16d7144b926339f8" }
 derive_more = "0.99.17"
 dirs = "4.0"
 documented = "0.9.1"
-dotenvy = "0.15.0"
 ec4rs = "1.1"
 emojis = "0.6.1"
 fancy-regex = "0.14.0"
@@ -377,7 +364,6 @@ indoc = "2"
 inventory = "0.3.19"
 itertools = "0.14.0"
 jj-lib = { git = "https://github.com/jj-vcs/jj", rev = "e18eb8e05efaa153fad5ef46576af145bba1807f" }
-json_dotpath = "1.1"
 jupyter-protocol = { git = "https://github.com/ConradIrwin/runtimed", rev = "7130c804216b6914355d15d0b91ea91f6babd734" }
 jupyter-websocket-client = { git = "https://github.com/ConradIrwin/runtimed", rev = "7130c804216b6914355d15d0b91ea91f6babd734" }
 libc = "0.2"
@@ -424,7 +410,6 @@ ordered-float = "2.1.1"
 palette = { version = "0.7.5", default-features = false, features = ["std"] }
 parking = "2.0"
 parking_lot = "0.12.1"
-parse_int = "0.9"
 pathdiff = "0.2"
 pet = { git = "https://github.com/microsoft/python-environment-tools.git", rev = "845945b830297a50de0e24020b980a65e4820559" }
 pet-conda = { git = "https://github.com/microsoft/python-environment-tools.git", rev = "845945b830297a50de0e24020b980a65e4820559" }

@@ -1,12 +1,10 @@
 //! Baseline interface of Tasks in Zed: all tasks in Zed are intended to use those for implementing their own logic.
 
 mod adapter_schema;
-mod debug_format;
 mod serde_helpers;
 mod shell_builder;
 pub mod static_source;
 mod task_template;
-mod vscode_debug_format;
 mod vscode_format;
 
 use collections::{HashMap, HashSet, hash_map};
@@ -18,16 +16,11 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 pub use adapter_schema::{AdapterSchema, AdapterSchemas};
-pub use debug_format::{
-    AttachRequest, BuildTaskDefinition, DebugRequest, DebugScenario, DebugTaskFile, LaunchRequest,
-    Request, TcpArgumentsTemplate, ZedDebugConfig,
-};
 pub use shell_builder::{ShellBuilder, ShellKind};
 pub use task_template::{
-    DebugArgsRequest, HideStrategy, RevealStrategy, TaskTemplate, TaskTemplates,
-    substitute_variables_in_map, substitute_variables_in_str,
+    HideStrategy, RevealStrategy, TaskTemplate, TaskTemplates, substitute_variables_in_map,
+    substitute_variables_in_str,
 };
-pub use vscode_debug_format::VsCodeDebugTaskFile;
 pub use vscode_format::VsCodeTaskFile;
 pub use zed_actions::RevealTarget;
 
@@ -348,20 +341,6 @@ impl EnvVariableReplacer {
         Self { variables }
     }
 
-    fn replace_value(&self, input: serde_json::Value) -> serde_json::Value {
-        match input {
-            serde_json::Value::String(s) => serde_json::Value::String(self.replace(&s)),
-            serde_json::Value::Array(arr) => {
-                serde_json::Value::Array(arr.into_iter().map(|v| self.replace_value(v)).collect())
-            }
-            serde_json::Value::Object(obj) => serde_json::Value::Object(
-                obj.into_iter()
-                    .map(|(k, v)| (self.replace(&k), self.replace_value(v)))
-                    .collect(),
-            ),
-            _ => input,
-        }
-    }
     // Replaces occurrences of VsCode-specific environment variables with Zed equivalents.
     fn replace(&self, input: &str) -> String {
         shellexpand::env_with_context_no_errors(&input, |var: &str| {

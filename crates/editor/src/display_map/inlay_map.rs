@@ -70,15 +70,6 @@ impl Inlay {
             color: Some(Hsla::from(color)),
         }
     }
-
-    pub fn debugger<T: Into<Rope>>(id: usize, position: Anchor, text: T) -> Self {
-        Self {
-            id: InlayId::DebuggerValue(id),
-            position,
-            text: text.into(),
-            color: None,
-        }
-    }
 }
 
 impl sum_tree::Item for Transform {
@@ -317,7 +308,6 @@ impl<'a> Iterator for InlayChunks<'a> {
                 let mut renderer = None;
                 let mut highlight_style = match inlay.id {
                     InlayId::Hint(_) => self.highlight_styles.inlay_hint,
-                    InlayId::DebuggerValue(_) => self.highlight_styles.inlay_hint,
                     InlayId::Color(_) => {
                         if let Some(color) = inlay.color {
                             renderer = Some(ChunkRenderer {

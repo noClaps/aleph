@@ -259,7 +259,6 @@ pub enum LocalSettingsKind {
     Settings,
     Tasks,
     Editorconfig,
-    Debug,
 }
 
 impl Global for SettingsStore {}
@@ -828,13 +827,6 @@ impl SettingsStore {
             (LocalSettingsKind::Tasks, _) => {
                 return Err(InvalidSettingsError::Tasks {
                     message: "Attempted to submit tasks into the settings store".to_string(),
-                    path: directory_path.join(task_file_name()),
-                });
-            }
-            (LocalSettingsKind::Debug, _) => {
-                return Err(InvalidSettingsError::Debug {
-                    message: "Attempted to submit debugger config into the settings store"
-                        .to_string(),
                     path: directory_path.join(task_file_name()),
                 });
             }

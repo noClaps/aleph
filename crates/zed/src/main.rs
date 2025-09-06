@@ -391,7 +391,6 @@ pub fn main() {
         .detach();
         let node_runtime = NodeRuntime::new(client.http_client(), Some(shell_env_loaded_rx), rx);
 
-        debug_adapter_extension::init(extension_host_proxy.clone(), cx);
         language::init(cx);
         languages::init(languages.clone(), node_runtime.clone(), cx);
         let user_store = cx.new(|cx| UserStore::new(client.clone(), cx));
@@ -422,8 +421,6 @@ pub fn main() {
 
         zed::init(cx);
         project::Project::init(&client, cx);
-        debugger_ui::init(cx);
-        debugger_tools::init(cx);
         client::init(&client, cx);
         let telemetry = client.telemetry();
         telemetry.start(
@@ -463,7 +460,6 @@ pub fn main() {
         AppState::set_global(Arc::downgrade(&app_state), cx);
 
         auto_update::init(client.http_client(), cx);
-        dap_adapters::init(cx);
         auto_update_ui::init(cx);
 
         SystemAppearance::init(cx);
@@ -988,7 +984,6 @@ fn init_paths() -> HashMap<io::ErrorKind, Vec<&'static Path>> {
         paths::config_dir(),
         paths::extensions_dir(),
         paths::languages_dir(),
-        paths::debug_adapters_dir(),
         paths::database_dir(),
         paths::logs_dir(),
         paths::temp_dir(),

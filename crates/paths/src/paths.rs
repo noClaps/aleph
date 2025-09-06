@@ -181,12 +181,6 @@ pub fn tasks_file() -> &'static PathBuf {
     TASKS_FILE.get_or_init(|| config_dir().join("tasks.json"))
 }
 
-/// Returns the path to the `debug.json` file.
-pub fn debug_scenarios_file() -> &'static PathBuf {
-    static DEBUG_SCENARIOS_FILE: OnceLock<PathBuf> = OnceLock::new();
-    DEBUG_SCENARIOS_FILE.get_or_init(|| config_dir().join("debug.json"))
-}
-
 /// Returns the path to the extensions directory.
 ///
 /// This is where installed extensions are stored.
@@ -278,14 +272,6 @@ pub fn languages_dir() -> &'static PathBuf {
     LANGUAGES_DIR.get_or_init(|| data_dir().join("languages"))
 }
 
-/// Returns the path to the debug adapters directory
-///
-/// This is where debug adapters are downloaded to for DAPs that are built-in to Zed.
-pub fn debug_adapters_dir() -> &'static PathBuf {
-    static DEBUG_ADAPTERS_DIR: OnceLock<PathBuf> = OnceLock::new();
-    DEBUG_ADAPTERS_DIR.get_or_init(|| data_dir().join("debug_adapters"))
-}
-
 /// Returns the path to the agent servers directory
 ///
 /// This is where agent servers are downloaded to
@@ -335,10 +321,6 @@ pub fn local_tasks_file_relative_path() -> &'static Path {
 /// Returns the relative path to a `.vscode/tasks.json` file within a project.
 pub fn local_vscode_tasks_file_relative_path() -> &'static Path {
     Path::new(".vscode/tasks.json")
-}
-
-pub fn debug_task_file_name() -> &'static str {
-    "debug.json"
 }
 
 pub fn task_file_name() -> &'static str {

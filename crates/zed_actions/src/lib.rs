@@ -65,7 +65,6 @@ pub enum ExtensionCategoryFilter {
     SlashCommands,
     IndexedDocsProviders,
     Snippets,
-    DebugAdapters,
 }
 
 /// Opens the extensions management interface.
@@ -341,20 +340,6 @@ pub mod assistant {
     }
 }
 
-pub mod debugger {
-    use gpui::actions;
-
-    actions!(
-        debugger,
-        [
-            /// Opens the debugger onboarding modal.
-            OpenOnboardingModal,
-            /// Resets the debugger onboarding state.
-            ResetOnboarding
-        ]
-    );
-}
-
 /// Opens the recent projects interface.
 #[derive(PartialEq, Clone, Deserialize, Default, JsonSchema, Action)]
 #[action(namespace = projects)]
@@ -472,24 +457,5 @@ actions!(
     [
         /// Opens the git integration onboarding modal.
         OpenGitIntegrationOnboarding
-    ]
-);
-
-actions!(
-    debug_panel,
-    [
-        /// Toggles focus on the debug panel.
-        ToggleFocus
-    ]
-);
-actions!(
-    debugger,
-    [
-        /// Toggles the enabled state of a breakpoint.
-        ToggleEnableBreakpoint,
-        /// Removes a breakpoint.
-        UnsetBreakpoint,
-        /// Opens the project debug tasks configuration.
-        OpenProjectDebugTasks,
     ]
 );

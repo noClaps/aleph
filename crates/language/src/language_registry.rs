@@ -219,7 +219,6 @@ pub const QUERY_FILENAME_PREFIXES: &[(
     ("overrides", |q| &mut q.overrides),
     ("redactions", |q| &mut q.redactions),
     ("runnables", |q| &mut q.runnables),
-    ("debugger", |q| &mut q.debugger),
     ("textobjects", |q| &mut q.text_objects),
 ];
 
@@ -236,7 +235,6 @@ pub struct LanguageQueries {
     pub redactions: Option<Cow<'static, str>>,
     pub runnables: Option<Cow<'static, str>>,
     pub text_objects: Option<Cow<'static, str>>,
-    pub debugger: Option<Cow<'static, str>>,
 }
 
 #[derive(Clone, Default)]

@@ -51,7 +51,7 @@ pub use item::{
     ProjectItem, SerializableItem, SerializableItemHandle, WeakItemHandle,
 };
 use itertools::Itertools;
-use language::{Buffer, LanguageRegistry, Rope};
+use language::{LanguageRegistry, Rope};
 pub use modal_layer::*;
 use node_runtime::NodeRuntime;
 use notifications::{
@@ -96,7 +96,7 @@ use std::{
     sync::{Arc, LazyLock, Weak, atomic::AtomicUsize},
     time::Duration,
 };
-use task::{DebugScenario, SpawnInTerminal, TaskContext};
+use task::SpawnInTerminal;
 use theme::{ActiveTheme, SystemAppearance, ThemeSettings};
 pub use toolbar::{Toolbar, ToolbarItemEvent, ToolbarItemLocation, ToolbarItemView};
 pub use ui;
@@ -106,7 +106,7 @@ use uuid::Uuid;
 pub use workspace_settings::{
     AutosaveSetting, BottomDockLayout, RestoreOnStartupBehavior, TabBarSettings, WorkspaceSettings,
 };
-use zed_actions::{Spawn, feedback::FileBugReport};
+use zed_actions::feedback::FileBugReport;
 
 use crate::notifications::NotificationId;
 use crate::persistence::{
@@ -137,33 +137,6 @@ pub trait TerminalProvider {
         window: &mut Window,
         cx: &mut App,
     ) -> Task<Option<Result<ExitStatus>>>;
-}
-
-pub trait DebuggerProvider {
-    // `active_buffer` is used to resolve build task's name against language-specific tasks.
-    fn start_session(
-        &self,
-        definition: DebugScenario,
-        task_context: TaskContext,
-        active_buffer: Option<Entity<Buffer>>,
-        worktree_id: Option<WorktreeId>,
-        window: &mut Window,
-        cx: &mut App,
-    );
-
-    fn spawn_task_or_modal(
-        &self,
-        workspace: &mut Workspace,
-        action: &Spawn,
-        window: &mut Window,
-        cx: &mut Context<Workspace>,
-    );
-
-    fn task_scheduled(&self, cx: &mut App);
-    fn debug_scenario_scheduled(&self, cx: &mut App);
-    fn debug_scenario_scheduled_last(&self, cx: &App) -> bool;
-
-    fn active_thread_state(&self, cx: &App) -> Option<ThreadStatus>;
 }
 
 actions!(
@@ -225,8 +198,6 @@ actions!(
         SaveAs,
         /// Saves without formatting.
         SaveWithoutFormat,
-        /// Shuts down all debug adapters.
-        ShutdownDebugAdapters,
         /// Suppresses the current notification.
         SuppressNotification,
         /// Toggles the bottom dock.
@@ -1051,7 +1022,6 @@ pub struct Workspace {
     on_prompt_for_new_path: Option<PromptForNewPath>,
     on_prompt_for_open_path: Option<PromptForOpenPath>,
     terminal_provider: Option<Box<dyn TerminalProvider>>,
-    debugger_provider: Option<Arc<dyn DebuggerProvider>>,
     serializable_items_tx: UnboundedSender<Box<dyn SerializableItemHandle>>,
     _items_serializer: Task<Result<()>>,
     session_id: Option<String>,
@@ -1342,7 +1312,6 @@ impl Workspace {
             on_prompt_for_new_path: None,
             on_prompt_for_open_path: None,
             terminal_provider: None,
-            debugger_provider: None,
             serializable_items_tx,
             _items_serializer,
             session_id: Some(session_id),
@@ -1904,14 +1873,6 @@ impl Workspace {
 
     pub fn set_terminal_provider(&mut self, provider: impl TerminalProvider + 'static) {
         self.terminal_provider = Some(Box::new(provider));
-    }
-
-    pub fn set_debugger_provider(&mut self, provider: impl DebuggerProvider + 'static) {
-        self.debugger_provider = Some(Arc::new(provider));
-    }
-
-    pub fn debugger_provider(&self) -> Option<Arc<dyn DebuggerProvider>> {
-        self.debugger_provider.clone()
     }
 
     pub fn prompt_for_open_path(
@@ -4271,7 +4232,6 @@ impl Workspace {
                     docks,
                     centered_layout: self.centered_layout,
                     session_id: self.session_id.clone(),
-                    breakpoints,
                     window_id: Some(window.window_handle().window_id().as_u64()),
                     user_toolchains,
                 };
@@ -4447,17 +4407,6 @@ impl Workspace {
 
                 cx.notify();
             })?;
-
-            let _ = project
-                .update(cx, |project, cx| {
-                    project
-                        .breakpoint_store()
-                        .update(cx, |breakpoint_store, cx| {
-                            breakpoint_store
-                                .with_serialized_breakpoints(serialized_workspace.breakpoints, cx)
-                        })
-                })?
-                .await;
 
             // Clean up all the items that have _not_ been loaded. Our ItemIds aren't stable. That means
             // after loading the items, we might have different items and in order to avoid
@@ -5126,19 +5075,6 @@ impl Render for Workspace {
         let mut context = KeyContext::new_with_defaults();
         context.add("Workspace");
         context.set("keyboard_layout", cx.keyboard_layout().name().to_string());
-        if let Some(status) = self
-            .debugger_provider
-            .as_ref()
-            .and_then(|provider| provider.active_thread_state(cx))
-        {
-            match status {
-                ThreadStatus::Running | ThreadStatus::Stepping => {
-                    context.add("debugger_running");
-                }
-                ThreadStatus::Stopped => context.add("debugger_stopped"),
-                ThreadStatus::Exited | ThreadStatus::Ended => {}
-            }
-        }
 
         let centered_layout = self.centered_layout
             && self.center.panes().len() == 1

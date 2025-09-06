@@ -10,20 +10,18 @@ use std::{
 
 use anyhow::Result;
 use collections::{HashMap, HashSet, VecDeque};
-use dap::DapRegistry;
 use fs::Fs;
-use gpui::{App, AppContext as _, Context, Entity, SharedString, Task, WeakEntity};
+use gpui::{App, AppContext as _, Context, Entity, SharedString, Task};
 use itertools::Itertools;
 use language::{
     Buffer, ContextLocation, ContextProvider, File, Language, LanguageToolchainStore, Location,
     language_settings::language_settings,
 };
 use lsp::{LanguageServerId, LanguageServerName};
-use paths::{debug_task_file_name, task_file_name};
+use paths::task_file_name;
 use settings::{InvalidSettingsError, parse_json_with_comments};
 use task::{
-    DebugScenario, ResolvedTask, TaskContext, TaskId, TaskTemplate, TaskTemplates, TaskVariables,
-    VariableName,
+    ResolvedTask, TaskContext, TaskId, TaskTemplate, TaskTemplates, TaskVariables, VariableName,
 };
 use text::{BufferId, Point, ToPoint};
 use util::{NumericPrefixWithSuffix, ResultExt as _, paths::PathExt as _, post_inc};
@@ -31,29 +29,18 @@ use worktree::WorktreeId;
 
 use crate::{task_store::TaskSettingsLocation, worktree_store::WorktreeStore};
 
-#[derive(Clone, Debug, Default)]
-pub struct DebugScenarioContext {
-    pub task_context: TaskContext,
-    pub worktree_id: Option<WorktreeId>,
-    pub active_buffer: Option<WeakEntity<Buffer>>,
-}
-
 /// Inventory tracks available tasks for a given project.
 pub struct Inventory {
     fs: Arc<dyn Fs>,
     last_scheduled_tasks: VecDeque<(TaskSourceKind, ResolvedTask)>,
-    last_scheduled_scenarios: VecDeque<(DebugScenario, DebugScenarioContext)>,
     templates_from_settings: InventoryFor<TaskTemplate>,
-    scenarios_from_settings: InventoryFor<DebugScenario>,
 }
 
 impl std::fmt::Debug for Inventory {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Inventory")
             .field("last_scheduled_tasks", &self.last_scheduled_tasks)
-            .field("last_scheduled_scenarios", &self.last_scheduled_scenarios)
             .field("templates_from_settings", &self.templates_from_settings)
-            .field("scenarios_from_settings", &self.scenarios_from_settings)
             .finish()
     }
 }
@@ -67,12 +54,6 @@ trait InventoryContents: Clone {
 impl InventoryContents for TaskTemplate {
     const GLOBAL_SOURCE_FILE: &'static str = "tasks.json";
     const LABEL: &'static str = "tasks";
-}
-
-impl InventoryContents for DebugScenario {
-    const GLOBAL_SOURCE_FILE: &'static str = "debug.json";
-
-    const LABEL: &'static str = "debug scenarios";
 }
 
 #[derive(Debug)]
@@ -246,103 +227,7 @@ impl Inventory {
         cx.new(|_| Self {
             fs,
             last_scheduled_tasks: VecDeque::default(),
-            last_scheduled_scenarios: VecDeque::default(),
             templates_from_settings: InventoryFor::default(),
-            scenarios_from_settings: InventoryFor::default(),
-        })
-    }
-
-    pub fn scenario_scheduled(
-        &mut self,
-        scenario: DebugScenario,
-        task_context: TaskContext,
-        worktree_id: Option<WorktreeId>,
-        active_buffer: Option<WeakEntity<Buffer>>,
-    ) {
-        self.last_scheduled_scenarios
-            .retain(|(s, _)| s.label != scenario.label);
-        self.last_scheduled_scenarios.push_back((
-            scenario,
-            DebugScenarioContext {
-                task_context,
-                worktree_id,
-                active_buffer,
-            },
-        ));
-        if self.last_scheduled_scenarios.len() > 5_000 {
-            self.last_scheduled_scenarios.pop_front();
-        }
-    }
-
-    pub fn last_scheduled_scenario(&self) -> Option<&(DebugScenario, DebugScenarioContext)> {
-        self.last_scheduled_scenarios.back()
-    }
-
-    pub fn list_debug_scenarios(
-        &self,
-        task_contexts: &TaskContexts,
-        lsp_tasks: Vec<(TaskSourceKind, task::ResolvedTask)>,
-        current_resolved_tasks: Vec<(TaskSourceKind, task::ResolvedTask)>,
-        add_current_language_tasks: bool,
-        cx: &mut App,
-    ) -> Task<(
-        Vec<(DebugScenario, DebugScenarioContext)>,
-        Vec<(TaskSourceKind, DebugScenario)>,
-    )> {
-        let mut scenarios = Vec::new();
-
-        if let Some(worktree_id) = task_contexts
-            .active_worktree_context
-            .iter()
-            .chain(task_contexts.other_worktree_contexts.iter())
-            .map(|context| context.0)
-            .next()
-        {
-            scenarios.extend(self.worktree_scenarios_from_settings(worktree_id));
-        }
-        scenarios.extend(self.global_debug_scenarios_from_settings());
-
-        let last_scheduled_scenarios = self.last_scheduled_scenarios.iter().cloned().collect();
-
-        let adapter = task_contexts.location().and_then(|location| {
-            let (file, language) = {
-                let buffer = location.buffer.read(cx);
-                (buffer.file(), buffer.language())
-            };
-            let language_name = language.as_ref().map(|l| l.name());
-            let adapter = language_settings(language_name, file, cx)
-                .debuggers
-                .first()
-                .map(SharedString::from)
-                .or_else(|| {
-                    language.and_then(|l| l.config().debuggers.first().map(SharedString::from))
-                });
-            adapter.map(|adapter| (adapter, DapRegistry::global(cx).locators()))
-        });
-        cx.background_spawn(async move {
-            if let Some((adapter, locators)) = adapter {
-                for (kind, task) in
-                    lsp_tasks
-                        .into_iter()
-                        .chain(current_resolved_tasks.into_iter().filter(|(kind, _)| {
-                            add_current_language_tasks
-                                || !matches!(kind, TaskSourceKind::Language { .. })
-                        }))
-                {
-                    let adapter = adapter.clone().into();
-
-                    for locator in locators.values() {
-                        if let Some(scenario) = locator
-                            .create_scenario(task.original_task(), task.display_label(), &adapter)
-                            .await
-                        {
-                            scenarios.push((kind, scenario));
-                            break;
-                        }
-                    }
-                }
-            }
-            (last_scheduled_scenarios, scenarios)
         })
     }
 
@@ -619,19 +504,6 @@ impl Inventory {
         self.templates_from_settings.global_scenarios()
     }
 
-    fn global_debug_scenarios_from_settings(
-        &self,
-    ) -> impl '_ + Iterator<Item = (TaskSourceKind, DebugScenario)> {
-        self.scenarios_from_settings.global_scenarios()
-    }
-
-    fn worktree_scenarios_from_settings(
-        &self,
-        worktree: WorktreeId,
-    ) -> impl '_ + Iterator<Item = (TaskSourceKind, DebugScenario)> {
-        self.scenarios_from_settings.worktree_scenarios(worktree)
-    }
-
     fn worktree_templates_from_settings(
         &self,
         worktree: WorktreeId,
@@ -712,93 +584,6 @@ impl Inventory {
                 });
             }
         }
-
-        Ok(())
-    }
-
-    /// Updates in-memory task metadata from the JSON string given.
-    /// Will fail if the JSON is not a valid array of objects, but will continue if any object will not parse into a [`TaskTemplate`].
-    ///
-    /// Global tasks are updated for no worktree provided, otherwise the worktree metadata for a given path will be updated.
-    pub(crate) fn update_file_based_scenarios(
-        &mut self,
-        location: TaskSettingsLocation<'_>,
-        raw_tasks_json: Option<&str>,
-    ) -> Result<(), InvalidSettingsError> {
-        let raw_tasks = match parse_json_with_comments::<Vec<serde_json::Value>>(
-            raw_tasks_json.unwrap_or("[]"),
-        ) {
-            Ok(tasks) => tasks,
-            Err(e) => {
-                return Err(InvalidSettingsError::Debug {
-                    path: match location {
-                        TaskSettingsLocation::Global(path) => path.to_owned(),
-                        TaskSettingsLocation::Worktree(settings_location) => {
-                            settings_location.path.join(debug_task_file_name())
-                        }
-                    },
-                    message: format!("Failed to parse tasks file content as a JSON array: {e}"),
-                });
-            }
-        };
-
-        let new_templates = raw_tasks
-            .into_iter()
-            .filter_map(|raw_template| {
-                serde_json::from_value::<DebugScenario>(raw_template).log_err()
-            })
-            .collect::<Vec<_>>();
-
-        let parsed_scenarios = &mut self.scenarios_from_settings;
-        let mut new_definitions: HashMap<_, _> = new_templates
-            .iter()
-            .map(|template| (template.label.clone(), template.clone()))
-            .collect();
-        let previously_existing_scenarios;
-
-        match location {
-            TaskSettingsLocation::Global(path) => {
-                previously_existing_scenarios = parsed_scenarios
-                    .global_scenarios()
-                    .map(|(_, scenario)| scenario.label)
-                    .collect::<HashSet<_>>();
-                parsed_scenarios
-                    .global
-                    .entry(path.to_owned())
-                    .insert_entry(new_templates);
-            }
-            TaskSettingsLocation::Worktree(location) => {
-                previously_existing_scenarios = parsed_scenarios
-                    .worktree_scenarios(location.worktree_id)
-                    .map(|(_, scenario)| scenario.label)
-                    .collect::<HashSet<_>>();
-
-                if new_templates.is_empty() {
-                    if let Some(worktree_tasks) =
-                        parsed_scenarios.worktree.get_mut(&location.worktree_id)
-                    {
-                        worktree_tasks.remove(location.path);
-                    }
-                } else {
-                    parsed_scenarios
-                        .worktree
-                        .entry(location.worktree_id)
-                        .or_default()
-                        .insert(Arc::from(location.path), new_templates);
-                }
-            }
-        }
-        self.last_scheduled_scenarios.retain_mut(|(scenario, _)| {
-            if !previously_existing_scenarios.contains(&scenario.label) {
-                return true;
-            }
-            if let Some(new_definition) = new_definitions.remove(&scenario.label) {
-                *scenario = new_definition;
-                true
-            } else {
-                false
-            }
-        });
 
         Ok(())
     }

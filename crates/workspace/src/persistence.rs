@@ -1,12 +1,6 @@
 pub mod model;
 
-use std::{
-    borrow::Cow,
-    collections::BTreeMap,
-    path::{Path, PathBuf},
-    str::FromStr,
-    sync::Arc,
-};
+use std::{path::Path, str::FromStr, sync::Arc};
 
 use anyhow::{Context as _, Result, bail};
 use collections::{HashMap, IndexSet};
@@ -16,7 +10,6 @@ use db::{
     sqlez_macros::sql,
 };
 use gpui::{Axis, Bounds, Task, WindowBounds, WindowId, point, size};
-use project::debugger::breakpoint_store::{BreakpointState, SourceBreakpoint};
 
 use language::{LanguageName, Toolchain, ToolchainScope};
 use project::WorktreeId;
@@ -149,96 +142,6 @@ impl Column for SerializedWindowBounds {
         };
 
         Ok((status, next_index + 4))
-    }
-}
-
-#[derive(Debug)]
-pub struct Breakpoint {
-    pub position: u32,
-    pub message: Option<Arc<str>>,
-    pub condition: Option<Arc<str>>,
-    pub hit_condition: Option<Arc<str>>,
-    pub state: BreakpointState,
-}
-
-/// Wrapper for DB type of a breakpoint
-struct BreakpointStateWrapper<'a>(Cow<'a, BreakpointState>);
-
-impl From<BreakpointState> for BreakpointStateWrapper<'static> {
-    fn from(kind: BreakpointState) -> Self {
-        BreakpointStateWrapper(Cow::Owned(kind))
-    }
-}
-
-impl StaticColumnCount for BreakpointStateWrapper<'_> {
-    fn column_count() -> usize {
-        1
-    }
-}
-
-impl Bind for BreakpointStateWrapper<'_> {
-    fn bind(&self, statement: &Statement, start_index: i32) -> anyhow::Result<i32> {
-        statement.bind(&self.0.to_int(), start_index)
-    }
-}
-
-impl Column for BreakpointStateWrapper<'_> {
-    fn column(statement: &mut Statement, start_index: i32) -> anyhow::Result<(Self, i32)> {
-        let state = statement.column_int(start_index)?;
-
-        match state {
-            0 => Ok((BreakpointState::Enabled.into(), start_index + 1)),
-            1 => Ok((BreakpointState::Disabled.into(), start_index + 1)),
-            _ => anyhow::bail!("Invalid BreakpointState discriminant {state}"),
-        }
-    }
-}
-
-impl sqlez::bindable::StaticColumnCount for Breakpoint {
-    fn column_count() -> usize {
-        // Position, log message, condition message, and hit condition message
-        4 + BreakpointStateWrapper::column_count()
-    }
-}
-
-impl sqlez::bindable::Bind for Breakpoint {
-    fn bind(
-        &self,
-        statement: &sqlez::statement::Statement,
-        start_index: i32,
-    ) -> anyhow::Result<i32> {
-        let next_index = statement.bind(&self.position, start_index)?;
-        let next_index = statement.bind(&self.message, next_index)?;
-        let next_index = statement.bind(&self.condition, next_index)?;
-        let next_index = statement.bind(&self.hit_condition, next_index)?;
-        statement.bind(
-            &BreakpointStateWrapper(Cow::Borrowed(&self.state)),
-            next_index,
-        )
-    }
-}
-
-impl Column for Breakpoint {
-    fn column(statement: &mut Statement, start_index: i32) -> Result<(Self, i32)> {
-        let position = statement
-            .column_int(start_index)
-            .with_context(|| format!("Failed to read BreakPoint at index {start_index}"))?
-            as u32;
-        let (message, next_index) = Option::<String>::column(statement, start_index + 1)?;
-        let (condition, next_index) = Option::<String>::column(statement, next_index)?;
-        let (hit_condition, next_index) = Option::<String>::column(statement, next_index)?;
-        let (state, next_index) = BreakpointStateWrapper::column(statement, next_index)?;
-
-        Ok((
-            Breakpoint {
-                position,
-                message: message.map(Arc::from),
-                condition: condition.map(Arc::from),
-                hit_condition: hit_condition.map(Arc::from),
-                state: state.0.into_owned(),
-            },
-            next_index,
-        ))
     }
 }
 
@@ -440,33 +343,11 @@ impl Domain for WorkspaceDb {
             ALTER TABLE toolchains ADD COLUMN raw_json TEXT DEFAULT "{}";
         ),
         sql!(
-            CREATE TABLE breakpoints (
-                workspace_id INTEGER NOT NULL,
-                path TEXT NOT NULL,
-                breakpoint_location INTEGER NOT NULL,
-                kind INTEGER NOT NULL,
-                log_message TEXT,
-                FOREIGN KEY(workspace_id) REFERENCES workspaces(workspace_id)
-                ON DELETE CASCADE
-                ON UPDATE CASCADE
-            );
-        ),
-        sql!(
             ALTER TABLE workspaces ADD COLUMN local_paths_array TEXT;
             CREATE UNIQUE INDEX local_paths_array_uq ON workspaces(local_paths_array);
             ALTER TABLE workspaces ADD COLUMN local_paths_order_array TEXT;
         ),
-        sql!(
-            ALTER TABLE breakpoints ADD COLUMN state INTEGER DEFAULT(0) NOT NULL
-        ),
-        sql!(
-            ALTER TABLE breakpoints DROP COLUMN kind
-        ),
         sql!(ALTER TABLE toolchains ADD COLUMN relative_worktree_path TEXT DEFAULT "" NOT NULL),
-        sql!(
-            ALTER TABLE breakpoints ADD COLUMN condition TEXT;
-            ALTER TABLE breakpoints ADD COLUMN hit_condition TEXT;
-        ),
         sql!(CREATE TABLE toolchains2 (
             workspace_id INTEGER,
             worktree_id INTEGER,
@@ -820,7 +701,6 @@ impl WorkspaceDb {
             display,
             docks,
             session_id: None,
-            breakpoints: self.breakpoints(workspace_id),
             window_id,
             user_toolchains: self.user_toolchains(workspace_id, remote_connection_id),
         })
@@ -1214,21 +1094,6 @@ impl WorkspaceDb {
             FROM workspaces
             WHERE session_id = ?1
             ORDER BY timestamp DESC
-        }
-    }
-
-    query! {
-        pub fn breakpoints_for_file(workspace_id: WorkspaceId, file_path: &Path) -> Result<Vec<Breakpoint>> {
-            SELECT breakpoint_location
-            FROM breakpoints
-            WHERE  workspace_id= ?1 AND path = ?2
-        }
-    }
-
-    query! {
-        pub fn clear_breakpoints(file_path: &Path) -> Result<()> {
-            DELETE FROM breakpoints
-            WHERE file_path = ?2
         }
     }
 

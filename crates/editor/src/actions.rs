@@ -310,16 +310,6 @@ pub struct GoToPreviousDiagnostic {
 }
 
 actions!(
-    debugger,
-    [
-        /// Runs program execution to the current cursor position.
-        RunToCursor,
-        /// Evaluates the selected text in the debugger context.
-        EvaluateSelectedText
-    ]
-);
-
-actions!(
     go_to_line,
     [
         /// Toggles the go to line dialog.
@@ -687,16 +677,8 @@ actions!(
         Tab,
         /// Removes a tab character or outdents.
         Backtab,
-        /// Toggles a breakpoint at the current line.
-        ToggleBreakpoint,
         /// Toggles the case of selected text.
         ToggleCase,
-        /// Disables the breakpoint at the current line.
-        DisableBreakpoint,
-        /// Enables the breakpoint at the current line.
-        EnableBreakpoint,
-        /// Edits the log message for a breakpoint.
-        EditLogBreakpoint,
         /// Toggles automatic signature help.
         ToggleAutoSignatureHelp,
         /// Toggles inline git blame display.

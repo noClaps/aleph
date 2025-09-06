@@ -27,8 +27,6 @@
         "created.background": "#d5f5d9",
         "created.border": "#64d970",
 
-        "debugger.accent": "#ff732e",
-
         "deleted": "#ea3c65",
         "deleted.background": "#ea3c65",
         "deleted.border": "#ea3c65",
@@ -39,7 +37,6 @@
         "editor.active_line_number": "#ccc",
         "editor.active_wrap_guide": "#ccc",
         "editor.background": "#222",
-        "editor.debugger_active_line.background": "#333",
         "editor.document_highlight.bracket_background": "#333",
         "editor.document_highlight.read_background": "#333",
         "editor.document_highlight.write_background": "#333",
