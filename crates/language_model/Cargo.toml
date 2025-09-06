@@ -2,15 +2,12 @@
 name = "language_model"
 version = "0.1.0"
 edition.workspace = true
-publish.workspace = true
 license = "GPL-3.0-or-later"
-
-[lints]
-workspace = true
+publish.workspace = true
 
 [lib]
-path = "src/language_model.rs"
 doctest = false
+path = "src/language_model.rs"
 
 [dependencies]
 anyhow.workspace = true
@@ -36,3 +33,7 @@ workspace-hack.workspace = true
 
 [dev-dependencies]
 gpui.workspace = true
+
+[lints]
+workspace = true
+

@@ -74,8 +74,8 @@ language_models.workspace = true
 language_selector.workspace = true
 language_tools.workspace = true
 languages = { workspace = true, features = ["load-grammars"] }
-line_ending_selector.workspace = true
 libc.workspace = true
+line_ending_selector.workspace = true
 log.workspace = true
 markdown.workspace = true
 markdown_preview.workspace = true
@@ -139,6 +139,7 @@ web_search.workspace = true
 workspace.workspace = true
 workspace-hack.workspace = true
 zed_actions.workspace = true
+zed_env_vars.workspace = true
 zlog.workspace = true
 zlog_settings.workspace = true
 
@@ -153,4 +154,3 @@ workspace.workspace = true
 
 [lints]
 workspace = true
-

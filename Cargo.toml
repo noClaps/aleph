@@ -56,6 +56,7 @@ members = [
   "crates/language_selector",
   "crates/language_tools",
   "crates/languages",
+  "crates/line_ending_selector",
   "crates/lmstudio",
   "crates/lsp",
   "crates/markdown",
@@ -138,6 +139,7 @@ members = [
   "crates/x_ai",
   "crates/zed",
   "crates/zed_actions",
+  "crates/zed_env_vars",
   "crates/zlog",
   "crates/zlog_settings",
   #
@@ -271,6 +273,7 @@ language_tools = { path = "crates/language_tools" }
 languages = { path = "crates/languages" }
 libc = "0.2"
 libsqlite3-sys = { version = "0.30.1", features = ["bundled"] }
+line_ending_selector = { path = "crates/line_ending_selector" }
 linkify = "0.10.0"
 lmstudio = { path = "crates/lmstudio" }
 log = { version = "0.4.16", features = ["kv_unstable_serde", "serde"] }
@@ -296,35 +299,39 @@ notifications = { path = "crates/notifications" }
 num-format = "0.4.4"
 objc = "0.2"
 objc2-foundation = { version = "0.3", default-features = false, features = [
-    "NSArray",
-    "NSAttributedString",
-    "NSBundle",
-    "NSCoder",
-    "NSData",
-    "NSDate",
-    "NSDictionary",
-    "NSEnumerator",
-    "NSError",
-    "NSGeometry",
-    "NSNotification",
-    "NSNull",
-    "NSObjCRuntime",
-    "NSObject",
-    "NSProcessInfo",
-    "NSRange",
-    "NSRunLoop",
-    "NSString",
-    "NSURL",
-    "NSUndoManager",
-    "NSValue",
-    "objc2-core-foundation",
-    "std"
+  "NSArray",
+  "NSAttributedString",
+  "NSBundle",
+  "NSCoder",
+  "NSData",
+  "NSDate",
+  "NSDictionary",
+  "NSEnumerator",
+  "NSError",
+  "NSGeometry",
+  "NSNotification",
+  "NSNull",
+  "NSObjCRuntime",
+  "NSObject",
+  "NSProcessInfo",
+  "NSRange",
+  "NSRunLoop",
+  "NSString",
+  "NSURL",
+  "NSUndoManager",
+  "NSValue",
+  "objc2-core-foundation",
+  "std",
 ] }
-open = "5.0.0"
+ollama = { path = "crates/ollama" }
+onboarding = { path = "crates/onboarding" }
+open_ai = { path = "crates/open_ai" }
+open_router = { path = "crates/open_router" }
 ordered-float = "2.1.1"
 outline = { path = "crates/outline" }
 outline_panel = { path = "crates/outline_panel" }
 palette = { version = "0.7.5", default-features = false, features = ["std"] }
+panel = { path = "crates/panel" }
 parking = "2.0"
 parking_lot = "0.12.1"
 pathdiff = "0.2"
@@ -498,6 +505,7 @@ workspace-hack = "0.1.0"
 worktree = { path = "crates/worktree" }
 x_ai = { path = "crates/x_ai" }
 zed_actions = { path = "crates/zed_actions" }
+zed_env_vars = { path = "crates/zed_env_vars" }
 zlog = { path = "crates/zlog" }
 zlog_settings = { path = "crates/zlog_settings" }
 zstd = "0.11"

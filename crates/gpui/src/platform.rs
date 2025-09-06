@@ -428,7 +428,7 @@ pub(crate) trait PlatformWindow: HasWindowHandle + HasDisplayHandle {
     fn set_client_inset(&self, _inset: Pixels) {}
     fn gpu_specs(&self) -> Option<GpuSpecs>;
 
-    fn update_ime_position(&self, _bounds: Bounds<ScaledPixels>);
+    fn update_ime_position(&self, _bounds: Bounds<Pixels>);
 }
 
 /// This type is public so that our test macro can generate and use it, but it should not

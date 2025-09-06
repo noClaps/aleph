@@ -230,13 +230,14 @@ pub fn main() {
 
     let (open_listener, mut open_rx) = OpenListener::new();
 
-    let failed_single_instance_check =
-        if *db::ZED_STATELESS || *release_channel::RELEASE_CHANNEL == ReleaseChannel::Dev {
-            false
-        } else {
-            use zed::mac_only_instance::*;
-            ensure_only_instance() != IsOnlyInstance::Yes
-        };
+    let failed_single_instance_check = if *zed_env_vars::ZED_STATELESS
+        || *release_channel::RELEASE_CHANNEL == ReleaseChannel::Dev
+    {
+        false
+    } else {
+        use zed::mac_only_instance::*;
+        ensure_only_instance() != IsOnlyInstance::Yes
+    };
     if failed_single_instance_check {
         println!("zed is already running");
         return;

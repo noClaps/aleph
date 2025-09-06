@@ -1,6 +1,5 @@
 use gpui::{Action, Entity, Global, Render, SharedString};
 use ui::{ButtonLike, Tooltip, prelude::*};
-use util::ResultExt;
 
 /// Prompts the user to try newly released Zed's features
 pub struct OnboardingBanner {
@@ -24,35 +23,6 @@ pub struct BannerDetails {
 }
 
 impl OnboardingBanner {
-    pub fn new(
-        source: &str,
-        icon_name: IconName,
-        label: impl Into<SharedString>,
-        subtitle: Option<SharedString>,
-        action: Box<dyn Action>,
-        cx: &mut Context<Self>,
-    ) -> Self {
-        cx.set_global(BannerGlobal {
-            entity: cx.entity(),
-        });
-        Self {
-            source: source.to_string(),
-            details: BannerDetails {
-                action,
-                icon_name,
-                label: label.into(),
-                subtitle: subtitle.or(Some(SharedString::from("Introducing:"))),
-            },
-            visible_when: None,
-            dismissed: get_dismissed(source),
-        }
-    }
-
-    pub fn visible_when(mut self, predicate: impl Fn(&mut App) -> bool + 'static) -> Self {
-        self.visible_when = Some(Box::new(predicate));
-        self
-    }
-
     fn should_show(&self, cx: &mut App) -> bool {
         !self.dismissed && self.visible_when.as_ref().map_or(true, |f| f(cx))
     }
@@ -73,14 +43,6 @@ fn dismissed_at_key(source: &str) -> String {
             source.to_lowercase().trim().replace(" ", "_")
         )
     }
-}
-
-fn get_dismissed(source: &str) -> bool {
-    let dismissed_at = dismissed_at_key(source);
-    db::kvp::KEY_VALUE_STORE
-        .read_kvp(&dismissed_at)
-        .log_err()
-        .is_some_and(|dismissed| dismissed.is_some())
 }
 
 fn persist_dismissed(source: &str, cx: &mut App) {

@@ -604,9 +604,6 @@ impl Client {
             Status::ConnectionLost => {
                 let client = self.clone();
                 state._reconnect_task = Some(cx.spawn(async move |cx| {
-                    #[cfg(any(test, feature = "test-support"))]
-                    let mut rng = StdRng::seed_from_u64(0);
-                    #[cfg(not(any(test, feature = "test-support")))]
                     let mut rng = StdRng::from_os_rng();
 
                     let mut delay = INITIAL_RECONNECTION_DELAY;

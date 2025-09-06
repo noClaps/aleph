@@ -2,18 +2,12 @@
 name = "scheduler"
 version = "0.1.0"
 edition.workspace = true
-publish.workspace = true
 license = "Apache-2.0"
-
-[lints]
-workspace = true
+publish.workspace = true
 
 [lib]
-path = "src/scheduler.rs"
 doctest = false
-
-[features]
-test-support = []
+path = "src/scheduler.rs"
 
 [dependencies]
 async-task.workspace = true
@@ -23,3 +17,7 @@ parking.workspace = true
 parking_lot.workspace = true
 rand.workspace = true
 workspace-hack.workspace = true
+
+[lints]
+workspace = true
+
