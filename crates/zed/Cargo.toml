@@ -1,22 +1,30 @@
 [package]
-description = "The fast, collaborative code editor."
-edition.workspace = true
 name = "aleph"
 version = "0.204.0"
-publish.workspace = true
-license = "GPL-3.0-or-later"
 authors = ["Zed Team <hi@zed.dev>"]
+edition.workspace = true
+description = "The fast, collaborative code editor."
+license = "GPL-3.0-or-later"
+publish.workspace = true
 
-[lints]
-workspace = true
+[package.metadata.bundle-stable]
+icon = ["resources/app-icon@2x.png", "resources/app-icon.png"]
+identifier = "dev.zed.Zed"
+name = "Zed"
+osx_minimum_system_version = "10.15.7"
+osx_info_plist_exts = ["resources/info/*"]
+osx_url_schemes = ["zed"]
 
-[[bin]]
-name = "aleph"
-path = "src/zed-main.rs"
+[package.metadata.cargo-shear]
+ignored = ["profiling", "zstd"]
 
 [lib]
 name = "aleph"
 path = "src/main.rs"
+
+[[bin]]
+name = "aleph"
+path = "src/zed-main.rs"
 
 [dependencies]
 activity_indicator.workspace = true
@@ -45,7 +53,6 @@ extensions_ui.workspace = true
 feature_flags.workspace = true
 feedback.workspace = true
 file_finder.workspace = true
-system_specs.workspace = true
 fs.workspace = true
 futures.workspace = true
 git.workspace = true
@@ -54,12 +61,12 @@ git_ui.workspace = true
 go_to_line.workspace = true
 gpui = { workspace = true, features = ["font-kit"] }
 gpui_tokio.workspace = true
-
 http_client.workspace = true
 image_viewer.workspace = true
 inspector_ui.workspace = true
 install_cli.workspace = true
 jj_ui.workspace = true
+keymap_editor.workspace = true
 language.workspace = true
 language_extension.workspace = true
 language_model.workspace = true
@@ -72,7 +79,6 @@ libc.workspace = true
 log.workspace = true
 markdown.workspace = true
 markdown_preview.workspace = true
-svg_preview.workspace = true
 menu.workspace = true
 migrator.workspace = true
 nc.workspace = true
@@ -84,7 +90,6 @@ outline_panel.workspace = true
 parking_lot.workspace = true
 paths.workspace = true
 picker.workspace = true
-settings_profile_selector.workspace = true
 profiling.workspace = true
 project.workspace = true
 project_panel.workspace = true
@@ -100,14 +105,16 @@ serde.workspace = true
 serde_json.workspace = true
 session.workspace = true
 settings.workspace = true
+settings_profile_selector.workspace = true
 settings_ui.workspace = true
-keymap_editor.workspace = true
 shellexpand.workspace = true
 smol.workspace = true
 snippet_provider.workspace = true
 snippets_ui.workspace = true
 supermaven.workspace = true
+svg_preview.workspace = true
 sysinfo.workspace = true
+system_specs.workspace = true
 tab_switcher.workspace = true
 tasks_ui.workspace = true
 telemetry.workspace = true
@@ -129,12 +136,11 @@ vim.workspace = true
 vim_mode_setting.workspace = true
 watch.workspace = true
 web_search.workspace = true
-workspace-hack.workspace = true
 workspace.workspace = true
+workspace-hack.workspace = true
 zed_actions.workspace = true
 zlog.workspace = true
 zlog_settings.workspace = true
-
 
 [dev-dependencies]
 editor.workspace = true
@@ -145,13 +151,6 @@ project.workspace = true
 terminal_view.workspace = true
 workspace.workspace = true
 
-[package.metadata.bundle-stable]
-icon = ["resources/app-icon@2x.png", "resources/app-icon.png"]
-identifier = "dev.zed.Zed"
-name = "Zed"
-osx_minimum_system_version = "10.15.7"
-osx_info_plist_exts = ["resources/info/*"]
-osx_url_schemes = ["zed"]
+[lints]
+workspace = true
 
-[package.metadata.cargo-shear]
-ignored = ["profiling", "zstd"]
